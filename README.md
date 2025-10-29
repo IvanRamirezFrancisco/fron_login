@@ -5,34 +5,40 @@ Este directorio contiene la aplicación Angular del sistema de autenticación.
 ## Configuración para Railway
 
 ### Archivos de configuración:
+
 - `Dockerfile` - Configuración Docker para build y deployment
 - `nginx.conf` - Configuración de servidor web Nginx
 - `railway.json` - Configuración específica de Railway
 - `src/environments/environment.prod.ts` - Variables de entorno para producción
 
 ### Backend URL configurada:
+
 - **Producción**: `https://backendapp-production-ce23.up.railway.app/api`
 - **Desarrollo**: `http://localhost:8080/api`
 
 ### Build verificado:
+
 ✅ Build de producción completado exitosamente
 ✅ Archivos generados en `dist/frontend/browser/`
 ✅ Configuración Nginx lista para SPA routing
 ✅ Dockerfile configurado para deployment
 
 ### Para desplegar en Railway:
+
 1. Crear nuevo servicio en Railway
 2. Conectar este directorio (frontend)
 3. Railway detectará automáticamente el Dockerfile
 4. Build y deployment automático
 
 ### Servicios configurados:
+
 - **AuthService**: Conectado al backend en Railway
 - **SmsService**: Configurado para 2FA SMS
 - **PasswordResetService**: Para recuperación de contraseñas
 - **GoogleAuthService**: Para autenticación Google
 
 ### Funcionalidades incluidas:
+
 - ✅ Sistema de login/registro
 - ✅ Verificación de email
 - ✅ Autenticación de dos factores (SMS, Email, Google Authenticator)
