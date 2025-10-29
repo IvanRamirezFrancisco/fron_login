@@ -13,7 +13,7 @@ RUN npm ci
 COPY . .
 
 # Build the app for production with environment production
-RUN npm run build
+RUN npm run build -- --configuration=production
 
 # Stage 2: Serve the app with Nginx
 FROM nginx:alpine
