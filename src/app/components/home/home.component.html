@@ -1,0 +1,53 @@
+<div class="home-container">
+  <header class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Bienvenido al Sistema de Login</h1>
+      <p class="hero-description">
+        Una aplicación moderna de autenticación construida con Angular y Spring Boot
+      </p>
+      
+      <div *ngIf="isLoggedIn$ | async; else guestActions" class="user-actions">
+        <div *ngIf="currentUser$ | async as user" class="welcome-message">
+          <p>¡Hola, {{ user.firstName }}! 👋</p>
+        </div>
+        <a routerLink="/dashboard" class="btn btn-primary">Ir al Dashboard</a>
+        <button (click)="logout()" class="btn btn-secondary">Cerrar Sesión</button>
+      </div>
+
+      <ng-template #guestActions>
+        <div class="guest-actions">
+          <a routerLink="/login" class="btn btn-primary">Iniciar Sesión</a>
+          <a routerLink="/register" class="btn btn-outline">Registrarse</a>
+        </div>
+      </ng-template>
+    </div>
+  </header>
+  
+  <section class="features-section">
+    <div class="container">
+      <h2>Características</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+          <h3>Seguridad Avanzada</h3>
+          <p>JWT + 2FA + Verificación por Email</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+          <h3>Rápido</h3>
+          <p>Angular 17 + Spring Boot optimizado</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
+          <h3>Responsive</h3>
+          <p>Diseño adaptable para todos los dispositivos</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-key"></i></div>
+          <h3>Reset Password</h3>
+          <p>Recuperación segura de contraseña</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

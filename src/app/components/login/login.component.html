@@ -1,0 +1,367 @@
+<!-- Contenedor principal con diseño moderno -->
+<div class="d-flex justify-content-center align-items-center" style="min-height: 100vh; background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);">
+  <div class="container-sm-modern">
+    
+    <!-- Card principal de login -->
+    <div class="card-modern card-elevated-modern fade-in">
+      
+      <!-- Header del card -->
+      <div class="card-header-modern text-center" style="background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%); color: white; border: none;">
+        <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
+          <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-lock" style="color: white; font-size: 1.2rem;"></i>
+          </div>
+          <h2 class="h3 mb-0" style="color: white; font-weight: 600;">Iniciar Sesión</h2>
+        </div>
+        <p class="mb-0" style="color: rgba(255,255,255,0.9); font-size: 0.9rem;">Accede a tu cuenta de forma segura</p>
+      </div>
+
+      <!-- Body del card -->
+      <div class="card-body-modern">
+        
+        <!-- Mensaje de error global -->
+        <div *ngIf="errorMessage" class="alert-modern alert-danger-modern mb-4">
+          <i class="fas fa-exclamation-triangle" style="color: var(--danger-600);"></i>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <!-- Formulario -->
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="d-flex flex-column gap-4">
+          
+          <!-- Campo Email -->
+          <div class="form-group">
+            <label for="email" class="form-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 0.5rem; color: var(--gray-600);">
+                <path d="M20 4H4C2.9 4 2.01 4.9 2.01 6V18C2.01 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z"/>
+              </svg>
+              Correo Electrónico
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email"
+              class="form-control"
+              [class.is-invalid]="email?.invalid && email?.touched"
+              [class.is-valid]="email?.valid && email?.touched"
+              placeholder="tu-email@ejemplo.com"
+              autocomplete="email"
+            >
+            <div *ngIf="email?.invalid && email?.touched" class="invalid-feedback">
+              <i class="fas fa-times-circle"></i>
+              <span *ngIf="email?.errors?.['required']">El email es requerido</span>
+              <span *ngIf="email?.errors?.['email']">Formato de email inválido</span>
+            </div>
+            <div *ngIf="email?.valid && email?.touched" class="valid-feedback">
+              <i class="fas fa-check-circle"></i>
+              <span>Email válido</span>
+            </div>
+          </div>
+
+          <!-- Campo Contraseña -->
+          <div class="form-group">
+            <label for="password" class="form-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 0.5rem; color: var(--gray-600);">
+                <path d="M18 10V8C18 5.79086 16.2091 4 14 4H10C7.79086 4 6 5.79086 6 8V10C4.89543 10 4 10.8954 4 12V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V12C20 10.8954 19.1046 10 18 10ZM8 8C8 6.89543 8.89543 6 10 6H14C15.1046 6 16 6.89543 16 8V10H8V8Z"/>
+                <circle cx="12" cy="16" r="2"/>
+              </svg>
+              Contraseña
+            </label>
+            <div class="input-group">
+              <input 
+                [type]="showPassword ? 'text' : 'password'"
+                id="password" 
+                formControlName="password"
+                class="form-control"
+                [class.is-invalid]="password?.invalid && password?.touched"
+                [class.is-valid]="password?.valid && password?.touched"
+                placeholder="Ingresa tu contraseña"
+                autocomplete="current-password"
+              >
+              <button 
+                type="button" 
+                class="btn-icon"
+                (click)="togglePasswordVisibility()"
+                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--gray-500); cursor: pointer; z-index: 10;"
+              >
+                <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 4C7 4 2.73 7.11 1 11.5C2.73 15.89 7 19 12 19S21.27 15.89 23 11.5C21.27 7.11 17 4 12 4ZM12 16.5C9.52 16.5 7.5 14.48 7.5 12S9.52 7.5 12 7.5 16.5 9.52 16.5 12 14.48 16.5 12 16.5Z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 4C7 4 2.73 7.11 1 11.5C2.23 13.79 4.06 15.72 6.26 17.05L7.67 15.64C6.14 14.66 4.91 13.25 4.07 11.5C5.6 8.57 8.48 6.5 12 6.5C13.07 6.5 14.09 6.74 15 7.17L16.42 5.76C14.72 4.64 13.42 4 12 4Z"/>
+                  <path d="M12 7.5C9.52 7.5 7.5 9.52 7.5 12C7.5 12.69 7.65 13.35 7.92 13.94L9.35 12.51C9.33 12.34 9.33 12.17 9.33 12C9.33 10.52 10.52 9.33 12 9.33C12.17 9.33 12.34 9.33 12.51 9.35L13.94 7.92C13.35 7.65 12.69 7.5 12 7.5Z"/>
+                  <path d="M16.57 11.5C16.93 12.25 17.15 13.08 17.2 13.94L18.64 12.5C18.59 12.33 18.53 12.17 18.46 12C18.46 11.83 18.4 11.67 18.33 11.5H16.57Z"/>
+                  <path d="M2.81 2.81L21.19 21.19L19.78 22.6L17.73 20.55C16.26 21.25 14.67 21.67 13 21.67C8 21.67 3.73 18.56 2 14.17C2.69 12.61 3.73 11.25 5.02 10.17L2.81 2.81Z"/>
+                </svg>
+              </button>
+            </div>
+            <div *ngIf="password?.invalid && password?.touched" class="invalid-feedback">
+              <i class="fas fa-times-circle"></i>
+              <span *ngIf="password?.errors?.['required']">La contraseña es requerida</span>
+              <span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres</span>
+            </div>
+            <div *ngIf="password?.valid && password?.touched" class="valid-feedback">
+              <i class="fas fa-check-circle"></i>
+              <span>Contraseña válida</span>
+            </div>
+          </div>
+
+          <!-- Botón de submit -->
+          <button 
+            type="submit" 
+            [disabled]="loginForm.invalid || isLoading"
+            class="btn btn-primary btn-lg w-100"
+            [class.loading]="isLoading"
+          >
+            <span *ngIf="!isLoading" class="d-flex align-items-center justify-content-center gap-2">
+              <i class="fas fa-sign-in-alt"></i>
+              <span>Iniciar Sesión</span>
+            </span>
+          </button>
+
+        </form>
+      </div>
+
+      <!-- Footer del card -->
+      <div class="card-footer-modern">
+        <div class="d-flex flex-column gap-3 text-center">
+          
+          <!-- Enlace olvidar contraseña -->
+          <div>
+            <a 
+              routerLink="/forgot-password" 
+              class="text-decoration-none"
+              style="color: var(--primary-600); font-weight: 500; font-size: 0.9rem;"
+            >
+              <i class="fas fa-key" style="margin-right: 0.5rem;"></i>
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+          
+          <!-- Divisor -->
+          <div style="height: 1px; background: var(--gray-200); margin: 0.5rem 0;"></div>
+          
+          <!-- Enlace registro -->
+          <div>
+            <span style="color: var(--gray-600); font-size: 0.9rem;">¿No tienes cuenta?</span>
+            <a 
+              routerLink="/register" 
+              class="text-decoration-none"
+              style="color: var(--primary-600); font-weight: 600; margin-left: 0.5rem;"
+            >
+              <i class="fas fa-user-plus" style="margin-right: 0.5rem;"></i>
+              Crear cuenta
+            </a>
+          </div>
+          
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+    <!-- ...existing code... -->
+
+<!-- Modal de verificación 2FA moderno -->
+<div *ngIf="showTwoFactorForm" 
+     class="position-fixed w-100 h-100 d-flex justify-content-center align-items-center"
+     style="top: 0; left: 0; background: rgba(0,0,0,0.5); z-index: 1050; backdrop-filter: blur(4px);">
+  
+  <div class="container-sm-modern">
+    <div class="card-modern card-elevated-modern fade-in" style="max-width: 420px; margin: 0 auto; width: 90vw;">
+      
+      <!-- Selección de método 2FA -->
+      <div *ngIf="!selectedMethod">
+        
+        <!-- Header -->
+        <div class="card-header-modern text-center" style="background: linear-gradient(135deg, var(--info-500) 0%, var(--info-600) 100%); color: white; border: none;">
+          <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
+            <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              <i class="fas fa-shield-alt" style="color: white; font-size: 1.2rem;"></i>
+            </div>
+            <h3 class="mb-0" style="color: white; font-weight: 600;">Verificación en dos pasos</h3>
+          </div>
+          <p class="mb-0" style="color: rgba(255,255,255,0.9); font-size: 0.9rem;">Elige cómo verificar tu identidad</p>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body-modern">
+          
+          <!-- Mensaje de error -->
+          <div *ngIf="errorMessage" class="alert-modern alert-danger-modern mb-4">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+
+          <!-- Grid de métodos -->
+          <div class="d-flex flex-column gap-3">
+            <div 
+              *ngFor="let method of availableMethods" 
+              class="card-modern p-4 cursor-pointer transition-all"
+              [class.card-primary-modern]="method.enabled"
+              [style.opacity]="method.enabled ? '1' : '0.5'"
+              [style.cursor]="method.enabled ? 'pointer' : 'not-allowed'"
+              (click)="method.enabled && selectMethod(method.id)"
+              style="border: 2px solid var(--gray-200); transition: all 0.2s ease;"
+              onmouseover="if(this.style.cursor === 'pointer') { this.style.borderColor = 'var(--primary-300)'; this.style.transform = 'translateY(-2px)'; }"
+              onmouseout="if(this.style.cursor === 'pointer') { this.style.borderColor = 'var(--gray-200)'; this.style.transform = 'translateY(0)'; }"
+            >
+              <div class="d-flex align-items-center gap-4">
+                <div class="d-flex align-items-center justify-content-center" 
+                     style="width: 50px; height: 50px; background: var(--primary-50); border-radius: 50%; color: var(--primary-600);">
+                  <i [class]="method.icon" style="font-size: 1.3rem;"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <h5 class="mb-1" style="color: var(--gray-900); font-weight: 600;">{{ method.name }}</h5>
+                  <p class="mb-0" style="color: var(--gray-600); font-size: 0.875rem;">{{ method.description }}</p>
+                </div>
+                <div *ngIf="method.enabled" style="color: var(--primary-500); font-size: 1.2rem;">
+                  <i class="fas fa-arrow-right"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer-modern text-center">
+          <button 
+            type="button" 
+            (click)="cancelTwoFactor()" 
+            class="btn btn-outline-secondary"
+          >
+            <i class="fas fa-times" style="margin-right: 0.5rem;"></i>
+            Cancelar
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Verificación de código -->
+      <div *ngIf="selectedMethod">
+        
+        <!-- Header con botón de regreso -->
+        <div class="card-header-modern" style="background: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%); color: white; border: none;">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <button 
+              type="button" 
+              (click)="goBackToMethodSelection()" 
+              class="btn btn-sm"
+              style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;"
+            >
+              <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="d-flex align-items-center gap-2">
+              <i [class]="getSelectedMethodInfo()?.icon" style="font-size: 1.2rem; color: white;"></i>
+              <h4 class="mb-0" style="color: white; font-weight: 600;">{{ getSelectedMethodInfo()?.name }}</h4>
+            </div>
+          </div>
+          <p class="mb-0" style="color: rgba(255,255,255,0.9); font-size: 0.9rem;">Ingresa el código de verificación</p>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body-modern">
+          
+          <!-- Instrucciones específicas por método -->
+          <div class="alert-modern alert-info-modern mb-4">
+            <i class="fas fa-lightbulb"></i>
+            <div>
+              <p class="mb-0" *ngIf="selectedMethod === 'GOOGLE_AUTHENTICATOR'">
+                Ingresa el código de 6 dígitos de tu aplicación Google Authenticator
+              </p>
+              <p class="mb-0" *ngIf="selectedMethod === 'SMS' && codeSent">
+                Hemos enviado un código a tu teléfono terminado en {{ formatPhone(pendingUser?.phone || '') }}
+              </p>
+              <p class="mb-0" *ngIf="selectedMethod === 'EMAIL' && codeSent">
+                Hemos enviado un código a {{ pendingUser?.email }}
+              </p>
+              <div *ngIf="(selectedMethod === 'SMS' || selectedMethod === 'EMAIL') && !codeSent" class="d-flex align-items-center gap-2">
+                <div class="spinner-border-sm"></div>
+                <span>Enviando código...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mensaje de error -->
+          <div *ngIf="errorMessage" class="alert-modern alert-danger-modern mb-4">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+
+          <!-- Formulario de código -->
+          <form (ngSubmit)="verifyTwoFactor()" *ngIf="codeSent" class="d-flex flex-column gap-4">
+            
+            <!-- Input de código -->
+            <div class="form-group text-center">
+              <label class="form-label">Código de verificación</label>
+              <input 
+                type="text" 
+                maxlength="6" 
+                [(ngModel)]="twoFactorCode" 
+                name="twoFactorCode" 
+                required 
+                placeholder="000000"
+                class="form-control text-center"
+                pattern="[0-9]{6}"
+                style="font-size: 1.5rem; font-weight: 600; letter-spacing: 0.5rem; font-family: monospace;"
+                autocomplete="one-time-code"
+              />
+              <div class="mt-2" style="font-size: 0.75rem; color: var(--gray-500);">
+                Ingresa los 6 dígitos del código
+              </div>
+            </div>
+            
+            <!-- Botón verificar -->
+            <button 
+              type="submit" 
+              [disabled]="isLoading || !twoFactorCode || twoFactorCode.length !== 6"
+              class="btn btn-success btn-lg"
+              [class.loading]="isLoading"
+            >
+              <span *ngIf="!isLoading" class="d-flex align-items-center justify-content-center gap-2">
+                <i class="fas fa-check"></i>
+                <span>Verificar código</span>
+              </span>
+            </button>
+
+            <!-- Opción de reenvío -->
+            <div *ngIf="selectedMethod === 'SMS' || selectedMethod === 'EMAIL'" class="text-center mt-3">
+              <p class="mb-2" style="color: var(--gray-600); font-size: 0.875rem;">¿No recibiste el código?</p>
+              <button 
+                type="button" 
+                (click)="sendVerificationCode()" 
+                class="btn btn-outline-primary btn-sm"
+                [disabled]="isLoading"
+              >
+                <i class="fas fa-redo" style="margin-right: 0.5rem;"></i>
+                Reenviar código
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer-modern text-center">
+          <button 
+            type="button" 
+            (click)="cancelTwoFactor()" 
+            class="btn btn-outline-secondary"
+          >
+            <i class="fas fa-times" style="margin-right: 0.5rem;"></i>
+            Cancelar verificación
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+

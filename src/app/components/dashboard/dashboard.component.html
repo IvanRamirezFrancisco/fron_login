@@ -1,0 +1,507 @@
+<div class="dashboard-container">
+  <!-- Header Moderno -->
+  <header style="background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%); color: white; padding: var(--spacing-6) 0; margin-bottom: var(--spacing-6);">
+    <div class="container-modern">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
+        
+        <!-- Información del header -->
+        <div class="d-flex flex-column">
+          <h1 class="h2 mb-2" style="color: white; font-weight: 700;">
+            <i class="fas fa-tachometer-alt" style="margin-right: 0.75rem;"></i>
+            Dashboard
+          </h1>
+          <p class="mb-0" style="color: rgba(255,255,255,0.9); font-size: 0.9rem;">
+            <i class="fas fa-calendar-alt" style="margin-right: 0.5rem;"></i>
+            {{ currentTime | date:'fullDate':'':'es' }}
+          </p>
+        </div>
+
+        <!-- Usuario y acciones -->
+        <div *ngIf="currentUser" class="d-flex align-items-center gap-3">
+          
+          <!-- Info del usuario -->
+          <div class="d-flex align-items-center gap-3 p-3" 
+               style="background: rgba(255,255,255,0.15); border-radius: var(--border-radius-lg); backdrop-filter: blur(10px);">
+            
+            <!-- Avatar -->
+            <div style="width: 45px; height: 45px; background: white; color: var(--primary-600); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; box-shadow: var(--shadow-md);">
+              {{ currentUser.firstName.charAt(0).toUpperCase() }}
+            </div>
+            
+            <!-- Detalles del usuario -->
+            <div class="d-none d-md-block">
+              <div style="color: white; font-weight: 600; font-size: 0.95rem;">
+                {{ currentUser.firstName }} {{ currentUser.lastName }}
+              </div>
+              <div style="color: rgba(255,255,255,0.8); font-size: 0.8rem;">
+                {{ currentUser.email }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Acciones -->
+          <div class="d-flex align-items-center gap-2">
+            
+            <!-- Botón refresh -->
+            <button 
+              class="btn btn-sm d-flex align-items-center justify-content-center"
+              (click)="refreshData()" 
+              [disabled]="isLoading"
+              style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 40px; height: 40px;"
+              title="Actualizar datos"
+            >
+              <i class="fas fa-sync-alt" [class.spinning]="isLoading" style="font-size: 1.1rem;"></i>
+            </button>
+
+            <!-- Botón logout (desktop) -->
+            <button 
+              class="btn btn-outline-light btn-sm d-none d-md-flex align-items-center gap-2"
+              (click)="logout()"
+              style="border-radius: 20px; padding: 0.5rem 1rem; border: 1px solid rgba(255,255,255,0.3);"
+              title="Cerrar sesión"
+            >
+              <span>Cerrar sesión</span>
+            </button>
+
+            <!-- Botón logout (solo móvil) -->
+            <button 
+              class="btn btn-outline-light btn-sm d-md-none d-flex align-items-center gap-2"
+              (click)="logout()"
+              style="border-radius: 20px; padding: 0.4rem 0.8rem;"
+            >
+              <span>Salir</span>
+            </button>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Moderno -->
+  <main class="container-modern">
+    
+    <!-- Welcome Section Modernizada -->
+    <section class="mb-6">
+      <div *ngIf="currentUser" class="card-modern card-elevated-modern fade-in">
+        
+        <!-- Header de bienvenida -->
+        <div class="card-header-modern" style="background: linear-gradient(135deg, var(--success-50) 0%, var(--success-100) 100%); border-bottom: 1px solid var(--success-200);">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+              <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                <i class="fas fa-hand-paper"></i>
+              </div>
+              <div>
+                <h2 class="h4 mb-1" style="color: var(--success-800);">
+                  {{ getGreeting() }}, {{ currentUser.firstName }}!
+                </h2>
+                <p class="mb-0" style="color: var(--success-600); font-size: 0.9rem;">
+                  Bienvenido de vuelta a tu panel de control
+                </p>
+              </div>
+            </div>
+            <div class="text-end d-none d-md-block">
+              <div style="color: var(--success-700); font-size: 0.85rem;">
+                <div><strong>Último acceso:</strong> {{ stats.lastLogin }}</div>
+                <div><strong>Tiempo actual:</strong> {{ currentTime | date:'medium':'':'es' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección de Seguridad 2FA Modernizada -->
+        <div class="card-body-modern">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div style="width: 40px; height: 40px; background: var(--info-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--info-600); font-size: 1.2rem;">
+              <i class="fas fa-lock"></i>
+            </div>
+            <div>
+              <h3 class="h5 mb-1" style="color: var(--gray-900);">Autenticación de Dos Factores</h3>
+              <p class="mb-0" style="color: var(--gray-600); font-size: 0.9rem;">Gestiona tus métodos de seguridad</p>
+            </div>
+          </div>
+          
+          <div class="row-modern gap-4">
+            
+            <!-- Google Authenticator Card -->
+            <div class="col-modern">
+              <div class="card-modern h-100 transition-all" 
+                   [style.border-color]="currentUser?.googleAuthEnabled ? 'var(--success-300)' : 'var(--gray-200)'"
+                   [style.background]="currentUser?.googleAuthEnabled ? 'var(--success-50)' : 'white'">
+                
+                <div class="card-body-modern d-flex flex-column">
+                  <!-- Header de la tarjeta -->
+                  <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;"
+                         [style.background]="currentUser?.googleAuthEnabled ? 'var(--success-100)' : 'var(--gray-100)'"
+                         [style.color]="currentUser?.googleAuthEnabled ? 'var(--success-600)' : 'var(--gray-500)'">
+                      <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                      <h5 class="mb-1" style="color: var(--gray-900); font-weight: 600;">Google Authenticator</h5>
+                      <p class="mb-0" style="color: var(--gray-600); font-size: 0.85rem;">
+                        Códigos TOTP generados por la aplicación
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Estado -->
+                  <div class="mb-3">
+                    <span *ngIf="currentUser?.googleAuthEnabled" 
+                          class="badge" 
+                          style="background: var(--success-100); color: var(--success-700); border: 1px solid var(--success-200); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                      <i class="fas fa-check-circle" style="margin-right: 0.25rem;"></i>
+                      Activado
+                    </span>
+                    <span *ngIf="!currentUser?.googleAuthEnabled" 
+                          class="badge" 
+                          style="background: var(--gray-100); color: var(--gray-600); border: 1px solid var(--gray-200); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                      <i class="fas fa-times-circle" style="margin-right: 0.25rem;"></i>
+                      Inactivo
+                    </span>
+                  </div>
+
+                  <!-- Acciones -->
+                  <div class="mt-auto">
+                    <button *ngIf="!currentUser?.googleAuthEnabled"
+                            class="btn btn-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-2" 
+                            routerLink="/google-auth-setup">
+                      <i class="fas fa-plus"></i>
+                      <span>Activar</span>
+                    </button>
+                    
+                    <div *ngIf="currentUser?.googleAuthEnabled">
+                      <button class="btn btn-success btn-sm w-100 d-flex align-items-center justify-content-center gap-2" disabled>
+                        <i class="fas fa-check"></i>
+                        <span>Activo</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SMS 2FA Card -->
+            <div class="col-modern">
+              <div class="card-modern h-100 transition-all" 
+                   [style.border-color]="currentUser?.smsEnabled ? 'var(--success-300)' : 'var(--gray-200)'"
+                   [style.background]="currentUser?.smsEnabled ? 'var(--success-50)' : 'white'">
+                
+                <div class="card-body-modern d-flex flex-column">
+                  <!-- Header de la tarjeta -->
+                  <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;"
+                         [style.background]="currentUser?.smsEnabled ? 'var(--success-100)' : 'var(--gray-100)'"
+                         [style.color]="currentUser?.smsEnabled ? 'var(--success-600)' : 'var(--gray-500)'">
+                      <i class="fas fa-sms"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                      <h5 class="mb-1" style="color: var(--gray-900); font-weight: 600;">SMS 2FA</h5>
+                      <p class="mb-0" style="color: var(--gray-600); font-size: 0.85rem;">
+                        Códigos enviados a tu teléfono móvil
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Estado y teléfono -->
+                  <div class="mb-3">
+                    <span *ngIf="currentUser?.smsEnabled" 
+                          class="badge" 
+                          style="background: var(--success-100); color: var(--success-700); border: 1px solid var(--success-200); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                      <i class="fas fa-check-circle" style="margin-right: 0.25rem;"></i>
+                      Activado
+                    </span>
+                    <span *ngIf="!currentUser?.smsEnabled" 
+                          class="badge" 
+                          style="background: var(--gray-100); color: var(--gray-600); border: 1px solid var(--gray-200); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                      <i class="fas fa-times-circle" style="margin-right: 0.25rem;"></i>
+                      Inactivo
+                    </span>
+                    
+                    <div *ngIf="currentUser?.smsEnabled && currentUser?.phone" class="mt-2">
+                      <small style="color: var(--gray-600); background: var(--gray-100); padding: 0.25rem 0.5rem; border-radius: 4px; font-family: monospace;">
+                        <i class="fas fa-phone" style="margin-right: 0.25rem;"></i>{{ formatPhoneForDisplay(currentUser.phone!) }}
+                      </small>
+                    </div>
+                  </div>
+
+                  <!-- Acciones -->
+                  <div class="mt-auto">
+                    <button *ngIf="!currentUser?.smsEnabled"
+                            class="btn btn-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-2" 
+                            routerLink="/sms-setup">
+                      <i class="fas fa-plus"></i>
+                      <span>Activar</span>
+                    </button>
+                    
+                    <div *ngIf="currentUser?.smsEnabled">
+                      <button class="btn btn-success btn-sm w-100 d-flex align-items-center justify-content-center gap-2" disabled>
+                        <i class="fas fa-check"></i>
+                        <span>Activo</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Estado de Seguridad General -->
+            <div class="col-12-modern">
+              <div class="card-modern" style="border: 2px solid var(--info-200); background: linear-gradient(135deg, var(--info-50) 0%, white 100%);">
+                <div class="card-body-modern text-center">
+                  
+                  <!-- Indicador de nivel de seguridad -->
+                  <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;"
+                         [style.background]="getSecurityLevel() === 'high' ? 'var(--success-100)' : (getSecurityLevel() === 'medium' ? 'var(--warning-100)' : 'var(--danger-100)')"
+                         [style.color]="getSecurityLevel() === 'high' ? 'var(--success-600)' : (getSecurityLevel() === 'medium' ? 'var(--warning-600)' : 'var(--danger-600)')">
+                      <i [class]="getSecurityIcon()"></i>
+                    </div>
+                    <div class="text-start">
+                      <h4 class="mb-1" 
+                          [style.color]="getSecurityLevel() === 'high' ? 'var(--success-700)' : (getSecurityLevel() === 'medium' ? 'var(--warning-700)' : 'var(--danger-700)')">
+                        {{ getSecurityText() }}
+                      </h4>
+                      <p class="mb-0" style="color: var(--gray-600); font-size: 0.9rem;">
+                        Estado de seguridad actual
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Recomendación -->
+                  <div class="alert-modern" 
+                       [ngClass]="getSecurityLevel() === 'high' ? 'alert-success-modern' : (getSecurityLevel() === 'medium' ? 'alert-warning-modern' : 'alert-danger-modern')">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>{{ getSecurityRecommendation() }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Grid Modernizado -->
+    <section class="mb-6">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div style="width: 40px; height: 40px; background: var(--primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-600); font-size: 1.2rem;">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div>
+          <h3 class="h5 mb-1" style="color: var(--gray-900);">Estadísticas Generales</h3>
+          <p class="mb-0" style="color: var(--gray-600); font-size: 0.9rem;">Resumen de actividad del sistema</p>
+        </div>
+      </div>
+      
+      <div class="row-modern gap-4">
+        
+        <!-- Total Usuarios -->
+        <div class="col-modern">
+          <div class="card-modern h-100 transition-all cursor-pointer"
+               onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)'"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
+            <div class="card-body-modern d-flex align-items-center gap-3">
+              <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%); border-radius: var(--border-radius-lg); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="flex-grow-1">
+                <h5 class="mb-1" style="color: var(--gray-600); font-size: 0.9rem; font-weight: 500;">Total Usuarios</h5>
+                <p class="h4 mb-1" style="color: var(--gray-900); font-weight: 700;">{{ stats.totalUsers | number }}</p>
+                <span style="background: var(--success-100); color: var(--success-700); padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                  <i class="fas fa-arrow-up" style="margin-right: 0.25rem;"></i>+12% este mes
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Usuarios Activos -->
+        <div class="col-modern">
+          <div class="card-modern h-100 transition-all cursor-pointer"
+               onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)'"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
+            <div class="card-body-modern d-flex align-items-center gap-3">
+              <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%); border-radius: var(--border-radius-lg); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                <i class="fas fa-user-check"></i>
+              </div>
+              <div class="flex-grow-1">
+                <h5 class="mb-1" style="color: var(--gray-600); font-size: 0.9rem; font-weight: 500;">Usuarios Activos</h5>
+                <p class="h4 mb-1" style="color: var(--gray-900); font-weight: 700;">{{ stats.activeUsers }}</p>
+                <span style="background: var(--success-100); color: var(--success-700); padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                  <i class="fas fa-arrow-up" style="margin-right: 0.25rem;"></i>+5% hoy
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nuevos Registros -->
+        <div class="col-modern">
+          <div class="card-modern h-100 transition-all cursor-pointer"
+               onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)'"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
+            <div class="card-body-modern d-flex align-items-center gap-3">
+              <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--warning-500) 0%, var(--warning-600) 100%); border-radius: var(--border-radius-lg); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                <i class="fas fa-user-plus"></i>
+              </div>
+              <div class="flex-grow-1">
+                <h5 class="mb-1" style="color: var(--gray-600); font-size: 0.9rem; font-weight: 500;">Nuevos Registros</h5>
+                <p class="h4 mb-1" style="color: var(--gray-900); font-weight: 700;">{{ stats.newRegistrations }}</p>
+                <span style="background: var(--info-100); color: var(--info-700); padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                  <i class="fas fa-calendar-week" style="margin-right: 0.25rem;"></i>Esta semana
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tiempo de Sesión -->
+        <div class="col-modern">
+          <div class="card-modern h-100 transition-all cursor-pointer"
+               onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)'"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
+            <div class="card-body-modern d-flex align-items-center gap-3">
+              <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--info-500) 0%, var(--info-600) 100%); border-radius: var(--border-radius-lg); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="flex-grow-1">
+                <h5 class="mb-1" style="color: var(--gray-600); font-size: 0.9rem; font-weight: 500;">Tiempo de Sesión</h5>
+                <p class="h4 mb-1" style="color: var(--gray-900); font-weight: 700;">2h 34m</p>
+                <span style="background: var(--info-100); color: var(--info-700); padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                  <i class="fas fa-chart-bar" style="margin-right: 0.25rem;"></i>Promedio diario
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+
+    <!-- Quick Actions Modernizado -->
+    <section class="mb-6">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div style="width: 40px; height: 40px; background: var(--warning-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--warning-600); font-size: 1.2rem;">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <div>
+          <h3 class="h5 mb-1" style="color: var(--gray-900);">Acciones Rápidas</h3>
+          <p class="mb-0" style="color: var(--gray-600); font-size: 0.9rem;">Tareas frecuentes y accesos directos</p>
+        </div>
+      </div>
+      
+      <div class="row-modern gap-3">
+        <div 
+          *ngFor="let action of quickActions" 
+          class="col-6-modern col-lg-3"
+        >
+          <div class="card-modern h-100 cursor-pointer transition-all"
+               (click)="executeQuickAction(action)"
+               [style.border-left]="'4px solid ' + action.color"
+               onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-md)'"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
+            
+            <div class="card-body-modern d-flex flex-column text-center">
+              <div class="mb-3">
+                <div style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto;"
+                     [style.background-color]="action.color + '20'"
+                     [style.color]="action.color">
+                  <i [class]="action.icon"></i>
+                </div>
+              </div>
+              <h5 class="mb-2" style="color: var(--gray-900); font-weight: 600; font-size: 0.95rem;">
+                {{ action.title }}
+              </h5>
+              <p class="mb-0" style="color: var(--gray-600); font-size: 0.8rem; line-height: 1.4;">
+                {{ action.description }}
+              </p>
+              <div class="mt-auto pt-3">
+                <i class="fas fa-arrow-right" style="color: var(--gray-400); font-size: 1.2rem;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Activity Modernizado -->
+    <section class="mb-6">
+      <div class="card-modern">
+        <div class="card-header-modern">
+          <div class="d-flex align-items-center gap-3">
+            <div style="width: 40px; height: 40px; background: var(--info-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--info-600); font-size: 1.2rem;">
+              <i class="fas fa-history"></i>
+            </div>
+            <div>
+              <h3 class="h5 mb-1" style="color: var(--gray-900);">Actividad Reciente</h3>
+              <p class="mb-0" style="color: var(--gray-600); font-size: 0.9rem;">Últimas acciones realizadas en el sistema</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body-modern">
+          <div *ngIf="recentActivities.length > 0" class="d-flex flex-column gap-3">
+            <div 
+              *ngFor="let activity of recentActivities; let i = index" 
+              class="d-flex align-items-center gap-3 p-3 rounded transition-all"
+              style="border: 1px solid var(--gray-200); background: var(--gray-50);"
+              onmouseover="this.style.background='white'; this.style.borderColor='var(--primary-200)'"
+              onmouseout="this.style.background='var(--gray-50)'; this.style.borderColor='var(--gray-200)'"
+            >
+              
+              <!-- Indicador de tipo de actividad -->
+              <div class="flex-shrink-0">
+                <div style="width: 12px; height: 12px; border-radius: 50%;"
+                     [style.background-color]="activity.type === 'login' ? 'var(--success-500)' : 
+                                             (activity.type === 'security' ? 'var(--warning-500)' : 
+                                             (activity.type === 'error' ? 'var(--danger-500)' : 'var(--info-500)'))"
+                     [title]="activity.type">
+                </div>
+              </div>
+              
+              <!-- Contenido de la actividad -->
+              <div class="flex-grow-1">
+                <p class="mb-1" style="color: var(--gray-900); font-size: 0.9rem; font-weight: 500;">
+                  {{ activity.action }}
+                </p>
+                <span style="color: var(--gray-500); font-size: 0.8rem;">
+                  {{ getTimeAgo(activity.timestamp) }}
+                </span>
+              </div>
+              
+              <!-- Línea de tiempo visual -->
+              <div *ngIf="i !== recentActivities.length - 1" 
+                   style="position: absolute; left: 20px; top: 60px; width: 1px; height: 20px; background: var(--gray-300);"></div>
+            </div>
+          </div>
+          
+          <!-- Estado vacío -->
+          <div *ngIf="recentActivities.length === 0" class="text-center py-5">
+            <div style="color: var(--gray-400); font-size: 3rem; margin-bottom: 1rem;">
+              <i class="fas fa-inbox"></i>
+            </div>
+            <h5 style="color: var(--gray-600); margin-bottom: 0.5rem;">No hay actividad reciente</h5>
+            <p style="color: var(--gray-500); font-size: 0.9rem;">Las acciones aparecerán aquí cuando interactúes con el sistema</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Loading Overlay Moderno -->
+  <div *ngIf="isLoading" 
+       class="position-fixed w-100 h-100 d-flex justify-content-center align-items-center"
+       style="top: 0; left: 0; background: rgba(255,255,255,0.95); z-index: 9999; backdrop-filter: blur(4px);">
+    <div class="text-center">
+      <div class="mb-4">
+        <div style="width: 60px; height: 60px; border: 4px solid var(--primary-200); border-top: 4px solid var(--primary-500); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+      </div>
+      <h5 style="color: var(--gray-700); margin-bottom: 0.5rem;">Cargando datos...</h5>
+      <p style="color: var(--gray-500); font-size: 0.9rem;">Por favor espera un momento</p>
+    </div>
+  </div>
+</div>
