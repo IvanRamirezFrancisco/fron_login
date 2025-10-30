@@ -136,22 +136,22 @@ export class LoginComponent {
         });
       }
 
-      // SMS disponible si está habilitado
+      // SMS disponible si está habilitado - PRIORIDAD ALTA
       if (this.pendingUser.smsEnabled) {
         this.availableMethods.push({
           id: 'SMS',
-          name: 'SMS',
+          name: 'SMS (Recomendado)',
           description: `Enviar código a ${this.formatPhone(this.pendingUser.phone)}`,
           icon: 'fas fa-sms',
           enabled: true
         });
       }
 
-      // Email siempre disponible como fallback
+      // Email como alternativa - nota sobre limitaciones
       this.availableMethods.push({
         id: 'EMAIL',
         name: 'Email',
-        description: `Enviar código a ${this.pendingUser.email}`,
+        description: `Enviar código a ${this.pendingUser.email} (puede fallar en producción)`,
         icon: 'fas fa-envelope',
         enabled: true
       });
