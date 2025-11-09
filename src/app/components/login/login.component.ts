@@ -140,7 +140,7 @@ export class LoginComponent {
       if (this.pendingUser.smsEnabled) {
         this.availableMethods.push({
           id: 'SMS',
-          name: 'SMS (Recomendado)',
+          name: 'SMS',
           description: `Enviar código a ${this.formatPhone(this.pendingUser.phone)}`,
           icon: 'fas fa-sms',
           enabled: true
