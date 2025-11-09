@@ -23,12 +23,6 @@ Este directorio contiene la aplicación Angular del sistema de autenticación.
 ✅ Configuración Nginx lista para SPA routing
 ✅ Dockerfile configurado para deployment
 
-### Para desplegar en Railway:
-
-1. Crear nuevo servicio en Railway
-2. Conectar este directorio (frontend)
-3. Railway detectará automáticamente el Dockerfile
-4. Build y deployment automático
 
 ### Servicios configurados:
 
