@@ -1,0 +1,104 @@
+<header class="home-header" (click)="cerrarMenuUsuario()">
+  <div class="header-container">
+    <!-- Logo/Marca -->
+    <div class="logo-section">
+      <a routerLink="/" class="logo-link">
+        <div class="logo-icon">
+          <span class="material-symbols-outlined">music_note</span>
+        </div>
+        <div class="logo-text">
+          <h1 class="logo-title">Casa de Música Castillo</h1>
+          <p class="logo-subtitle">Instrumentos & Audio Profesional</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- Navegación Principal -->
+    <nav class="main-nav">
+      <ul class="nav-list">
+        <li><a href="#inicio" (click)="scrollToSection('inicio')" class="nav-link">Inicio</a></li>
+        <li><a href="#productos" (click)="scrollToSection('productos')" class="nav-link">Productos</a></li>
+        <li><a href="#sobre-nosotros" (click)="scrollToSection('sobre-nosotros')" class="nav-link">Nosotros</a></li>
+        <li><a href="#contacto" (click)="scrollToSection('contacto')" class="nav-link">Contacto</a></li>
+        <li><a (click)="navigateToCatalog()" class="nav-link catalog-link">
+          <span class="material-symbols-outlined">store</span>
+          Tienda
+        </a></li>
+      </ul>
+    </nav>
+
+    <!-- Acciones del Usuario -->
+    <div class="user-actions">
+      <!-- Usuario No Autenticado -->
+      <div class="auth-buttons" *ngIf="!isAuthenticated">
+        <button (click)="navigateToLogin()" class="btn-login">
+          <span class="material-symbols-outlined">login</span>
+          Iniciar Sesión
+        </button>
+        <button (click)="navigateToRegister()" class="btn-register">
+          <span class="material-symbols-outlined">person_add</span>
+          Registrarse
+        </button>
+      </div>
+
+      <!-- Usuario Autenticado -->
+      <div class="user-section" *ngIf="isAuthenticated">
+        <!-- Carrito -->
+        <button (click)="navigateToCart()" class="cart-button">
+          <span class="material-symbols-outlined">shopping_cart</span>
+          <span class="cart-text">Carrito</span>
+        </button>
+
+        <!-- Información del Usuario -->
+        <div class="user-info" (click)="toggleMenuUsuario(); $event.stopPropagation()">
+          <div class="user-avatar">
+            <span class="material-symbols-outlined">account_circle</span>
+          </div>
+          <div class="user-details">
+            <span class="welcome-text">¡Hola!</span>
+            <span class="user-name">{{ currentUser?.firstName || currentUser?.name || 'Usuario' }}</span>
+          </div>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </div>
+
+        <!-- Dropdown del Usuario -->
+        <div class="user-dropdown" [class.visible]="mostrarMenuUsuario" (click)="$event.stopPropagation()">
+          <div class="dropdown-header">
+            <div class="avatar-large">
+              <span class="material-symbols-outlined">account_circle</span>
+            </div>
+            <div class="user-info-detailed">
+              <div class="full-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</div>
+              <div class="email">{{ currentUser?.email }}</div>
+            </div>
+          </div>
+          
+          <nav class="dropdown-nav">
+            <a routerLink="/profile" class="dropdown-link" (click)="cerrarMenuUsuario()">
+              <span class="material-symbols-outlined">person</span>
+              Mi Perfil
+            </a>
+            <a routerLink="/orders" class="dropdown-link" (click)="cerrarMenuUsuario()">
+              <span class="material-symbols-outlined">receipt_long</span>
+              Mis Pedidos
+            </a>
+            <a routerLink="/wishlist" class="dropdown-link" (click)="cerrarMenuUsuario()">
+              <span class="material-symbols-outlined">favorite</span>
+              Lista de Deseos
+            </a>
+            <div class="dropdown-divider"></div>
+            <button (click)="logout()" class="dropdown-link logout-link">
+              <span class="material-symbols-outlined">logout</span>
+              Cerrar Sesión
+            </button>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón Móvil -->
+    <button class="mobile-menu-toggle" (click)="$event.stopPropagation()">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+  </div>
+</header>

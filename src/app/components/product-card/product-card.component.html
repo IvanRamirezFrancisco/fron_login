@@ -1,0 +1,133 @@
+<div class="product-card" [class.in-cart]="isInCart">
+  <!-- Badge de descuento -->
+  <div class="discount-badge" *ngIf="product.discount">
+    -{{product.discount}}%
+  </div>
+
+  <!-- Badge de nuevo -->
+  <div class="new-badge" *ngIf="product.isNew">
+    NUEVO
+  </div>
+
+  <!-- Imagen del producto -->
+  <div class="product-image" (click)="viewProduct()">
+    <img 
+      [src]="product.images[0]" 
+      [alt]="product.name"
+      (error)="onImageError($event)"
+      loading="lazy"
+    >
+    
+    <!-- Overlay con acciones rápidas -->
+    <div class="image-overlay">
+      <button 
+        class="btn-icon" 
+        title="Vista rápida" 
+        (click)="quickView($event)"
+      >
+        <span class="material-symbols-outlined">visibility</span>
+      </button>
+      <button 
+        class="btn-icon" 
+        [class.active]="isFavorite"
+        title="Agregar a favoritos" 
+        (click)="toggleFavorite($event)"
+      >
+        <span class="material-symbols-outlined">
+          {{ isFavorite ? 'favorite' : 'favorite_border' }}
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Información del producto -->
+  <div class="product-info">
+    <!-- Marca y categoría -->
+    <div class="product-meta">
+      <span class="brand">{{ product.brand }}</span>
+      <span class="category">{{ product.category.name }}</span>
+    </div>
+
+    <!-- Nombre del producto -->
+    <h3 class="product-name" (click)="viewProduct()" title="{{ product.name }}">
+      {{ product.name }}
+    </h3>
+
+    <!-- Descripción corta -->
+    <p class="product-description">{{ product.shortDescription }}</p>
+
+    <!-- Rating -->
+    <div class="product-rating">
+      <div class="stars">
+        <span 
+          class="material-symbols-outlined star" 
+          *ngFor="let star of getStars()" 
+          [class.filled]="star"
+        >
+          {{ star ? 'star' : 'star_border' }}
+        </span>
+      </div>
+      <span class="rating-text">{{ product.rating }} ({{ product.reviewCount }})</span>
+    </div>
+
+    <!-- Precio -->
+    <div class="product-price">
+      <div class="current-price">${{ product.price | number:'1.2-2' }}</div>
+      <div class="original-price" *ngIf="product.originalPrice && product.discount">
+        ${{ product.originalPrice | number:'1.2-2' }}
+      </div>
+    </div>
+
+    <!-- Stock -->
+    <div class="stock-info">
+      <span 
+        class="stock-status" 
+        [class.in-stock]="product.inStock"
+        [class.out-of-stock]="!product.inStock"
+      >
+        {{ getStockText() }}
+      </span>
+      <span class="stock-quantity" *ngIf="product.inStock && showStockQuantity">
+        ({{ product.stockQuantity }} disponibles)
+      </span>
+    </div>
+  </div>
+
+  <!-- Acciones -->
+  <div class="product-actions">
+    <!-- Selector de cantidad (si el producto está en el carrito) -->
+    <div class="quantity-selector" *ngIf="isInCart">
+      <button 
+        class="quantity-btn" 
+        (click)="decreaseQuantity()"
+        [disabled]="cartQuantity <= 1"
+      >
+        <span class="material-symbols-outlined">remove</span>
+      </button>
+      <span class="quantity">{{ cartQuantity }}</span>
+      <button 
+        class="quantity-btn" 
+        (click)="increaseQuantity()"
+        [disabled]="cartQuantity >= product.stockQuantity"
+      >
+        <span class="material-symbols-outlined">add</span>
+      </button>
+    </div>
+
+    <!-- Botón principal -->
+    <button 
+      class="btn-add-cart"
+      [class.in-cart]="isInCart"
+      [disabled]="!product.inStock || addingToCart"
+      (click)="toggleCart()"
+    >
+      <span class="material-symbols-outlined" *ngIf="!addingToCart">
+        {{ isInCart ? 'shopping_cart' : 'add_shopping_cart' }}
+      </span>
+      <span class="loading-spinner" *ngIf="addingToCart"></span>
+      <span class="btn-text">
+        {{ getBtnText() }}
+      </span>
+    </button>
+  </div>
+</div>

@@ -8,21 +8,56 @@ import { GoogleAuthSetupComponent } from './google-auth-setup/google-auth-setup.
 import { AuthGuard } from './auth.guard';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 
-// import { DashboardComponent } from './components/dashboard/dashboard.component';
-// import { ProfileComponent } from './components/profile/profile.component';
-// import { AuthGuard } from './guards/auth.guard';
-
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
+  // {
+  //   path: 'catalogo',
+  //   loadComponent: () =>
+  //     import('./components/product-catalog/product-catalog.component').then(m => m.ProductCatalogComponent)
+  // },
+  // {
+  //   path: 'producto/:id',
+  //   loadComponent: () =>
+  //     import('./components/product-detail/product-detail.component').then(m => m.ProductDetailComponent)
+  // },
+  {
+    path: 'carrito',
+    loadComponent: () =>
+      import('./components/cart/cart.component').then(m => m.CartComponent),
+    canActivate: [AuthGuard]
+  },
+  // {
+  //   path: 'checkout',
+  //   loadComponent: () =>
+  //     import('./components/checkout/checkout.component').then(m => m.CheckoutComponent),
+  //   canActivate: [AuthGuard]
+  // },
+  // {
+  //   path: 'perfil',
+  //   loadComponent: () =>
+  //     import('./components/profile/profile.component').then(m => m.ProfileComponent),
+  //   canActivate: [AuthGuard]
+  // },
+  // {
+  //   path: 'pedidos',
+  //   loadComponent: () =>
+  //     import('./components/orders/orders.component').then(m => m.OrdersComponent),
+  //   canActivate: [AuthGuard]
+  // },
+  // {
+  //   path: 'favoritos',
+  //   loadComponent: () =>
+  //     import('./components/favorites/favorites.component').then(m => m.FavoritesComponent),
+  //   canActivate: [AuthGuard]
+  // },
   {
     path: 'google-auth-setup',
     loadComponent: () =>
       import('./google-auth-setup/google-auth-setup.component').then(m => m.GoogleAuthSetupComponent)
-    // Puedes agregar canActivate: [authGuard] si quieres proteger la ruta
   },
   {
     path: 'dashboard',

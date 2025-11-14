@@ -4,8 +4,8 @@
 
 /* Navbar principal */
 .navbar-modern {
-  background: white;
-  border-bottom: 1px solid var(--gray-200);
+  background-color: var(--color-primario);
+  border-bottom: 1px solid var(--color-primario-dark);
   box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
@@ -38,7 +38,7 @@
   display: inline-flex;
   align-items: center;
   padding: var(--spacing-2) var(--spacing-4);
-  color: var(--gray-700);
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   font-weight: 500;
   font-size: 0.9rem;
@@ -46,11 +46,12 @@
   transition: var(--transition);
   position: relative;
   margin: 0 0.25rem;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .nav-link-modern:hover {
-  color: var(--primary-600);
-  background-color: var(--primary-50);
+  color: white;
+  background-color: var(--color-primario-light);
   text-decoration: none;
   transform: translateY(-1px);
 }
@@ -62,8 +63,8 @@
 
 /* Estado activo */
 .nav-link-modern.nav-link-active {
-  color: var(--primary-700);
-  background-color: var(--primary-100);
+  color: var(--color-primario);
+  background-color: var(--color-resalte);
   font-weight: 600;
 }
 
@@ -75,7 +76,7 @@
   transform: translateX(-50%);
   width: 80%;
   height: 2px;
-  background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
+  background-color: var(--color-primario);
   border-radius: 1px;
 }
 
@@ -85,8 +86,8 @@
 
 /* Contenedor del menú móvil */
 .mobile-menu {
-  background: white;
-  border-top: 1px solid var(--gray-200);
+  background-color: var(--color-primario);
+  border-top: 1px solid var(--color-primario-light);
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
@@ -108,7 +109,7 @@
   display: flex;
   align-items: center;
   padding: var(--spacing-3) var(--spacing-4);
-  color: var(--gray-700);
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   font-weight: 500;
   font-size: 1rem;
@@ -116,11 +117,12 @@
   transition: var(--transition);
   margin-bottom: var(--spacing-2);
   width: 100%;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .mobile-nav-link:hover {
-  color: var(--primary-600);
-  background-color: var(--primary-50);
+  color: white;
+  background-color: var(--color-primario-light);
   text-decoration: none;
   transform: translateX(4px);
 }
@@ -132,10 +134,10 @@
 
 /* Estado activo móvil */
 .mobile-nav-link.mobile-link-active {
-  color: var(--primary-700);
-  background-color: var(--primary-100);
+  color: var(--color-primario);
+  background-color: var(--color-resalte);
   font-weight: 600;
-  border-left: 4px solid var(--primary-500);
+  border-left: 4px solid var(--color-primario);
 }
 
 /* ========================================

@@ -127,15 +127,15 @@
             <!-- Google Authenticator Card -->
             <div class="col-modern">
               <div class="card-modern h-100 transition-all" 
-                   [style.border-color]="currentUser?.googleAuthEnabled ? 'var(--success-300)' : 'var(--gray-200)'"
-                   [style.background]="currentUser?.googleAuthEnabled ? 'var(--success-50)' : 'white'">
+                   [style.border-color]="currentUser.googleAuthEnabled ? 'var(--success-300)' : 'var(--gray-200)'"
+                   [style.background]="currentUser.googleAuthEnabled ? 'var(--success-50)' : 'white'">
                 
                 <div class="card-body-modern d-flex flex-column">
                   <!-- Header de la tarjeta -->
                   <div class="d-flex align-items-center gap-3 mb-3">
                     <div style="width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;"
-                         [style.background]="currentUser?.googleAuthEnabled ? 'var(--success-100)' : 'var(--gray-100)'"
-                         [style.color]="currentUser?.googleAuthEnabled ? 'var(--success-600)' : 'var(--gray-500)'">
+                         [style.background]="currentUser.googleAuthEnabled ? 'var(--success-100)' : 'var(--gray-100)'"
+                         [style.color]="currentUser.googleAuthEnabled ? 'var(--success-600)' : 'var(--gray-500)'">
                       <i class="fas fa-mobile-alt"></i>
                     </div>
                     <div class="flex-grow-1">
@@ -185,15 +185,15 @@
             <!-- SMS 2FA Card -->
             <div class="col-modern">
               <div class="card-modern h-100 transition-all" 
-                   [style.border-color]="currentUser?.smsEnabled ? 'var(--success-300)' : 'var(--gray-200)'"
-                   [style.background]="currentUser?.smsEnabled ? 'var(--success-50)' : 'white'">
+                   [style.border-color]="currentUser.smsEnabled ? 'var(--success-300)' : 'var(--gray-200)'"
+                   [style.background]="currentUser.smsEnabled ? 'var(--success-50)' : 'white'">
                 
                 <div class="card-body-modern d-flex flex-column">
                   <!-- Header de la tarjeta -->
                   <div class="d-flex align-items-center gap-3 mb-3">
                     <div style="width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;"
-                         [style.background]="currentUser?.smsEnabled ? 'var(--success-100)' : 'var(--gray-100)'"
-                         [style.color]="currentUser?.smsEnabled ? 'var(--success-600)' : 'var(--gray-500)'">
+                         [style.background]="currentUser.smsEnabled ? 'var(--success-100)' : 'var(--gray-100)'"
+                         [style.color]="currentUser.smsEnabled ? 'var(--success-600)' : 'var(--gray-500)'">
                       <i class="fas fa-sms"></i>
                     </div>
                     <div class="flex-grow-1">

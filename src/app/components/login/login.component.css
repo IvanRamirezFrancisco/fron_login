@@ -56,7 +56,7 @@
 
 /* Override para el fondo del body cuando está en login */
 body.login-page {
-  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
+  background-color: var(--color-fondo);
   margin: 0;
   padding: 0;
 }
@@ -119,7 +119,7 @@ body.login-page {
 /* Mejoras para accesibilidad */
 .btn:focus,
 .form-control:focus {
-  outline: 2px solid var(--primary-500);
+  outline: 2px solid var(--color-primario);
   outline-offset: 2px;
 }
 
@@ -180,14 +180,15 @@ body.login-page {
 
 /* Estilos para enlaces */
 .link-primary {
-  color: var(--primary-600);
+  color: var(--color-primario);
   text-decoration: none;
   font-weight: 500;
   transition: var(--transition);
+  font-family: 'Montserrat', sans-serif;
 }
 
 .link-primary:hover {
-  color: var(--primary-700);
+  color: var(--color-primario-light);
   text-decoration: underline;
 }
 

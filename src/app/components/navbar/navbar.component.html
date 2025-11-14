@@ -8,12 +8,12 @@
         <a routerLink="/" class="navbar-brand d-flex align-items-center gap-3 text-decoration-none">
           <div class="brand-icon">
             <div style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; font-weight: bold; box-shadow: var(--shadow-md);">
-              <i class="fas fa-shield-alt"></i>
+              <span class="material-symbols-outlined">music_note</span>
             </div>
           </div>
           <div class="brand-text">
-            <h4 class="mb-0" style="color: var(--gray-900); font-weight: 700; font-size: 1.25rem;">SecureAuth</h4>
-            <small style="color: var(--gray-500); font-size: 0.75rem; font-weight: 500;">Sistema de Autenticación</small>
+            <h4 class="mb-0" style="color: var(--gray-900); font-weight: 700; font-size: 1.25rem;">Casa de Música Castillo</h4>
+            <small style="color: var(--gray-500); font-size: 0.75rem; font-weight: 500;">Instrumentos Musicales</small>
           </div>
         </a>
       </div>
@@ -25,7 +25,7 @@
         <a routerLink="/home" 
            routerLinkActive="nav-link-active" 
            class="nav-link-modern">
-          <i class="fas fa-home" style="margin-right: 0.5rem;"></i>
+          <span class="material-symbols-outlined" style="margin-right: 0.5rem;">home</span>
           Inicio
         </a>
         
@@ -36,7 +36,7 @@
           <a routerLink="/dashboard" 
              routerLinkActive="nav-link-active" 
              class="nav-link-modern">
-            <i class="fas fa-tachometer-alt" style="margin-right: 0.5rem;"></i>
+            <span class="material-symbols-outlined" style="margin-right: 0.5rem;">dashboard</span>
             Dashboard
           </a>
 
@@ -48,7 +48,7 @@
             (click)="logout()" 
             class="btn btn-outline-danger btn-sm d-flex align-items-center gap-2"
             style="border-radius: 20px; padding: 0.5rem 1rem;">
-            <i class="fas fa-sign-out-alt"></i>
+            <span class="material-symbols-outlined">logout</span>
             <span>Cerrar Sesión</span>
           </button>
           
@@ -61,7 +61,7 @@
           <a routerLink="/login" 
              routerLinkActive="nav-link-active" 
              class="nav-link-modern">
-            <i class="fas fa-sign-in-alt" style="margin-right: 0.5rem;"></i>
+            <span class="material-symbols-outlined" style="margin-right: 0.5rem;">login</span>
             Iniciar Sesión
           </a>
           
@@ -72,7 +72,7 @@
           <a routerLink="/register" 
              class="btn btn-primary btn-sm d-flex align-items-center gap-2"
              style="border-radius: 20px; padding: 0.5rem 1rem;">
-            <i class="fas fa-user-plus"></i>
+            <span class="material-symbols-outlined">person_add</span>
             <span>Crear Cuenta</span>
           </a>
           
@@ -85,7 +85,7 @@
           class="btn btn-outline-secondary btn-sm"
           (click)="toggleMobileMenu()"
           style="border-radius: 8px; padding: 0.5rem;">
-          <i class="fas" [ngClass]="mobileMenuOpen ? 'fa-times' : 'fa-bars'" style="font-size: 1.2rem;"></i>
+          <span class="material-symbols-outlined" style="font-size: 1.2rem;">{{ mobileMenuOpen ? 'close' : 'menu' }}</span>
         </button>
       </div>
 
@@ -100,7 +100,7 @@
            routerLinkActive="mobile-link-active" 
            class="mobile-nav-link"
            (click)="closeMobileMenu()">
-          <i class="fas fa-home" style="margin-right: 0.75rem;"></i>
+          <span class="material-symbols-outlined" style="margin-right: 0.75rem;">home</span>
           <span>Inicio</span>
         </a>
         
@@ -112,7 +112,7 @@
              routerLinkActive="mobile-link-active" 
              class="mobile-nav-link"
              (click)="closeMobileMenu()">
-            <i class="fas fa-tachometer-alt" style="margin-right: 0.75rem;"></i>
+            <span class="material-symbols-outlined" style="margin-right: 0.75rem;">dashboard</span>
             <span>Dashboard</span>
           </a>
 
@@ -124,7 +124,7 @@
             (click)="logout(); closeMobileMenu()" 
             class="mobile-nav-link" 
             style="width: 100%; text-align: left; background: none; border: none; color: var(--danger-600);">
-            <i class="fas fa-sign-out-alt" style="margin-right: 0.75rem;"></i>
+            <span class="material-symbols-outlined" style="margin-right: 0.75rem;">logout</span>
             <span>Cerrar Sesión</span>
           </button>
           
@@ -138,7 +138,7 @@
              routerLinkActive="mobile-link-active" 
              class="mobile-nav-link"
              (click)="closeMobileMenu()">
-            <i class="fas fa-sign-in-alt" style="margin-right: 0.75rem;"></i>
+            <span class="material-symbols-outlined" style="margin-right: 0.75rem;">login</span>
             <span>Iniciar Sesión</span>
           </a>
           
@@ -147,7 +147,7 @@
              routerLinkActive="mobile-link-active" 
              class="mobile-nav-link"
              (click)="closeMobileMenu()">
-            <i class="fas fa-user-plus" style="margin-right: 0.75rem;"></i>
+            <span class="material-symbols-outlined" style="margin-right: 0.75rem;">person_add</span>
             <span>Crear Cuenta</span>
           </a>
           

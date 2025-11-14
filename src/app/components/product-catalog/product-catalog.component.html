@@ -1,0 +1,336 @@
+<!-- Header del Catálogo -->
+<section class="catalog-header">
+  <div class="container">
+    <h1>Catálogo de Instrumentos</h1>
+    <p>Descubre nuestra amplia selección de instrumentos musicales y equipos profesionales</p>
+  </div>
+</section>
+
+<!-- Filtros y Búsqueda -->
+<section class="catalog-filters">
+  <div class="container">
+    <div class="filters-row">
+      <!-- Barra de búsqueda -->
+      <div class="search-section">
+        <div class="search-bar">
+          <span class="material-symbols-outlined">search</span>
+          <input 
+            type="text" 
+            placeholder="Buscar instrumentos, marcas..." 
+            [(ngModel)]="searchQuery"
+            (input)="onSearchChange()"
+          />
+          <button 
+            class="clear-search" 
+            *ngIf="searchQuery"
+            (click)="clearSearch()"
+          >
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Controles de vista y ordenamiento -->
+      <div class="view-controls">
+        <div class="view-toggle">
+          <button 
+            class="view-btn"
+            [class.active]="viewMode === 'grid'"
+            (click)="setViewMode('grid')"
+            title="Vista de cuadrícula"
+          >
+            <span class="material-symbols-outlined">grid_view</span>
+          </button>
+          <button 
+            class="view-btn"
+            [class.active]="viewMode === 'list'"
+            (click)="setViewMode('list')"
+            title="Vista de lista"
+          >
+            <span class="material-symbols-outlined">list</span>
+          </button>
+        </div>
+
+        <div class="sort-controls">
+          <select [(ngModel)]="sortOption" (change)="onSortChange()">
+            <option value="name-asc">Nombre A-Z</option>
+            <option value="name-desc">Nombre Z-A</option>
+            <option value="price-asc">Precio: Menor a Mayor</option>
+            <option value="price-desc">Precio: Mayor a Menor</option>
+            <option value="rating-desc">Mejor Valorados</option>
+            <option value="created-desc">Más Nuevos</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros expandibles -->
+    <div class="expandable-filters" [class.expanded]="filtersExpanded">
+      <button class="toggle-filters" (click)="toggleFilters()">
+        <span class="material-symbols-outlined">tune</span>
+        Filtros
+        <span class="material-symbols-outlined">
+          {{ filtersExpanded ? 'expand_less' : 'expand_more' }}
+        </span>
+      </button>
+
+      <div class="filters-content" *ngIf="filtersExpanded">
+        <!-- Filtro por categorías -->
+        <div class="filter-group">
+          <h4>Categorías</h4>
+          <div class="filter-options">
+            <label 
+              class="filter-checkbox" 
+              *ngFor="let category of availableFilters.categories"
+            >
+              <input 
+                type="checkbox" 
+                [checked]="selectedFilters.categories.includes(category.id)"
+                (change)="onCategoryFilterChange(category.id, $event)"
+              />
+              <span class="checkmark"></span>
+              <span class="material-symbols-outlined">{{ category.icon }}</span>
+              {{ category.name }}
+            </label>
+          </div>
+        </div>
+
+        <!-- Filtro por marcas -->
+        <div class="filter-group">
+          <h4>Marcas</h4>
+          <div class="filter-options">
+            <label 
+              class="filter-checkbox" 
+              *ngFor="let brand of availableFilters.brands"
+            >
+              <input 
+                type="checkbox" 
+                [checked]="selectedFilters.brands.includes(brand)"
+                (change)="onBrandFilterChange(brand, $event)"
+              />
+              <span class="checkmark"></span>
+              {{ brand }}
+            </label>
+          </div>
+        </div>
+
+        <!-- Filtro por rango de precio -->
+        <div class="filter-group">
+          <h4>Rango de Precio</h4>
+          <div class="price-range">
+            <div class="price-inputs">
+              <input 
+                type="number" 
+                placeholder="Mín" 
+                [(ngModel)]="priceRange.min"
+                (input)="onPriceRangeChange()"
+              />
+              <span>-</span>
+              <input 
+                type="number" 
+                placeholder="Máx" 
+                [(ngModel)]="priceRange.max"
+                (input)="onPriceRangeChange()"
+              />
+            </div>
+            <div class="price-slider">
+              <input 
+                type="range" 
+                [min]="availableFilters.priceRange.min" 
+                [max]="availableFilters.priceRange.max"
+                [(ngModel)]="priceRange.min"
+                (input)="onPriceRangeChange()"
+                class="slider-min"
+              />
+              <input 
+                type="range" 
+                [min]="availableFilters.priceRange.min" 
+                [max]="availableFilters.priceRange.max"
+                [(ngModel)]="priceRange.max"
+                (input)="onPriceRangeChange()"
+                class="slider-max"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Filtros adicionales -->
+        <div class="filter-group">
+          <h4>Opciones</h4>
+          <div class="filter-options">
+            <label class="filter-checkbox">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="onlyInStock"
+                (change)="onStockFilterChange()"
+              />
+              <span class="checkmark"></span>
+              Solo en stock
+            </label>
+            <label class="filter-checkbox">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="onlyWithDiscount"
+                (change)="onDiscountFilterChange()"
+              />
+              <span class="checkmark"></span>
+              Solo con descuento
+            </label>
+          </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="filter-actions">
+          <button class="btn-clear" (click)="clearAllFilters()">
+            Limpiar filtros
+          </button>
+          <button class="btn-apply" (click)="applyFilters()">
+            Aplicar filtros ({{ filteredProductCount }})
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros activos -->
+    <div class="active-filters" *ngIf="hasActiveFilters()">
+      <span class="active-filters-label">Filtros activos:</span>
+      <span 
+        class="filter-tag" 
+        *ngFor="let category of getSelectedCategoryNames()"
+        (click)="removeFilter('category', getSelectedCategoryId(category))"
+      >
+        {{ category }}
+        <span class="material-symbols-outlined">close</span>
+      </span>
+      <span 
+        class="filter-tag" 
+        *ngFor="let brand of selectedFilters.brands"
+        (click)="removeFilter('brand', brand)"
+      >
+        {{ brand }}
+        <span class="material-symbols-outlined">close</span>
+      </span>
+      <span 
+        class="filter-tag" 
+        *ngIf="priceRange.min > availableFilters.priceRange.min || priceRange.max < availableFilters.priceRange.max"
+        (click)="removeFilter('price', '')"
+      >
+        ${{ priceRange.min }} - ${{ priceRange.max }}
+        <span class="material-symbols-outlined">close</span>
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- Resultados -->
+<section class="catalog-results">
+  <div class="container">
+    <!-- Información de resultados -->
+    <div class="results-info">
+      <p *ngIf="!loadingProducts">
+        Mostrando {{ products.length }} de {{ totalProducts }} productos
+        <span *ngIf="searchQuery"> para "{{ searchQuery }}"</span>
+      </p>
+      <p *ngIf="loadingProducts">Cargando productos...</p>
+    </div>
+
+    <!-- Grid/Lista de productos -->
+    <div 
+      class="products-container" 
+      [class.grid-view]="viewMode === 'grid'"
+      [class.list-view]="viewMode === 'list'"
+      *ngIf="!loadingProducts && products.length > 0"
+    >
+      <app-product-card
+        *ngFor="let product of products"
+        [product]="product"
+        [showStockQuantity]="viewMode === 'list'"
+        (productClick)="viewProduct($event)"
+        (quickViewClick)="openQuickView($event)"
+        (favoriteToggle)="onFavoriteToggle($event)"
+      ></app-product-card>
+    </div>
+
+    <!-- Estado de carga -->
+    <div class="loading-state" *ngIf="loadingProducts">
+      <div class="loading-grid">
+        <div class="product-skeleton" *ngFor="let item of [1,2,3,4,5,6,7,8]"></div>
+      </div>
+    </div>
+
+    <!-- Estado sin resultados -->
+    <div class="no-results" *ngIf="!loadingProducts && products.length === 0">
+      <div class="no-results-content">
+        <span class="material-symbols-outlined">search_off</span>
+        <h3>No se encontraron productos</h3>
+        <p>No hay productos que coincidan con los filtros seleccionados.</p>
+        <button class="btn-clear-filters" (click)="clearAllFilters()">
+          Limpiar todos los filtros
+        </button>
+      </div>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination" *ngIf="!loadingProducts && totalPages > 1">
+      <button 
+        class="pagination-btn"
+        [disabled]="currentPage === 1"
+        (click)="goToPage(1)"
+      >
+        <span class="material-symbols-outlined">first_page</span>
+      </button>
+      
+      <button 
+        class="pagination-btn"
+        [disabled]="currentPage === 1"
+        (click)="goToPage(currentPage - 1)"
+      >
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+
+      <div class="pagination-numbers">
+        <button 
+          class="pagination-number"
+          *ngFor="let page of getVisiblePages()"
+          [class.active]="page === currentPage"
+          [disabled]="page === '...'"
+          (click)="goToPage(page)"
+        >
+          {{ page }}
+        </button>
+      </div>
+
+      <button 
+        class="pagination-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="goToPage(currentPage + 1)"
+      >
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+      
+      <button 
+        class="pagination-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="goToPage(totalPages)"
+      >
+        <span class="material-symbols-outlined">last_page</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Productos relacionados o sugeridos -->
+<section class="related-products" *ngIf="!loadingProducts && products.length > 0">
+  <div class="container">
+    <h2>También te podría interesar</h2>
+    <div class="related-grid">
+      <app-product-card
+        *ngFor="let product of suggestedProducts.slice(0, 4)"
+        [product]="product"
+        (productClick)="viewProduct($event)"
+        (quickViewClick)="openQuickView($event)"
+        (favoriteToggle)="onFavoriteToggle($event)"
+      ></app-product-card>
+    </div>
+  </div>
+</section>

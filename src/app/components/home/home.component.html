@@ -1,53 +1,279 @@
-<div class="home-container">
-  <header class="hero-section">
-    <div class="hero-content">
-      <h1 class="hero-title">Bienvenido al Sistema de Login</h1>
-      <p class="hero-description">
-        Una aplicación moderna de autenticación construida con Angular y Spring Boot
-      </p>
-      
-      <div *ngIf="isLoggedIn$ | async; else guestActions" class="user-actions">
-        <div *ngIf="currentUser$ | async as user" class="welcome-message">
-          <p>¡Hola, {{ user.firstName }}! 👋</p>
-        </div>
-        <a routerLink="/dashboard" class="btn btn-primary">Ir al Dashboard</a>
-        <button (click)="logout()" class="btn btn-secondary">Cerrar Sesión</button>
-      </div>
+<!-- Header Principal -->
+<app-home-header></app-home-header>
 
-      <ng-template #guestActions>
-        <div class="guest-actions">
-          <a routerLink="/login" class="btn btn-primary">Iniciar Sesión</a>
-          <a routerLink="/register" class="btn btn-outline">Registrarse</a>
+<!-- Hero Section -->
+<section class="hero-section" id="inicio">
+  <div class="hero-content">
+    <div class="hero-text">
+      <h1 class="hero-title">
+        Descubre la <span class="highlight">Música</span> 
+        en Casa de Música Castillo
+      </h1>
+      <p class="hero-subtitle">
+        Los mejores instrumentos musicales, equipos de audio profesional y accesorios para músicos de todos los niveles. Calidad garantizada y precios increíbles.
+      </p>
+      <div class="hero-actions">
+        <button class="btn-primary" (click)="viewCatalog()">
+          <span class="material-symbols-outlined">music_note</span>
+          Explorar Catálogo
+        </button>
+        <button class="btn-secondary" (click)="viewOffers()">
+          <span class="material-symbols-outlined">local_offer</span>
+          Ver Ofertas
+        </button>
+      </div>
+      
+      <!-- Estadísticas -->
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-number">500+</span>
+          <span class="stat-label">Instrumentos</span>
         </div>
-      </ng-template>
-    </div>
-  </header>
-  
-  <section class="features-section">
-    <div class="container">
-      <h2>Desarrolladores de actividad</h2>
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
-          <h3></h3>
-          <p>Ivan francisco ramires</p>
+        <div class="stat">
+          <span class="stat-number">50+</span>
+          <span class="stat-label">Marcas</span>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-bolt"></i></div>
-          <h3>Rápido</h3>
-          <p>Angular 17 + Spring Boot optimizado</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
-          <h3>Responsive</h3>
-          <p>Diseño adaptable para todos los dispositivos</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-key"></i></div>
-          <h3>Reset Password</h3>
-          <p>Recuperación segura de contraseña</p>
+        <div class="stat">
+          <span class="stat-number">1000+</span>
+          <span class="stat-label">Clientes Satisfechos</span>
         </div>
       </div>
     </div>
-  </section>
-</div>
+    
+    <div class="hero-image">
+      <img src="/assets/images/hero-music-store.jpg" alt="Casa de Música Castillo" />
+      
+      <!-- Elementos flotantes -->
+      <div class="floating-element note-1">
+        <span class="material-symbols-outlined">music_note</span>
+      </div>
+      <div class="floating-element note-2">
+        <span class="material-symbols-outlined">queue_music</span>
+      </div>
+      <div class="floating-element note-3">
+        <span class="material-symbols-outlined">radio</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Categorías Principales -->
+<section class="categories-section" id="productos">
+  <div class="container">
+    <div class="section-header">
+      <h2>Explora por Categorías</h2>
+      <p>Encuentra exactamente lo que necesitas para tu música</p>
+    </div>
+    
+    <div class="categories-grid">
+      <div 
+        class="category-card" 
+        *ngFor="let category of categories"
+        (click)="viewCategory(category)"
+      >
+        <div class="category-icon">
+          <span class="material-symbols-outlined">{{ category.icon }}</span>
+        </div>
+        <h3>{{ category.name }}</h3>
+        <p>{{ getCategoryDescription(category.id) }}</p>
+        <span class="category-arrow">
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Productos Destacados -->
+<section class="featured-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Productos Destacados</h2>
+      <p>Los favoritos de nuestros clientes y las mejores ofertas del mes</p>
+      <button class="btn-link" routerLink="/catalogo">
+        Ver todos los productos
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </div>
+    
+    <div class="products-grid" *ngIf="!loadingFeatured">
+      <app-product-card
+        *ngFor="let product of featuredProducts"
+        [product]="product"
+        (productClick)="viewProduct($event)"
+        (quickViewClick)="openQuickView($event)"
+        (favoriteToggle)="onFavoriteToggle($event)"
+      ></app-product-card>
+    </div>
+    
+    <div class="loading-products" *ngIf="loadingFeatured">
+      <div class="product-skeleton" *ngFor="let item of [1,2,3,4]"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Ofertas Especiales -->
+<section class="offers-section">
+  <div class="container">
+    <div class="offers-banner">
+      <div class="offer-content">
+        <div class="offer-badge">
+          <span class="material-symbols-outlined">local_offer</span>
+          OFERTA ESPECIAL
+        </div>
+        <h2>¡Descuentos de hasta 30% en instrumentos seleccionados!</h2>
+        <p>Aprovecha nuestras ofertas exclusivas en guitarras, pianos y más. Oferta válida hasta fin de mes.</p>
+        <button class="btn-accent" (click)="viewOffers()">
+          <span class="material-symbols-outlined">shopping_cart</span>
+          Ver Ofertas
+        </button>
+      </div>
+      <div class="offer-image">
+        <img src="/assets/images/special-offers.jpg" alt="Ofertas especiales" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Marcas Destacadas -->
+<section class="brands-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Marcas de Confianza</h2>
+      <p>Trabajamos con las mejores marcas del mercado musical</p>
+    </div>
+    
+    <div class="brands-carousel">
+      <div class="brand-item" *ngFor="let brand of brands">
+        <img [src]="'/assets/images/brands/' + brand.logo" [alt]="brand.name" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonios -->
+<section class="testimonials-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Lo que Dicen Nuestros Clientes</h2>
+      <p>Experiencias reales de músicos que confían en nosotros</p>
+    </div>
+    
+    <div class="testimonials-grid">
+      <div class="testimonial-card" *ngFor="let testimonial of testimonials">
+        <div class="testimonial-header">
+          <div class="customer-avatar">
+            <img [src]="testimonial.avatar" [alt]="testimonial.name" />
+          </div>
+          <div class="customer-info">
+            <h4>{{ testimonial.name }}</h4>
+            <p>{{ testimonial.role }}</p>
+          </div>
+          <div class="testimonial-rating">
+            <span 
+              class="material-symbols-outlined star" 
+              *ngFor="let star of getTestimonialStars(testimonial.rating)"
+              [class.filled]="star"
+            >
+              {{ star ? 'star' : 'star_border' }}
+            </span>
+          </div>
+        </div>
+        <blockquote>{{ testimonial.content }}</blockquote>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter -->
+<section class="newsletter-section" id="contacto">
+  <div class="container">
+    <div class="newsletter-content">
+      <div class="newsletter-text">
+        <h2>Mantente al Día con las Últimas Novedades</h2>
+        <p>Suscríbete a nuestro boletín y recibe ofertas exclusivas, nuevos productos y tips musicales directamente en tu email.</p>
+      </div>
+      
+      <form class="newsletter-form" (ngSubmit)="subscribeNewsletter()" #newsletterForm="ngForm">
+        <div class="form-group">
+          <input 
+            type="email" 
+            placeholder="Tu dirección de email" 
+            [(ngModel)]="newsletterEmail"
+            name="email"
+            required
+            email
+            #emailInput="ngModel"
+          />
+          <button type="submit" [disabled]="newsletterForm.invalid || subscribing">
+            <span class="material-symbols-outlined" *ngIf="!subscribing">send</span>
+            <span class="loading-spinner" *ngIf="subscribing"></span>
+            {{ subscribing ? 'Suscribiendo...' : 'Suscribirse' }}
+          </button>
+        </div>
+        <div class="form-validation" *ngIf="emailInput.invalid && emailInput.touched">
+          <span class="error-message">Por favor, ingresa un email válido</span>
+        </div>
+      </form>
+      
+      <div class="newsletter-benefits">
+        <div class="benefit">
+          <span class="material-symbols-outlined">local_offer</span>
+          <span>Ofertas exclusivas</span>
+        </div>
+        <div class="benefit">
+          <span class="material-symbols-outlined">new_releases</span>
+          <span>Primero en saber de nuevos productos</span>
+        </div>
+        <div class="benefit">
+          <span class="material-symbols-outlined">tips_and_updates</span>
+          <span>Tips y tutoriales musicales</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Servicios Adicionales -->
+<section class="services-section" id="sobre-nosotros">
+  <div class="container">
+    <div class="section-header">
+      <h2>Nuestros Servicios</h2>
+      <p>Más que una tienda, somos tu socio musical</p>
+    </div>
+    
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined">local_shipping</span>
+        </div>
+        <h3>Envío Gratuito</h3>
+        <p>En compras mayores a $1,000. Entrega rápida y segura a todo el país.</p>
+      </div>
+      
+      <div class="service-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined">build</span>
+        </div>
+        <h3>Reparación y Mantenimiento</h3>
+        <p>Servicio técnico especializado para todos los instrumentos.</p>
+      </div>
+      
+      <div class="service-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined">school</span>
+        </div>
+        <h3>Clases de Música</h3>
+        <p>Aprende con nuestros profesores certificados en nuestra academia.</p>
+      </div>
+      
+      <div class="service-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined">autorenew</span>
+        </div>
+        <h3>Garantía Extendida</h3>
+        <p>Protección completa para tu inversión musical.</p>
+      </div>
+    </div>
+  </div>
+</section>

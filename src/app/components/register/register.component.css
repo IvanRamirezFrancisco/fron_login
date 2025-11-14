@@ -1,6 +1,6 @@
 /* Hereda estilos del login component y global styles */
 .login-container {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: var(--color-fondo);
   min-height: 100vh;
 }
 
@@ -11,17 +11,18 @@
 .invalid-feedback {
   display: block;
   font-size: 0.875rem;
-  color: #dc3545;
+  color: var(--color-error);
   margin-top: 0.25rem;
 }
 
 .text-decoration-none {
-  color: #667eea;
+  color: var(--color-primario);
   font-weight: 500;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .text-decoration-none:hover {
-  color: #764ba2;
+  color: var(--color-primario-light);
   text-decoration: underline !important;
 }
 
@@ -30,7 +31,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: var(--color-fondo);
   padding: 1rem;
 }
 
@@ -58,9 +59,10 @@
 h2 {
   text-align: center;
   margin-bottom: 2rem;
-  color: #333;
+  color: var(--color-primario);
   font-size: 1.8rem;
   font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .form-group {
@@ -80,8 +82,9 @@ label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: #555;
+  color: var(--color-texto-principal);
   font-size: 0.9rem;
+  font-family: 'Montserrat', sans-serif;
 }
 
 input {
@@ -96,9 +99,9 @@ input {
 
 input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--color-primario);
   background-color: white;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(62, 39, 35, 0.1);
 }
 
 input.error {
@@ -135,7 +138,7 @@ input::placeholder {
 .submit-btn {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: var(--color-primario);
   color: white;
   border: none;
   border-radius: 8px;
@@ -144,11 +147,13 @@ input::placeholder {
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 1rem;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .submit-btn:hover:not(:disabled) {
+  background-color: var(--color-primario-light);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 15px rgba(62, 39, 35, 0.4);
 }
 
 .submit-btn:disabled {
@@ -166,14 +171,15 @@ input::placeholder {
 }
 
 .form-footer a {
-  color: #667eea;
+  color: var(--color-primario);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .form-footer a:hover {
-  color: #764ba2;
+  color: var(--color-primario-light);
   text-decoration: underline;
 }
 

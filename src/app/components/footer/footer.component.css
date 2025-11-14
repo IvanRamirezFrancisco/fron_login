@@ -1,0 +1,589 @@
+/* ========================================
+   FOOTER COMPONENT - CASA DE MÚSICA CASTILLO
+======================================== */
+
+.footer-tienda {
+  background-color: var(--color-primario);
+  color: white;
+  margin-top: auto;
+}
+
+.footer-principal {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 3rem;
+  padding: 3rem 0;
+}
+
+/* ========================================
+   COLUMNA DE MARCA
+======================================== */
+
+.marca-columna {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.logo-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+}
+
+.logo-icono .material-symbols-outlined {
+  font-size: 28px;
+  color: var(--color-resalte);
+}
+
+.logo-texto {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-titulo {
+  font-family: var(--font-titulos);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+  color: white;
+  line-height: 1.2;
+}
+
+.footer-subtitulo {
+  font-family: var(--font-cuerpo);
+  font-size: 0.875rem;
+  color: var(--color-resalte);
+  font-weight: 400;
+  margin: 0;
+}
+
+.footer-descripcion {
+  font-family: var(--font-cuerpo);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+/* Redes sociales */
+.redes-sociales {
+  margin-top: 0.5rem;
+}
+
+.redes-titulo {
+  font-family: var(--font-titulos);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: white;
+}
+
+.redes-iconos {
+  display: flex;
+  gap: 1rem;
+}
+
+.red-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.red-social:hover {
+  background-color: var(--color-resalte);
+  color: var(--color-primario);
+  transform: translateY(-2px);
+}
+
+.red-social .material-symbols-outlined {
+  font-size: 20px;
+}
+
+/* ========================================
+   COLUMNA DE ENLACES
+======================================== */
+
+.enlaces-columna .footer-titulo {
+  margin-bottom: 1.5rem;
+}
+
+.enlaces-grupos {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.enlaces-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.grupo-titulo {
+  font-family: var(--font-titulos);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--color-resalte);
+}
+
+.enlaces-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.footer-enlace {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-family: var(--font-cuerpo);
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+  transition: all 0.3s ease;
+}
+
+.footer-enlace:hover {
+  color: var(--color-resalte);
+  padding-left: 0.5rem;
+}
+
+.footer-enlace .material-symbols-outlined {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.footer-enlace:hover .material-symbols-outlined {
+  color: var(--color-resalte);
+}
+
+/* ========================================
+   COLUMNA DE CONTACTO
+======================================== */
+
+.contacto-columna {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.contacto-columna .footer-titulo {
+  margin-bottom: 1.5rem;
+}
+
+.contacto-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.contacto-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.contacto-item .material-symbols-outlined {
+  font-size: 24px;
+  color: var(--color-resalte);
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.contacto-detalles h4 {
+  font-family: var(--font-titulos);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  color: white;
+}
+
+.contacto-detalles p {
+  font-family: var(--font-cuerpo);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+.contacto-enlace {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.contacto-enlace:hover {
+  color: var(--color-resalte);
+}
+
+/* Sección de soporte */
+.soporte-seccion {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.soporte-titulo {
+  font-family: var(--font-titulos);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: white;
+}
+
+.soporte-botones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.boton-soporte {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-family: var(--font-cuerpo);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.boton-soporte:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.boton-soporte .material-symbols-outlined {
+  font-size: 20px;
+  color: var(--color-resalte);
+}
+
+/* ========================================
+   NEWSLETTER
+======================================== */
+
+.newsletter-seccion {
+  background-color: var(--color-primario-light);
+  padding: 2rem 0;
+  margin: 2rem 0 0 0;
+}
+
+.newsletter-contenido {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.newsletter-info {
+  flex: 1;
+}
+
+.newsletter-titulo {
+  font-family: var(--font-titulos);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: white;
+}
+
+.newsletter-descripcion {
+  font-family: var(--font-cuerpo);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.newsletter-form {
+  flex: 1;
+  max-width: 400px;
+}
+
+.newsletter-input-grupo {
+  display: flex;
+  background: white;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.newsletter-input-grupo .material-symbols-outlined {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+  color: var(--color-texto-principal);
+  font-size: 20px;
+}
+
+.newsletter-input {
+  flex: 1;
+  padding: 1rem 0.5rem;
+  border: none;
+  outline: none;
+  font-family: var(--font-cuerpo);
+  font-size: 0.9rem;
+  background: transparent;
+}
+
+.newsletter-input::placeholder {
+  color: #9ca3af;
+}
+
+.newsletter-boton {
+  background-color: var(--color-accion);
+  color: white;
+  border: none;
+  padding: 1rem 1.5rem;
+  font-family: var(--font-titulos);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.newsletter-boton:hover:not(:disabled) {
+  background-color: var(--color-accion-hover);
+}
+
+.newsletter-boton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.newsletter-mensaje {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-family: var(--font-cuerpo);
+  font-size: 0.85rem;
+  background-color: rgba(220, 53, 69, 0.1);
+  color: var(--color-error-light);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.newsletter-mensaje.exito {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: var(--color-exito-light);
+  border-color: rgba(40, 167, 69, 0.2);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   FOOTER INFERIOR
+======================================== */
+
+.footer-divisor {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 2rem 0;
+}
+
+.footer-inferior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 0;
+  gap: 2rem;
+}
+
+.footer-legal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.copyright {
+  font-family: var(--font-cuerpo);
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.enlaces-legales {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.enlace-legal {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-family: var(--font-cuerpo);
+  font-size: 0.8rem;
+  transition: color 0.3s ease;
+}
+
+.enlace-legal:hover {
+  color: var(--color-resalte);
+}
+
+.separador {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
+}
+
+.footer-certificaciones {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.certificacion-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-cuerpo);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.certificacion-item .material-symbols-outlined {
+  font-size: 16px;
+  color: var(--color-resalte);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+======================================== */
+
+@media (max-width: 1024px) {
+  .footer-principal {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+  
+  .contacto-columna {
+    grid-column: 1 / -1;
+    margin-top: 1rem;
+  }
+  
+  .newsletter-contenido {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .newsletter-form {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-principal {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 2rem 0;
+  }
+  
+  .footer-logo {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .enlaces-grupos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  
+  .newsletter-input-grupo {
+    flex-direction: column;
+  }
+  
+  .newsletter-boton {
+    justify-content: center;
+  }
+  
+  .footer-inferior {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .footer-certificaciones {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-principal {
+    padding: 1.5rem 0;
+  }
+  
+  .redes-iconos {
+    justify-content: center;
+  }
+  
+  .enlaces-grupos {
+    grid-template-columns: 1fr;
+  }
+  
+  .contacto-info {
+    gap: 1rem;
+  }
+  
+  .contacto-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .soporte-botones {
+    align-items: center;
+  }
+  
+  .enlaces-legales {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .separador {
+    display: none;
+  }
+}

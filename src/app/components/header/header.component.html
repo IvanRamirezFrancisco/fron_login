@@ -1,0 +1,350 @@
+<!-- Header Principal - Casa de Música Castillo -->
+<header class="header-tienda">
+  <!-- Barra superior con información adicional -->
+  <div class="header-top">
+    <div class="contenedor">
+      <div class="header-top-content">
+        <div class="contact-info">
+          <span class="info-item">
+            <span class="material-symbols-outlined">call</span>
+            <span>+52 (55) 1234-5678</span>
+          </span>
+          <span class="info-item">
+            <span class="material-symbols-outlined">schedule</span>
+            <span>Lun-Sáb: 9:00-20:00</span>
+          </span>
+        </div>
+        <div class="top-actions">
+          <a href="#" class="top-link">
+            <span class="material-symbols-outlined">local_shipping</span>
+            <span>Envío Gratis +$1,000</span>
+          </a>
+          <a href="#" class="top-link">
+            <span class="material-symbols-outlined">support_agent</span>
+            <span>Soporte</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header principal -->
+  <div class="header-main">
+    <div class="contenedor">
+      <div class="header-contenido">
+        
+        <!-- Logo y Marca -->
+        <div class="logo-seccion">
+          <a routerLink="/" class="logo-link">
+            <div class="logo-icono">
+              <span class="material-symbols-outlined">music_note</span>
+            </div>
+            <div class="logo-texto">
+              <h1 class="marca-titulo">Casa de Música Castillo</h1>
+              <span class="marca-subtitulo">Instrumentos de Tradición</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Barra de búsqueda integrada -->
+        <div class="busqueda-integrada">
+          <div class="busqueda-container">
+            <div class="busqueda-input-group">
+              <span class="material-symbols-outlined search-icon">search</span>
+              <input 
+                type="text" 
+                placeholder="Buscar guitarras, pianos, baterías..." 
+                class="busqueda-input-inline"
+                [(ngModel)]="terminoBusqueda"
+                (keyup.enter)="buscar()"
+                (focus)="mostrarSugerenciasInline = true"
+                (blur)="ocultarSugerenciasInline()"
+              />
+              <button 
+                class="busqueda-btn-inline" 
+                (click)="buscar()"
+                [disabled]="!terminoBusqueda"
+              >
+                Buscar
+              </button>
+            </div>
+            
+            <!-- Sugerencias inline -->
+            <div class="sugerencias-inline" *ngIf="mostrarSugerenciasInline && terminoBusqueda.length > 0">
+              <div class="sugerencia-item" *ngFor="let sugerencia of getSugerenciasFiltradas()">
+                <button class="sugerencia-btn" (click)="seleccionarSugerencia(sugerencia)">
+                  <span class="material-symbols-outlined">{{ sugerencia.icono }}</span>
+                  <span>{{ sugerencia.texto }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones principales -->
+        <div class="acciones-principales">
+          
+          <!-- Estado de usuario -->
+          <div class="usuario-estado">
+            <ng-container *ngIf="usuarioLogueado; else loginPrompt">
+              <!-- Usuario logueado -->
+              <div class="usuario-logueado" (click)="toggleMenuUsuario()">
+                <div class="usuario-avatar">
+                  <span class="material-symbols-outlined">account_circle</span>
+                </div>
+                <div class="usuario-info">
+                  <span class="saludo">¡Hola!</span>
+                  <span class="nombre">{{ nombreUsuario }}</span>
+                </div>
+                <span class="material-symbols-outlined chevron">
+                  {{ menuUsuarioAbierto ? 'expand_less' : 'expand_more' }}
+                </span>
+              </div>
+              
+              <!-- Dropdown del usuario -->
+              <div class="usuario-dropdown" [class.visible]="menuUsuarioAbierto">
+                <div class="dropdown-header">
+                  <div class="user-avatar-large">
+                    <span class="material-symbols-outlined">account_circle</span>
+                  </div>
+                  <div class="user-details">
+                    <span class="user-name">{{ nombreUsuario }}</span>
+                    <span class="user-email">usuario@email.com</span>
+                  </div>
+                </div>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a routerLink="/perfil" class="dropdown-link" (click)="cerrarMenuUsuario()">
+                      <span class="material-symbols-outlined">person</span>
+                      <span>Mi Perfil</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a routerLink="/pedidos" class="dropdown-link" (click)="cerrarMenuUsuario()">
+                      <span class="material-symbols-outlined">receipt_long</span>
+                      <span>Mis Pedidos</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a routerLink="/favoritos" class="dropdown-link" (click)="cerrarMenuUsuario()">
+                      <span class="material-symbols-outlined">favorite</span>
+                      <span>Favoritos</span>
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <button class="dropdown-link logout" (click)="cerrarSesion()">
+                      <span class="material-symbols-outlined">logout</span>
+                      <span>Cerrar Sesión</span>
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </ng-container>
+            
+            <!-- Usuario no logueado -->
+            <ng-template #loginPrompt>
+              <div class="login-prompt">
+                <a routerLink="/login" class="btn-login">
+                  <span class="material-symbols-outlined">person</span>
+                  <div class="login-text">
+                    <span class="login-primary">Iniciar Sesión</span>
+                    <span class="login-secondary">o Crear Cuenta</span>
+                  </div>
+                </a>
+              </div>
+            </ng-template>
+          </div>
+
+          <!-- Carrito -->
+          <div class="carrito-seccion">
+            <a routerLink="/carrito" class="carrito-btn" [class.tiene-items]="cantidadCarrito > 0">
+              <div class="carrito-icon-container">
+                <span class="material-symbols-outlined">shopping_cart</span>
+                <span class="carrito-badge" *ngIf="cantidadCarrito > 0">
+                  {{ cantidadCarrito }}
+                </span>
+              </div>
+              <div class="carrito-info">
+                <span class="carrito-label">Carrito</span>
+                <span class="carrito-total" *ngIf="cantidadCarrito > 0">
+                  ${{ cartTotal | number:'1.0-0' }}
+                </span>
+                <span class="carrito-empty" *ngIf="cantidadCarrito === 0">
+                  Vacío
+                </span>
+              </div>
+            </a>
+          </div>
+
+          <!-- Toggle móvil -->
+          <button class="mobile-toggle" (click)="toggleMenuMovil()">
+            <span class="material-symbols-outlined">
+              {{ menuMovilAbierto ? 'close' : 'menu' }}
+            </span>
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navegación secundaria -->
+  <nav class="header-nav">
+    <div class="contenedor">
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+            <span class="material-symbols-outlined">home</span>
+            <span>Inicio</span>
+          </a>
+        </li>
+        <li class="nav-item dropdown" (mouseenter)="mostrarCategorias = true" (mouseleave)="mostrarCategorias = false">
+          <a routerLink="/catalogo" class="nav-link">
+            <span class="material-symbols-outlined">library_music</span>
+            <span>Catálogo</span>
+            <span class="material-symbols-outlined">expand_more</span>
+          </a>
+          
+          <!-- Mega menú de categorías -->
+          <div class="mega-menu" *ngIf="mostrarCategorias">
+            <div class="mega-menu-content">
+              <div class="categoria-grupo" *ngFor="let categoria of categoriasPrincipales">
+                <h4 class="categoria-titulo">
+                  <span class="material-symbols-outlined">{{ categoria.icono }}</span>
+                  {{ categoria.nombre }}
+                </h4>
+                <ul class="subcategorias">
+                  <li *ngFor="let sub of categoria.subcategorias">
+                    <a [routerLink]="['/catalogo']" [queryParams]="{categoria: sub.id}">
+                      {{ sub.nombre }}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div class="menu-promo">
+                <img src="/assets/images/menu-promo.jpg" alt="Ofertas especiales" />
+                <div class="promo-content">
+                  <h5>Ofertas Especiales</h5>
+                  <p>Hasta 30% de descuento</p>
+                  <a routerLink="/ofertas" class="btn-promo">Ver Ofertas</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/ofertas" routerLinkActive="active" class="nav-link">
+            <span class="material-symbols-outlined">local_offer</span>
+            <span>Ofertas</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/marcas" routerLinkActive="active" class="nav-link">
+            <span class="material-symbols-outlined">verified</span>
+            <span>Marcas</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/ayuda" routerLinkActive="active" class="nav-link">
+            <span class="material-symbols-outlined">help</span>
+            <span>Ayuda</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/contacto" routerLinkActive="active" class="nav-link">
+            <span class="material-symbols-outlined">contact_support</span>
+            <span>Contacto</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+    <!-- Menú móvil -->
+    <nav class="navegacion-movil" [class.abierto]="menuMovilAbierto">
+      <ul class="menu-movil-lista">
+        <li>
+          <a routerLink="/" class="menu-movil-enlace" (click)="cerrarMenuMovil()">
+            <span class="material-symbols-outlined">home</span>
+            <span>Inicio</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/catalogo" class="menu-movil-enlace" (click)="cerrarMenuMovil()">
+            <span class="material-symbols-outlined">library_music</span>
+            <span>Catálogo</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/ayuda" class="menu-movil-enlace" (click)="cerrarMenuMovil()">
+            <span class="material-symbols-outlined">help</span>
+            <span>Ayuda</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/contacto" class="menu-movil-enlace" (click)="cerrarMenuMovil()">
+            <span class="material-symbols-outlined">contact_support</span>
+            <span>Contacto</span>
+          </a>
+        </li>
+        <li class="menu-movil-separador"></li>
+        <li *ngIf="!usuarioLogueado">
+          <a routerLink="/login" class="menu-movil-enlace" (click)="cerrarMenuMovil()">
+            <span class="material-symbols-outlined">person</span>
+            <span>Iniciar Sesión</span>
+          </a>
+        </li>
+        <li *ngIf="usuarioLogueado">
+          <a routerLink="/perfil" class="menu-movil-enlace" (click)="cerrarMenuMovil()">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span>Mi Perfil</span>
+          </a>
+        </li>
+        <li *ngIf="usuarioLogueado">
+          <button class="menu-movil-enlace salir" (click)="cerrarSesion(); cerrarMenuMovil()">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Cerrar Sesión</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+  </div>
+</header>
+
+<!-- Modal de búsqueda -->
+<div class="busqueda-modal" [class.abierto]="busquedaAbierta" (click)="cerrarBusqueda()">
+  <div class="busqueda-contenido" (click)="$event.stopPropagation()">
+    <div class="busqueda-header">
+      <h3>Buscar Instrumentos</h3>
+      <button class="cerrar-busqueda" (click)="cerrarBusqueda()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="busqueda-formulario">
+      <input 
+        type="text" 
+        placeholder="Buscar guitarras, pianos, batería..." 
+        class="busqueda-input"
+        [(ngModel)]="terminoBusqueda"
+        (keyup.enter)="buscar()"
+        #inputBusqueda
+      >
+      <button class="busqueda-boton" (click)="buscar()">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+    </div>
+    <div class="busqueda-sugerencias" *ngIf="sugerencias.length > 0">
+      <h4>Sugerencias</h4>
+      <ul class="sugerencias-lista">
+        <li *ngFor="let sugerencia of sugerencias" class="sugerencia-item">
+          <button class="sugerencia-enlace" (click)="seleccionarSugerencia(sugerencia)">
+            <span class="material-symbols-outlined">{{ sugerencia.icono }}</span>
+            <span>{{ sugerencia.texto }}</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

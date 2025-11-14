@@ -1,0 +1,247 @@
+<div class="cart-container">
+  <!-- Header del carrito -->
+  <header class="cart-header">
+    <div class="container">
+      <h1 class="cart-title">
+        <span class="material-symbols-outlined">shopping_cart</span>
+        Carrito de Compras
+      </h1>
+      <p class="cart-subtitle">{{ cartItems.length }} {{ cartItems.length === 1 ? 'producto' : 'productos' }} en tu carrito</p>
+    </div>
+  </header>
+
+  <div class="cart-content">
+    <div class="container">
+      <!-- Carrito con productos -->
+      <div class="cart-main" *ngIf="cartItems.length > 0">
+        <div class="cart-products">
+          <!-- Lista de productos -->
+          <div class="products-list">
+            <div 
+              class="cart-item"
+              *ngFor="let item of cartItems; trackBy: trackByProductId"
+              [@slideIn]
+            >
+              <!-- Imagen del producto -->
+              <div class="item-image">
+                <img 
+                  [src]="item.product.images[0]" 
+                  [alt]="item.product.name"
+                  (error)="onImageError($event)"
+                />
+              </div>
+
+              <!-- Información del producto -->
+              <div class="item-info">
+                <h3 class="item-name">{{ item.product.name }}</h3>
+                <p class="item-brand">{{ item.product.brand }}</p>
+                <p class="item-description">{{ item.product.shortDescription }}</p>
+                
+                <!-- Opciones seleccionadas -->
+                <div class="item-options" *ngIf="item.selectedOptions">
+                  <span 
+                    class="option-tag"
+                    *ngFor="let option of getSelectedOptionsArray(item.selectedOptions)"
+                  >
+                    {{ option.key }}: {{ option.value }}
+                  </span>
+                </div>
+
+                <!-- Precio y descuento -->
+                <div class="item-pricing">
+                  <span class="item-price">${{ item.product.price | number:'1.2-2' }}</span>
+                  <span 
+                    class="item-original-price" 
+                    *ngIf="item.product.originalPrice && item.product.discount"
+                  >
+                    ${{ item.product.originalPrice | number:'1.2-2' }}
+                  </span>
+                  <span 
+                    class="item-discount" 
+                    *ngIf="item.product.discount"
+                  >
+                    -{{ item.product.discount }}%
+                  </span>
+                </div>
+              </div>
+
+              <!-- Controles de cantidad -->
+              <div class="item-quantity">
+                <label class="quantity-label">Cantidad:</label>
+                <div class="quantity-controls">
+                  <button 
+                    class="quantity-btn decrease"
+                    (click)="decreaseQuantity(item)"
+                    [disabled]="item.quantity <= 1 || updating"
+                    title="Disminuir cantidad"
+                  >
+                    <span class="material-symbols-outlined">remove</span>
+                  </button>
+                  
+                  <input 
+                    type="number" 
+                    class="quantity-input"
+                    [value]="item.quantity"
+                    (blur)="updateQuantityFromInput(item, $event)"
+                    [max]="item.product.stockQuantity"
+                    min="1"
+                  />
+                  
+                  <button 
+                    class="quantity-btn increase"
+                    (click)="increaseQuantity(item)"
+                    [disabled]="item.quantity >= item.product.stockQuantity || updating"
+                    title="Aumentar cantidad"
+                  >
+                    <span class="material-symbols-outlined">add</span>
+                  </button>
+                </div>
+                <p class="stock-info">
+                  Stock: {{ item.product.stockQuantity }} disponibles
+                </p>
+              </div>
+
+              <!-- Subtotal del item -->
+              <div class="item-total">
+                <span class="total-label">Subtotal:</span>
+                <span class="total-amount">
+                  ${{ getItemTotal(item) | number:'1.2-2' }}
+                </span>
+              </div>
+
+              <!-- Botón eliminar -->
+              <div class="item-actions">
+                <button 
+                  class="remove-btn"
+                  (click)="removeItem(item)"
+                  title="Eliminar producto"
+                >
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Acciones del carrito -->
+          <div class="cart-actions">
+            <button 
+              class="btn-secondary"
+              routerLink="/catalogo"
+            >
+              <span class="material-symbols-outlined">arrow_back</span>
+              Seguir Comprando
+            </button>
+            
+            <button 
+              class="btn-danger"
+              (click)="clearCart()"
+              [disabled]="cartItems.length === 0"
+            >
+              <span class="material-symbols-outlined">delete_sweep</span>
+              Vaciar Carrito
+            </button>
+          </div>
+        </div>
+
+        <!-- Resumen del carrito -->
+        <div class="cart-summary">
+          <div class="summary-card">
+            <h2 class="summary-title">Resumen del Pedido</h2>
+            
+            <div class="summary-line">
+              <span>Subtotal ({{ getTotalItems() }} productos):</span>
+              <span>${{ cartSubtotal | number:'1.2-2' }}</span>
+            </div>
+            
+            <div class="summary-line">
+              <span>Impuestos (16% IVA):</span>
+              <span>${{ cartTaxes | number:'1.2-2' }}</span>
+            </div>
+            
+            <div class="summary-line">
+              <span>Envío:</span>
+              <span *ngIf="cartShipping === 0" class="free-shipping">
+                <span class="material-symbols-outlined">local_shipping</span>
+                ¡Gratis!
+              </span>
+              <span *ngIf="cartShipping > 0">${{ cartShipping | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="summary-divider"></div>
+            
+            <div class="summary-total">
+              <span>Total:</span>
+              <span class="total-amount">${{ cartTotal | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="shipping-notice" *ngIf="cartSubtotal < freeShippingThreshold">
+              <span class="material-symbols-outlined">info</span>
+              <span>
+                Agrega ${{ (freeShippingThreshold - cartSubtotal) | number:'1.2-2' }} más 
+                para obtener <strong>envío gratis</strong>
+              </span>
+            </div>
+
+            <button 
+              class="btn-primary checkout-btn"
+              (click)="proceedToCheckout()"
+              [disabled]="cartItems.length === 0"
+            >
+              <span class="material-symbols-outlined">payment</span>
+              Proceder al Pago
+            </button>
+
+            <!-- Métodos de pago aceptados -->
+            <div class="payment-methods">
+              <p>Aceptamos:</p>
+              <div class="payment-icons">
+                <span class="payment-icon visa">VISA</span>
+                <span class="payment-icon mastercard">MC</span>
+                <span class="payment-icon amex">AMEX</span>
+                <span class="payment-icon paypal">PayPal</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carrito vacío -->
+      <div class="empty-cart" *ngIf="cartItems.length === 0">
+        <div class="empty-cart-content">
+          <div class="empty-cart-icon">
+            <span class="material-symbols-outlined">shopping_cart</span>
+          </div>
+          <h2>Tu carrito está vacío</h2>
+          <p>¿No sabes qué comprar? ¡Miles de productos te esperan!</p>
+          <button class="btn-primary" routerLink="/catalogo">
+            <span class="material-symbols-outlined">music_note</span>
+            Explorar Productos
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación para vaciar carrito -->
+<div class="modal-overlay" *ngIf="showClearConfirm" (click)="cancelClearCart()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Confirmar acción</h3>
+      <button class="modal-close" (click)="cancelClearCart()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>¿Estás seguro de que deseas vaciar tu carrito? Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="cancelClearCart()">
+        Cancelar
+      </button>
+      <button class="btn-danger" (click)="confirmClearCart()">
+        Sí, vaciar carrito
+      </button>
+    </div>
+  </div>
+</div>
