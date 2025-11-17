@@ -8,7 +8,7 @@ import { HomeHeaderComponent } from '../home-header/home-header.component';
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule],
+  imports: [ReactiveFormsModule, CommonModule, RouterModule, HomeHeaderComponent],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
