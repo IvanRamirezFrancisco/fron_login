@@ -8,7 +8,7 @@ import { HomeHeaderComponent } from '../home-header/home-header.component';
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule, HomeHeaderComponent],
+  imports: [ReactiveFormsModule, CommonModule, RouterModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
@@ -33,7 +33,11 @@ export class RegisterComponent {
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: ['', [
+        Validators.required, 
+        Validators.minLength(8),
+        Validators.pattern(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&._-])[A-Za-z\d@$!%*?&._-]{8,}$/)
+      ]],
       confirmPassword: ['', [Validators.required]]
     });
 
@@ -83,7 +87,8 @@ export class RegisterComponent {
         
       case 'password':
         if (errors['required']) return 'La contraseña es obligatoria';
-        if (errors['minlength']) return 'La contraseña debe tener al menos 6 caracteres';
+        if (errors['minlength']) return 'La contraseña debe tener al menos 8 caracteres';
+        if (errors['pattern']) return 'La contraseña debe contener: 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial (@$!%*?&._-)';
         break;
         
       case 'confirmPassword':
@@ -168,6 +173,75 @@ export class RegisterComponent {
     }
 
     return '';
+  }
+
+  /**
+   * Verificar si la contraseña es fuerte (cumple todos los requisitos)
+   */
+  isPasswordStrong(password: string): boolean {
+    if (!password) return false;
+    
+    const hasMinLength = password.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChars = /[@$!%*?&._-]/.test(password);
+    
+    return hasMinLength && hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChars;
+  }
+
+  /**
+   * Verificar si la contraseña tiene al menos 8 caracteres
+   */
+  hasMinLength(password: string): boolean {
+    return password.length >= 8;
+  }
+
+  /**
+   * Verificar si la contraseña tiene al menos una mayúscula
+   */
+  hasUpperCase(password: string): boolean {
+    return /[A-Z]/.test(password);
+  }
+
+  /**
+   * Verificar si la contraseña tiene al menos una minúscula
+   */
+  hasLowerCase(password: string): boolean {
+    return /[a-z]/.test(password);
+  }
+
+  /**
+   * Verificar si la contraseña tiene al menos un número
+   */
+  hasNumbers(password: string): boolean {
+    return /\d/.test(password);
+  }
+
+  /**
+   * Verificar si la contraseña tiene al menos un carácter especial
+   */
+  hasSpecialChars(password: string): boolean {
+    return /[@$!%*?&._-]/.test(password);
+  }
+
+  /**
+   * Obtener fortaleza de contraseña para mostrar indicador visual
+   */
+  getPasswordStrength(password: string): string {
+    if (!password) return '';
+    
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/\d/.test(password)) score++;
+    if (/[@$!%*?&._-]/.test(password)) score++;
+    
+    if (score <= 2) return 'weak';
+    if (score <= 3) return 'medium'; 
+    if (score <= 4) return 'strong';
+    return 'very-strong';
   }
 
   /**

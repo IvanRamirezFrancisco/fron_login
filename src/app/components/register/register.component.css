@@ -670,3 +670,53 @@
   40% { transform: translateY(-3px); }
   80% { transform: translateY(-1px); }
 }
+
+/* ========================================
+   INDICADORES DE CONTRASEÑA
+======================================== */
+
+.password-hints {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #C75D2C;
+}
+
+.hint-text {
+  display: block;
+  font-size: 0.85rem;
+  color: #3E2723;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.requirements-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.requirements-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  font-size: 0.85rem;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.requirements-list li.valid {
+  color: #4CAF50;
+}
+
+.requirements-list li .material-symbols-outlined {
+  font-size: 1.1rem;
+  color: #ccc;
+  transition: all 0.3s ease;
+}
+
+.requirements-list li.valid .material-symbols-outlined {
+  color: #4CAF50;
+}

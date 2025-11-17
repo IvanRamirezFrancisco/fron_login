@@ -168,17 +168,37 @@
               <span class="material-symbols-outlined">error</span>
               <span>{{ getFieldError('password') }}</span>
             </div>
-            <!-- Lista detallada de errores de contraseña -->
-            <div *ngIf="getPasswordErrors().length > 0" class="password-requirements">
-              <div *ngFor="let error of getPasswordErrors()" class="requirement-item error">
-                <span class="material-symbols-outlined">close</span>
-                <span>{{ error }}</span>
-              </div>
-            </div>
             <!-- Indicador de contraseña válida -->
             <div *ngIf="isFieldValid('password')" class="mensaje-validacion success">
               <span class="material-symbols-outlined">verified_user</span>
               <span>Contraseña segura</span>
+            </div>
+            
+            <!-- Requisitos de contraseña (cuando está escribiendo) -->
+            <div *ngIf="password?.value && password?.invalid && password?.touched" class="password-hints">
+              <small class="hint-text">La contraseña debe contener:</small>
+              <ul class="requirements-list">
+                <li [class.valid]="hasMinLength(password?.value || '')">
+                  <span class="material-symbols-outlined">{{ hasMinLength(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}</span>
+                  Al menos 8 caracteres
+                </li>
+                <li [class.valid]="hasUpperCase(password?.value || '')">
+                  <span class="material-symbols-outlined">{{ hasUpperCase(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}</span>
+                  Una letra mayúscula
+                </li>
+                <li [class.valid]="hasLowerCase(password?.value || '')">
+                  <span class="material-symbols-outlined">{{ hasLowerCase(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}</span>
+                  Una letra minúscula
+                </li>
+                <li [class.valid]="hasNumbers(password?.value || '')">
+                  <span class="material-symbols-outlined">{{ hasNumbers(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}</span>
+                  Un número
+                </li>
+                <li [class.valid]="hasSpecialChars(password?.value || '')">
+                  <span class="material-symbols-outlined">{{ hasSpecialChars(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}</span>
+                  Un carácter especial (&#64;$!%*?&._-)
+                </li>
+              </ul>
             </div>
           </div>
 
