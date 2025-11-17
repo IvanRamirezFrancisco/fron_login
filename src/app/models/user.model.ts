@@ -5,6 +5,7 @@ export interface User {
     email: string;
     phone?: string;
     enabled: boolean;
+    emailVerified?: boolean;
     twoFactorEnabled: boolean;
     roles: string[];
     createdAt: string;
@@ -12,6 +13,7 @@ export interface User {
     googleAuthEnabled?: boolean;
     smsEnabled?: boolean;
     emailEnabled?: boolean; // <-- Para Email 2FA
+    backupCodesEnabled?: boolean; // <-- Para Backup Codes
   }
   
   export interface RegisterRequest {

@@ -1,14 +1,17 @@
+/* Dashboard Casa de Música Castillo */
 .dashboard-container {
   min-height: 100vh;
-  background-color: #f8f9fa;
+  background-color: var(--color-fondo);
   position: relative;
+  margin-top: 80px; /* Espacio para el header fijo */
+  font-family: var(--font-cuerpo);
 }
 
 .dashboard-header {
-  background-color: var(--color-primario);
+  background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-dark) 100%);
   color: white;
   padding: 1.5rem 0;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
 }
 
 .header-content {
@@ -471,6 +474,75 @@
   100% { transform: rotate(360deg); }
 }
 
+/* Casa de Música specific animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fade-in {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Casa de Música card enhancements */
+.card-modern {
+  animation: scaleIn 0.4s ease-out;
+  border-radius: var(--border-radius-xl) !important;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.card-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-elevated-modern {
+  box-shadow: var(--shadow-md) !important;
+}
+
+.card-elevated-modern:hover {
+  box-shadow: var(--shadow-xl) !important;
+}
+
+/* Material Symbols spinning animation */
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* Button hover effects for Casa de Música */
+.boton-primario:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(62, 39, 35, 0.3);
+}
+
+.boton-accion:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(199, 93, 44, 0.3);
+}
+
+.boton-secundario:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
 @media (max-width: 768px) {
   .header-content {
     flex-direction: column;
@@ -771,3 +843,242 @@
   .security-description {
     font-size: 12px;
   }
+
+/* ===== BACKUP CODES MODAL STYLES ===== */
+.backup-codes-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(5px);
+}
+
+.backup-codes-modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 0;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.backup-codes-modal-header {
+  background: linear-gradient(135deg, var(--warning-500), var(--warning-600));
+  color: white;
+  padding: 2rem;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.backup-codes-modal-header h2 {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.close-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.backup-codes-warning {
+  background: var(--danger-50);
+  border: 2px solid var(--danger-200);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.warning-icon {
+  background: var(--danger-100);
+  color: var(--danger-600);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.warning-content h3 {
+  color: var(--danger-700);
+  margin: 0 0 0.5rem 0;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+}
+
+.warning-content p {
+  color: var(--danger-800);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.backup-codes-list {
+  padding: 0 2rem 2rem 2rem;
+}
+
+.backup-codes-list h4 {
+  color: var(--gray-800);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.codes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.code-item {
+  background: var(--gray-50);
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.code-item:hover {
+  border-color: var(--primary-300);
+  background: var(--primary-50);
+}
+
+.code-number {
+  color: var(--gray-500);
+  font-weight: 600;
+  min-width: 25px;
+  font-size: 0.9rem;
+}
+
+.backup-code {
+  background: white;
+  color: var(--primary-700);
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  flex: 1;
+  border: 1px solid var(--primary-200);
+}
+
+.backup-codes-modal-actions {
+  background: var(--gray-50);
+  padding: 1.5rem 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.backup-codes-instructions {
+  background: var(--info-50);
+  border-top: 1px solid var(--info-200);
+  padding: 2rem;
+  border-radius: 0 0 20px 20px;
+}
+
+.backup-codes-instructions h5 {
+  color: var(--info-700);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.backup-codes-instructions ol {
+  color: var(--info-800);
+  line-height: 1.6;
+  padding-left: 1.5rem;
+  margin: 0;
+}
+
+.backup-codes-instructions li {
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive para el modal */
+@media (max-width: 768px) {
+  .backup-codes-modal-content {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+  }
+  
+  .backup-codes-modal-header {
+    padding: 1.5rem;
+  }
+  
+  .backup-codes-modal-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .codes-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .backup-codes-modal-actions {
+    flex-direction: column;
+  }
+  
+  .backup-codes-warning {
+    margin: 1rem;
+    padding: 1rem;
+  }
+  
+  .backup-codes-list {
+    padding: 0 1rem 1rem 1rem;
+  }
+  
+  .backup-codes-instructions {
+    padding: 1.5rem 1rem;
+  }
+}

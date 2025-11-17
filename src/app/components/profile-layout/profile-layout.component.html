@@ -1,0 +1,27 @@
+<!-- Header Principal Reutilizado -->
+<app-home-header></app-home-header>
+
+<!-- Contenido del Dashboard -->
+<div class="dashboard-container">
+  
+  <!-- Título de Página -->
+  <div class="page-header">
+    <!-- <div class="page-title-section">
+      <span class="material-symbols-outlined title-icon">shield</span>
+      <h1 class="page-title">Mi Perfil y Seguridad</h1>
+    </div>
+    <p class="page-subtitle">Gestiona tu información personal y configuraciones de seguridad</p>
+     -->
+    <!-- Botón de Cerrar Sesión -->
+    <button (click)="logout()" class="logout-button">
+      <span class="material-symbols-outlined">logout</span>
+      Cerrar Sesión
+    </button>
+  </div>
+
+  <!-- Contenido del Dashboard -->
+  <main class="dashboard-content">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

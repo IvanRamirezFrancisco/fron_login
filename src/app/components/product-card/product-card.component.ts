@@ -156,7 +156,7 @@ export class ProductCardComponent implements OnInit {
 
   // Manejar error de imagen
   onImageError(event: any): void {
-    event.target.src = '/assets/images/placeholder-product.jpg';
+    event.target.src = '/assets/logoP.png';
   }
 
   private updateCartStatus(): void {

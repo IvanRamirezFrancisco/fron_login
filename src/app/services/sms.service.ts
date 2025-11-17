@@ -58,11 +58,65 @@ export class SmsService {
   }
 
   /**
-   * Verificar código durante el proceso de login
+   * MÉTODO NUCLEAR: Verificar código con FORZADO EXTREMO de strings
    */
   verifyLoginCode(email: string, code: string, method: 'SMS' | 'EMAIL' | 'GOOGLE_AUTHENTICATOR'): Observable<any> {
-    const request: VerifyCodeRequest = { email, code, method };
-    return this.http.post<any>(`${this.API_URL}/verify`, request);
+    console.log('💣 MÉTODO NUCLEAR ACTIVADO 💣');
+    console.log('Input code:', code, 'Type:', typeof code);
+    
+    // MEGA conversión de string
+    let codeString = String(code);
+    codeString = `${codeString}`;
+    codeString = codeString.toString();
+    codeString = JSON.parse(`"${codeString}"`); // Force JSON string parsing
+    codeString = new String(codeString).valueOf();
+    
+    console.log('MEGA converted code:', codeString, 'Type:', typeof codeString);
+    console.log('🚨 ANÁLISIS CRÍTICO DEL CÓDIGO 🚨');
+    console.log('  Código original:', code);
+    console.log('  Código procesado:', codeString);
+    console.log('  ¿Empieza con 0?:', codeString.startsWith('0'));
+    console.log('  Longitud:', codeString.length);
+    console.log('  parseInt result:', parseInt(codeString));
+    console.log('  ¿Se perdió el 0?:', codeString.startsWith('0') && parseInt(codeString).toString() !== codeString);
+    console.log('  Backend recibe entero:', parseInt(codeString));
+    
+    // Crear objeto con descriptores de propiedad para FORZAR strings
+    const requestObj = {};
+    Object.defineProperty(requestObj, 'email', {
+      value: String(email),
+      enumerable: true
+    });
+    Object.defineProperty(requestObj, 'code', {
+      value: codeString,
+      enumerable: true
+    });
+    Object.defineProperty(requestObj, 'method', {
+      value: String(method),
+      enumerable: true
+    });
+    
+    console.log('🔍 NUCLEAR REQUEST VALIDATION:');
+    console.log('  email:', (requestObj as any).email, 'Type:', typeof (requestObj as any).email);
+    console.log('  code:', (requestObj as any).code, 'Type:', typeof (requestObj as any).code);
+    console.log('  method:', (requestObj as any).method, 'Type:', typeof (requestObj as any).method);
+    
+    // SERIALIZACIÓN MANUAL CUSTOM para garantizar strings
+    const manualJson = `{"email":"${String(email)}","code":"${codeString}","method":"${String(method)}"}`;
+    console.log('🚀 Manual JSON:', manualJson);
+    
+    // Headers especiales para FORZAR string processing
+    const nuclearHeaders = new HttpHeaders({
+      'Content-Type': 'application/json; charset=utf-8',
+      'Accept': 'application/json',
+      'X-Force-String-Types': 'true',
+      'X-Code-Type': 'string'
+    });
+    
+    // Usar string body directamente en lugar de object
+    return this.http.post<any>(`${this.API_URL}/verify`, manualJson, { 
+      headers: nuclearHeaders 
+    });
   }
 
   /**

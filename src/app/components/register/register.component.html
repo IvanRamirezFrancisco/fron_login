@@ -1,118 +1,239 @@
-<div class="register-container">
-  <div class="register-card">
-    <h2>Crear Cuenta</h2>
+<!-- Header de navegación -->
+<app-home-header></app-home-header>
+
+<!-- Contenedor principal Casa de Música -->
+<div class="registro-container">
+  <div class="registro-contenido">
     
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="username">Nombre de usuario</label>
-        <input 
-          type="text" 
-          id="username" 
-          formControlName="username"
-          [class.error]="username?.invalid && username?.touched"
-          placeholder="Nombre de usuario único"
-        >
-        <div *ngIf="username?.invalid && username?.touched" class="error-message">
-          <span *ngIf="username?.errors?.['required']">El nombre de usuario es requerido</span>
-          <span *ngIf="username?.errors?.['minlength']">Mínimo 3 caracteres</span>
+    <!-- Card principal de registro Casa de Música -->
+    <div class="card-registro">
+      
+      <!-- Header del card Casa de Música -->
+      <div class="card-header">
+        <!-- Logo Casa de Música -->
+        <div class="logo-container">
+          <div class="logo-icon">
+            <span class="material-symbols-outlined">music_note</span>
+          </div>
+          <div class="logo-text">
+            <h1 class="marca-titulo">Casa de Música</h1>
+            <span class="marca-subtitulo">CASTILLO</span>
+          </div>
         </div>
+        <h2 class="titulo-principal">Crear Cuenta</h2>
+        <p class="subtitulo">Únete a la comunidad musical</p>
       </div>
 
-      <div class="form-row">
-        <div class="form-group half">
-          <label for="firstName">Nombre</label>
-          <input 
-            type="text" 
-            id="firstName" 
-            formControlName="firstName"
-            [class.error]="firstName?.invalid && firstName?.touched"
-            placeholder="Tu nombre"
-          >
-          <div *ngIf="firstName?.invalid && firstName?.touched" class="error-message">
-            <span *ngIf="firstName?.errors?.['required']">El nombre es requerido</span>
-            <span *ngIf="firstName?.errors?.['minlength']">Mínimo 2 caracteres</span>
+      <!-- Body del card Casa de Música -->
+      <div class="card-body">
+        
+        <!-- Mensaje de error global -->
+        <div *ngIf="errorMessage" class="mensaje-error">
+          <span class="material-symbols-outlined">warning</span>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <!-- Mensaje de éxito - Verificación de email -->
+        <div *ngIf="showEmailVerification" class="mensaje-exito">
+          <span class="material-symbols-outlined">check_circle</span>
+          <div class="mensaje-contenido">
+            <h3>¡Registro Exitoso!</h3>
+            <p>{{ successMessage }}</p>
+            <p class="mensaje-adicional">Revisa tu bandeja de entrada y carpeta de spam.</p>
+            <a routerLink="/login" class="enlace-login-verificacion">
+              <span class="material-symbols-outlined">login</span>
+              Ir a Iniciar Sesión
+            </a>
           </div>
         </div>
 
-        <div class="form-group half">
-          <label for="lastName">Apellido</label>
-          <input 
-            type="text" 
-            id="lastName" 
-            formControlName="lastName"
-            [class.error]="lastName?.invalid && lastName?.touched"
-            placeholder="Tu apellido"
+        <!-- Formulario Casa de Música -->
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="formulario-registro">
+          
+          <!-- Campo Nombre de Usuario -->
+          <div class="campo-completo">
+            <label for="username" class="etiqueta">
+              <span class="material-symbols-outlined">person</span>
+              Nombre de usuario
+            </label>
+            <input 
+              type="text" 
+              id="username" 
+              formControlName="username"
+              class="input-campo"
+              [class.input-error]="username?.invalid && username?.touched"
+              [class.input-valid]="username?.valid && username?.touched"
+              placeholder="Nombre de usuario único"
+              autocomplete="username"
+            >
+            <div *ngIf="getFieldError('username')" class="mensaje-validacion error">
+              <span class="material-symbols-outlined">error</span>
+              <span>{{ getFieldError('username') }}</span>
+            </div>
+            <div *ngIf="isFieldValid('username')" class="mensaje-validacion success">
+              <span class="material-symbols-outlined">check_circle</span>
+              <span>Nombre de usuario disponible</span>
+            </div>
+          </div>
+
+          <!-- Campos Nombre y Apellido -->
+          <div class="fila-campos">
+            <div class="campo-mitad">
+              <label for="firstName" class="etiqueta">
+                <span class="material-symbols-outlined">badge</span>
+                Nombre
+              </label>
+              <input 
+                type="text" 
+                id="firstName" 
+                formControlName="firstName"
+                class="input-campo"
+                [class.input-error]="firstName?.invalid && firstName?.touched"
+                [class.input-valid]="firstName?.valid && firstName?.touched"
+                placeholder="Tu nombre"
+                autocomplete="given-name"
+              >
+              <div *ngIf="getFieldError('firstName')" class="mensaje-validacion error">
+                <span class="material-symbols-outlined">error</span>
+                <span>{{ getFieldError('firstName') }}</span>
+              </div>
+            </div>
+
+            <div class="campo-mitad">
+              <label for="lastName" class="etiqueta">
+                <span class="material-symbols-outlined">badge</span>
+                Apellido
+              </label>
+              <input 
+                type="text" 
+                id="lastName" 
+                formControlName="lastName"
+                class="input-campo"
+                [class.input-error]="lastName?.invalid && lastName?.touched"
+                [class.input-valid]="lastName?.valid && lastName?.touched"
+                placeholder="Tu apellido"
+                autocomplete="family-name"
+              >
+              <div *ngIf="getFieldError('lastName')" class="mensaje-validacion error">
+                <span class="material-symbols-outlined">error</span>
+                <span>{{ getFieldError('lastName') }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campo Email -->
+          <div class="campo-completo">
+            <label for="email" class="etiqueta">
+              <span class="material-symbols-outlined">email</span>
+              Email
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email"
+              class="input-campo"
+              [class.input-error]="email?.invalid && email?.touched"
+              [class.input-valid]="email?.valid && email?.touched"
+              placeholder="ejemplo@correo.com"
+              autocomplete="email"
+            >
+            <div *ngIf="getFieldError('email')" class="mensaje-validacion error">
+              <span class="material-symbols-outlined">error</span>
+              <span>{{ getFieldError('email') }}</span>
+            </div>
+            <div *ngIf="isFieldValid('email')" class="mensaje-validacion success">
+              <span class="material-symbols-outlined">verified</span>
+              <span>Correo electrónico válido</span>
+            </div>
+          </div>
+
+          <!-- Campo Contraseña -->
+          <div class="campo-completo">
+            <label for="password" class="etiqueta">
+              <span class="material-symbols-outlined">lock</span>
+              Contraseña
+            </label>
+            <input 
+              type="password" 
+              id="password" 
+              formControlName="password"
+              class="input-campo"
+              [class.input-error]="password?.invalid && password?.touched"
+              [class.input-valid]="password?.valid && password?.touched"
+              placeholder="Mínimo 6 caracteres"
+              autocomplete="new-password"
+            >
+            <!-- Errores de contraseña -->
+            <div *ngIf="getFieldError('password')" class="mensaje-validacion error">
+              <span class="material-symbols-outlined">error</span>
+              <span>{{ getFieldError('password') }}</span>
+            </div>
+            <!-- Lista detallada de errores de contraseña -->
+            <div *ngIf="getPasswordErrors().length > 0" class="password-requirements">
+              <div *ngFor="let error of getPasswordErrors()" class="requirement-item error">
+                <span class="material-symbols-outlined">close</span>
+                <span>{{ error }}</span>
+              </div>
+            </div>
+            <!-- Indicador de contraseña válida -->
+            <div *ngIf="isFieldValid('password')" class="mensaje-validacion success">
+              <span class="material-symbols-outlined">verified_user</span>
+              <span>Contraseña segura</span>
+            </div>
+          </div>
+
+          <!-- Campo Confirmar Contraseña -->
+          <div class="campo-completo">
+            <label for="confirmPassword" class="etiqueta">
+              <span class="material-symbols-outlined">lock_reset</span>
+              Confirmar contraseña
+            </label>
+            <input 
+              type="password" 
+              id="confirmPassword" 
+              formControlName="confirmPassword"
+              class="input-campo"
+              [class.input-error]="confirmPassword?.invalid && confirmPassword?.touched || (registerForm.errors?.['passwordMismatch'] && confirmPassword?.touched)"
+              [class.input-valid]="confirmPassword?.valid && confirmPassword?.touched && !registerForm.errors?.['passwordMismatch']"
+              placeholder="Repite tu contraseña"
+              autocomplete="new-password"
+            >
+            <div *ngIf="getConfirmPasswordError()" class="mensaje-validacion error">
+              <span class="material-symbols-outlined">error</span>
+              <span>{{ getConfirmPasswordError() }}</span>
+            </div>
+            <div *ngIf="isFieldValid('confirmPassword') && passwordsMatch()" class="mensaje-validacion success">
+              <span class="material-symbols-outlined">check_circle</span>
+              <span>Las contraseñas coinciden</span>
+            </div>
+          </div>
+
+          <!-- Botón de registro -->
+          <button 
+            type="submit" 
+            [disabled]="registerForm.invalid || isLoading"
+            class="boton-registro"
           >
-          <div *ngIf="lastName?.invalid && lastName?.touched" class="error-message">
-            <span *ngIf="lastName?.errors?.['required']">El apellido es requerido</span>
-            <span *ngIf="lastName?.errors?.['minlength']">Mínimo 2 caracteres</span>
+            <span *ngIf="isLoading" class="material-symbols-outlined loading">sync</span>
+            <span *ngIf="!isLoading" class="material-symbols-outlined">person_add</span>
+            <span *ngIf="isLoading">Creando cuenta...</span>
+            <span *ngIf="!isLoading">Crear Cuenta</span>
+          </button>
+        </form>
+
+        <!-- Enlaces adicionales -->
+        <div class="enlaces-adicionales">
+          <div class="separador"></div>
+          <div class="enlace-login">
+            <span class="texto-enlace">¿Ya tienes cuenta?</span>
+            <a routerLink="/login" class="enlace-accion">
+              <span class="material-symbols-outlined">login</span>
+              Inicia sesión
+            </a>
           </div>
         </div>
+
       </div>
-
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input 
-          type="email" 
-          id="email" 
-          formControlName="email"
-          [class.error]="email?.invalid && email?.touched"
-          placeholder="ejemplo@correo.com"
-        >
-        <div *ngIf="email?.invalid && email?.touched" class="error-message">
-          <span *ngIf="email?.errors?.['required']">El email es requerido</span>
-          <span *ngIf="email?.errors?.['email']">Formato de email inválido</span>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input 
-          type="password" 
-          id="password" 
-          formControlName="password"
-          [class.error]="password?.invalid && password?.touched"
-          placeholder="Mínimo 6 caracteres"
-        >
-        <div *ngIf="password?.invalid && password?.touched" class="error-message">
-          <span *ngIf="password?.errors?.['required']">La contraseña es requerida</span>
-          <span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres</span>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="confirmPassword">Confirmar contraseña</label>
-        <input 
-          type="password" 
-          id="confirmPassword" 
-          formControlName="confirmPassword"
-          [class.error]="confirmPassword?.invalid && confirmPassword?.touched"
-          placeholder="Repite tu contraseña"
-        >
-        <div *ngIf="confirmPassword?.invalid && confirmPassword?.touched" class="error-message">
-          <span *ngIf="confirmPassword?.errors?.['required']">Confirma tu contraseña</span>
-        </div>
-        <div *ngIf="registerForm.errors?.['passwordMismatch'] && confirmPassword?.touched" class="error-message">
-          Las contraseñas no coinciden
-        </div>
-      </div>
-
-      <div *ngIf="errorMessage" class="error-message server-error">
-        {{ errorMessage }}
-      </div>
-
-      <button 
-        type="submit" 
-        [disabled]="registerForm.invalid || isLoading"
-        class="submit-btn"
-      >
-        <span *ngIf="isLoading">Creando cuenta...</span>
-        <span *ngIf="!isLoading">Crear Cuenta</span>
-      </button>
-    </form>
-
-    <div class="form-footer">
-      <a routerLink="/login">¿Ya tienes cuenta? Inicia sesión</a>
     </div>
   </div>
 </div>

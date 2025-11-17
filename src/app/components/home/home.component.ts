@@ -49,21 +49,21 @@ export class HomeComponent implements OnInit {
       role: 'Músico Profesional',
       content: 'Excelente servicio y productos de alta calidad. Encontré exactamente lo que buscaba para mi estudio de grabación.',
       rating: 5,
-      avatar: '/assets/images/avatars/carlos.jpg'
+      avatar: '/assets/logoP.png'
     },
     {
       name: 'Ana García',
       role: 'Profesora de Piano',
       content: 'El piano que compré aquí superó mis expectativas. La atención al cliente es excepcional y los precios son muy competitivos.',
       rating: 5,
-      avatar: '/assets/images/avatars/ana.jpg'
+      avatar: '/assets/logoP.png'
     },
     {
       name: 'Miguel Rodríguez',
       role: 'Guitarrista de Banda',
       content: 'Llevo años comprando mis instrumentos aquí. Siempre tienen las últimas novedades y el personal es muy conocedor.',
       rating: 4,
-      avatar: '/assets/images/avatars/miguel.jpg'
+      avatar: '/assets/logoP.png'
     }
   ];
 

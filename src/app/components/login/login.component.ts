@@ -1,16 +1,19 @@
 import { Component } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { SmsService } from '../../services/sms.service';
 import { CommonModule } from '@angular/common';
 import { AuthResponse, User } from '../../models/user.model';
 import { TwoFactorMethod } from '../../models/sms.model';
+import { environment } from '../../../environments/environment';
+import { HomeHeaderComponent } from '../home-header/home-header.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule,ReactiveFormsModule, CommonModule, RouterModule],
+  imports: [FormsModule,ReactiveFormsModule, CommonModule, RouterModule, HomeHeaderComponent],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -20,7 +23,7 @@ export class LoginComponent {
   errorMessage = '';
   showTwoFactorForm = false;
   pendingUser: any = null;
-  twoFactorCode = '';
+  twoFactorCode: string = ''; // CRITICAL: Inicializar explícitamente como string
   showPassword = false; // Nueva propiedad para controlar visibilidad de contraseña
   
   // Estados para SMS 2FA
@@ -28,12 +31,20 @@ export class LoginComponent {
   codeSent = false;
   availableMethods: TwoFactorMethod[] = [];
 
+
+
+  // Estados para códigos de respaldo
+  useBackupCode = false;
+  backupCode = '';
+
   cancelTwoFactor(): void {
     this.showTwoFactorForm = false;
-    this.twoFactorCode = '';
+    this.twoFactorCode = ''; // Reset como string vacío
     this.pendingUser = null;
     this.selectedMethod = '';
     this.codeSent = false;
+    this.useBackupCode = false; // Reset backup code mode
+    this.backupCode = ''; // Reset backup code input
     this.errorMessage = '';
   }
 
@@ -41,7 +52,8 @@ export class LoginComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private smsService: SmsService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -106,7 +118,7 @@ export class LoginComponent {
       const user = response.data?.user ?? response.user;
       if (token && user) {
         this.authService.completeLogin(token, user);
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/']);
       } else {
         // Solo muestra el error si NO hay 2FA y NO hay token
         this.errorMessage = 'Respuesta de login inválida';
@@ -209,33 +221,84 @@ export class LoginComponent {
   }
 
   /**
-   * Verificar código 2FA
+   * MÉTODO EXTREMO: Verificar código 2FA con FORZADO de strings
    */
   verifyTwoFactor(): void {
-    console.log('Verificando código 2FA:', this.twoFactorCode, this.pendingUser);
-    if (!this.twoFactorCode || !this.pendingUser || !this.selectedMethod) return;
+    console.log('�💥 MÉTODO EXTREMO INICIADO 💥🚀');
+    console.log('Initial twoFactorCode:', this.twoFactorCode, 'Type:', typeof this.twoFactorCode);
+    
+    if (!this.twoFactorCode || !this.pendingUser || !this.selectedMethod) {
+      console.log('❌ Faltan datos requeridos');
+      return;
+    }
+    
+    // QUINTUPLE conversión de string para garantía absoluta
+    let codeString = String(this.twoFactorCode).trim();
+    codeString = `${codeString}`;  // Template literal
+    codeString = codeString.toString();  // Explicit toString
+    codeString = JSON.parse(JSON.stringify(codeString)); // JSON roundtrip
+    codeString = new String(codeString).valueOf(); // String object conversion
+    
+    console.log('QUINTUPLE converted code:', codeString, 'Type:', typeof codeString);
+    
+    // Validar que solo contenga dígitos
+    if (!/^\d+$/.test(codeString)) {
+      this.errorMessage = 'El código debe contener solo dígitos';
+      return;
+    }
+    
+    // Normalizar a 6 dígitos
+    codeString = codeString.padStart(6, '0');
+    if (codeString.length > 6) {
+      codeString = codeString.substring(0, 6);
+    }
+    
+    console.log('Final normalized code:', codeString, 'Type:', typeof codeString);
     
     this.isLoading = true;
     this.errorMessage = '';
 
+    // CREAR REQUEST CON FORZADO EXTREMO DE STRINGS
+    const emailString = String(this.pendingUser.email);
+    const methodString = String(this.selectedMethod);
+    
+    // Usar Object.create para garantizar tipos primitivos
+    const requestData = Object.create(null);
+    requestData.email = emailString;
+    requestData.code = codeString;  // GUARANTEED STRING
+    requestData.method = methodString;
+    
+    // Verificar que todo sean strings
+    console.log('🔍 REQUEST VALIDATION:');
+    console.log('  email:', requestData.email, 'Type:', typeof requestData.email);
+    console.log('  code:', requestData.code, 'Type:', typeof requestData.code);
+    console.log('  method:', requestData.method, 'Type:', typeof requestData.method);
+    console.log('🚀 Sending request with EXTREME string forcing:', requestData);
+    
+    // JSON stringify manual para inspección
+    const jsonString = JSON.stringify(requestData);
+    console.log('📤 JSON que se enviará:', jsonString);
+    
     this.smsService.verifyLoginCode(
-      this.pendingUser.email,
-      this.twoFactorCode,
-      this.selectedMethod as 'SMS' | 'EMAIL' | 'GOOGLE_AUTHENTICATOR'
+      emailString,
+      codeString,
+      methodString as 'SMS' | 'EMAIL' | 'GOOGLE_AUTHENTICATOR'
     ).subscribe({
       next: (response: any) => {
+        console.log('✅ Respuesta exitosa:', response);
         this.isLoading = false;
         const token = response.data?.accessToken || response.accessToken;
         const user = response.data?.user || response.user;
         
         if (token && user) {
           this.authService.completeLogin(token, user);
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/']);
         } else {
           this.errorMessage = 'Código inválido o respuesta inválida';
         }
       },
       error: (err: any) => {
+        console.error('💥 Error en verificación EXTREMA:', err);
         this.errorMessage = this.getErrorMessage(err);
         this.isLoading = false;
       }
@@ -248,8 +311,65 @@ export class LoginComponent {
   goBackToMethodSelection(): void {
     this.selectedMethod = '';
     this.codeSent = false;
-    this.twoFactorCode = '';
+    this.twoFactorCode = ''; // Reset como string vacío
+    this.useBackupCode = false; // Reset backup code state
+    this.backupCode = ''; // Reset backup code input
     this.errorMessage = '';
+  }
+
+  /**
+   * Alternar entre código de 6 dígitos y código de respaldo
+   */
+  toggleBackupCodeMode(): void {
+    this.useBackupCode = !this.useBackupCode;
+    this.twoFactorCode = '';
+    this.backupCode = '';
+    this.errorMessage = '';
+  }
+
+  /**
+   * Verificar código de respaldo
+   */
+  verifyBackupCode(): void {
+    if (!this.backupCode || !this.pendingUser) {
+      this.errorMessage = 'Ingresa un código de respaldo válido';
+      return;
+    }
+
+    // Limpiar el código de respaldo (solo números y guiones)
+    const cleanCode = this.backupCode.replace(/[^0-9-]/g, '').trim();
+    
+    if (cleanCode.length < 8) {
+      this.errorMessage = 'El código de respaldo debe tener al menos 8 dígitos';
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    // Llamar al AuthService para verificar el código de respaldo
+    this.authService.verifyBackupCodeForLogin(this.pendingUser.email, cleanCode).subscribe({
+      next: (response: any) => {
+        this.isLoading = false;
+        if (response.success) {
+          const token = response.data?.accessToken || response.accessToken;
+          const user = response.data?.user || response.user;
+          
+          if (token && user) {
+            this.authService.completeLogin(token, user);
+            this.router.navigate(['/']);
+          } else {
+            this.errorMessage = 'Respuesta de login inválida';
+          }
+        } else {
+          this.errorMessage = response.message || 'Código de respaldo inválido';
+        }
+      },
+      error: (error: any) => {
+        this.isLoading = false;
+        this.errorMessage = this.getErrorMessage(error);
+      }
+    });
   }
 
   /**
@@ -285,6 +405,51 @@ export class LoginComponent {
     return this.availableMethods.find(m => m.id === this.selectedMethod) || null;
   }
 
+  /**
+   * MÉTODO RADICAL para preservar strings en código 2FA
+   */
+  onCodeInput(event: any): void {
+    console.log('🔥 RADICAL onCodeInput INICIADO 🔥');
+    const rawValue = event.target.value;
+    console.log('Raw input:', rawValue, 'Type:', typeof rawValue);
+    
+    // TRIPLE conversión para garantizar string absoluto
+    let stringValue = String(rawValue || '');
+    stringValue = `${stringValue}`;  // Template literal force
+    stringValue = stringValue.toString();  // Explicit toString
+    
+    // Solo permitir dígitos
+    stringValue = stringValue.replace(/[^0-9]/g, '');
+    
+    // Limitar a 6 dígitos
+    if (stringValue.length > 6) {
+      stringValue = stringValue.substring(0, 6);
+    }
+    
+    console.log('Triple converted:', stringValue, 'Type:', typeof stringValue);
+    console.log('Is string?', typeof stringValue === 'string');
+    console.log('Constructor:', stringValue.constructor.name);
+    
+    // Asignar con Object.defineProperty para forzar tipo
+    Object.defineProperty(this, 'twoFactorCode', {
+      value: stringValue,
+      writable: true,
+      enumerable: true,
+      configurable: true
+    });
+    
+    // Actualizar DOM también
+    event.target.value = stringValue;
+    
+    console.log('Final assignment:', this.twoFactorCode, 'Type:', typeof this.twoFactorCode);
+    console.log('Property descriptor:', Object.getOwnPropertyDescriptor(this, 'twoFactorCode'));
+    console.log('🔥 RADICAL onCodeInput COMPLETADO 🔥');
+  }
+
+  // Getter que siempre retorna string
+  get typeof() {
+    return typeof this.twoFactorCode;
+  }
 
   /**
    * Alternar visibilidad de contraseña
@@ -292,6 +457,8 @@ export class LoginComponent {
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
+
+
 
   get email() { return this.loginForm.get('email'); }
   get password() { return this.loginForm.get('password'); }

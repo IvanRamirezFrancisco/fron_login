@@ -1,31 +1,34 @@
-<!-- Navbar moderno con diseño elegante -->
-<nav class="navbar-modern">
+<!-- Navbar Casa de Música Castillo -->
+<nav class="navbar-modern" style="background-color: var(--color-primario); box-shadow: var(--shadow-lg); position: fixed; top: 0; left: 0; right: 0; z-index: 1000;">
   <div class="container-modern">
-    <div class="d-flex justify-content-between align-items-center" style="height: 70px;">
+    <div class="d-flex justify-content-between align-items-center" style="height: 80px;">
       
-      <!-- Logo y marca -->
+      <!-- Logo y marca Casa de Música -->
       <div class="d-flex align-items-center gap-3">
-        <a routerLink="/" class="navbar-brand d-flex align-items-center gap-3 text-decoration-none">
+        <a routerLink="/" class="navbar-brand d-flex align-items-center gap-3 text-decoration-none transicion" 
+           onmouseover="this.style.transform='scale(1.05)'"
+           onmouseout="this.style.transform='scale(1)'">
           <div class="brand-icon">
-            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; font-weight: bold; box-shadow: var(--shadow-md);">
-              <span class="material-symbols-outlined">music_note</span>
+            <div style="width: 50px; height: 50px; background: var(--color-resalte); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--color-primario); font-size: 1.5rem; font-weight: bold; box-shadow: var(--shadow-lg);">
+              <span class="material-symbols-outlined" style="font-size: 1.8rem;">music_note</span>
             </div>
           </div>
           <div class="brand-text">
-            <h4 class="mb-0" style="color: var(--gray-900); font-weight: 700; font-size: 1.25rem;">Casa de Música Castillo</h4>
-            <small style="color: var(--gray-500); font-size: 0.75rem; font-weight: 500;">Instrumentos Musicales</small>
+            <h1 style="color: white; font-weight: 700; font-size: 1.4rem; margin: 0; font-family: var(--font-titulos); line-height: 1;">Casa de Música</h1>
+            <small style="color: var(--color-resalte); font-size: 0.8rem; font-weight: 600; font-family: var(--font-titulos); letter-spacing: 1px;">CASTILLO</small>
           </div>
         </a>
       </div>
 
-      <!-- Menú de navegación principal -->
-      <div class="d-none d-md-flex align-items-center gap-1">
+      <!-- Menú de navegación Casa de Música -->
+      <div class="d-none d-md-flex align-items-center gap-2">
         
         <!-- Link Home -->
         <a routerLink="/home" 
            routerLinkActive="nav-link-active" 
-           class="nav-link-modern">
-          <span class="material-symbols-outlined" style="margin-right: 0.5rem;">home</span>
+           class="nav-link-modern" 
+           style="color: rgba(255,255,255,0.9); padding: 0.75rem 1rem; border-radius: var(--border-radius-lg); text-decoration: none; font-family: var(--font-titulos); font-weight: 600; display: flex; align-items: center; transition: var(--transition);">
+          <span class="material-symbols-outlined" style="margin-right: 0.5rem; font-size: 1.2rem;">home</span>
           Inicio
         </a>
         
@@ -35,20 +38,21 @@
           <!-- Dashboard -->
           <a routerLink="/dashboard" 
              routerLinkActive="nav-link-active" 
-             class="nav-link-modern">
-            <span class="material-symbols-outlined" style="margin-right: 0.5rem;">dashboard</span>
-            Dashboard
+             class="nav-link-modern"
+             style="color: rgba(255,255,255,0.9); padding: 0.75rem 1rem; border-radius: var(--border-radius-lg); text-decoration: none; font-family: var(--font-titulos); font-weight: 600; display: flex; align-items: center; transition: var(--transition);">
+            <span class="material-symbols-outlined" style="margin-right: 0.5rem; font-size: 1.2rem;">dashboard</span>
+            Panel de Control
           </a>
 
           <!-- Separador visual -->
-          <div style="width: 1px; height: 24px; background: var(--gray-300); margin: 0 0.5rem;"></div>
+          <div style="width: 2px; height: 30px; background: var(--color-resalte); margin: 0 1rem; border-radius: 1px;"></div>
 
           <!-- Botón de logout -->
           <button 
             (click)="logout()" 
-            class="btn btn-outline-danger btn-sm d-flex align-items-center gap-2"
-            style="border-radius: 20px; padding: 0.5rem 1rem;">
-            <span class="material-symbols-outlined">logout</span>
+            class="boton-secundario d-flex align-items-center gap-2"
+            style="background: rgba(255,255,255,0.1); color: white; border: 2px solid var(--color-resalte); padding: 0.75rem 1.5rem;">
+            <span class="material-symbols-outlined" style="font-size: 1.1rem;">logout</span>
             <span>Cerrar Sesión</span>
           </button>
           
@@ -60,47 +64,51 @@
           <!-- Login -->
           <a routerLink="/login" 
              routerLinkActive="nav-link-active" 
-             class="nav-link-modern">
-            <span class="material-symbols-outlined" style="margin-right: 0.5rem;">login</span>
+             class="nav-link-modern"
+             style="color: rgba(255,255,255,0.9); padding: 0.75rem 1rem; border-radius: var(--border-radius-lg); text-decoration: none; font-family: var(--font-titulos); font-weight: 600; display: flex; align-items: center; transition: var(--transition);">
+            <span class="material-symbols-outlined" style="margin-right: 0.5rem; font-size: 1.2rem;">login</span>
             Iniciar Sesión
           </a>
           
           <!-- Separador visual -->
-          <div style="width: 1px; height: 24px; background: var(--gray-300); margin: 0 0.5rem;"></div>
+          <div style="width: 2px; height: 30px; background: var(--color-resalte); margin: 0 1rem; border-radius: 1px;"></div>
           
           <!-- Register -->
           <a routerLink="/register" 
-             class="btn btn-primary btn-sm d-flex align-items-center gap-2"
-             style="border-radius: 20px; padding: 0.5rem 1rem;">
-            <span class="material-symbols-outlined">person_add</span>
+             class="boton-accion d-flex align-items-center gap-2"
+             style="padding: 0.75rem 1.5rem; text-decoration: none;">
+            <span class="material-symbols-outlined" style="font-size: 1.1rem;">person_add</span>
             <span>Crear Cuenta</span>
           </a>
           
         </ng-template>
       </div>
 
-      <!-- Menú hamburguesa para móvil -->
+      <!-- Menú hamburguesa para móvil Casa de Música -->
       <div class="d-md-none">
         <button 
-          class="btn btn-outline-secondary btn-sm"
+          class="btn"
           (click)="toggleMobileMenu()"
-          style="border-radius: 8px; padding: 0.5rem;">
-          <span class="material-symbols-outlined" style="font-size: 1.2rem;">{{ mobileMenuOpen ? 'close' : 'menu' }}</span>
+          style="background: rgba(255,255,255,0.1); color: white; border: 2px solid var(--color-resalte); border-radius: var(--border-radius-lg); padding: 0.75rem; transition: var(--transition);">
+          <span class="material-symbols-outlined" style="font-size: 1.3rem;">{{ mobileMenuOpen ? 'close' : 'menu' }}</span>
         </button>
       </div>
 
     </div>
 
-    <!-- Menú móvil desplegable -->
-    <div class="mobile-menu d-md-none" [class.mobile-menu-open]="mobileMenuOpen">
-      <div class="mobile-menu-content">
+    <!-- Menú móvil desplegable Casa de Música -->
+    <div class="mobile-menu d-md-none" 
+         [class.mobile-menu-open]="mobileMenuOpen"
+         style="background-color: var(--color-primario); border-top: 2px solid var(--color-resalte);">
+      <div class="mobile-menu-content" style="padding: 1rem 0;">
         
         <!-- Link Home -->
         <a routerLink="/home" 
            routerLinkActive="mobile-link-active" 
            class="mobile-nav-link"
-           (click)="closeMobileMenu()">
-          <span class="material-symbols-outlined" style="margin-right: 0.75rem;">home</span>
+           (click)="closeMobileMenu()"
+           style="color: rgba(255,255,255,0.9); padding: 1rem; text-decoration: none; font-family: var(--font-titulos); font-weight: 600; display: flex; align-items: center; transition: var(--transition);">
+          <span class="material-symbols-outlined" style="margin-right: 0.75rem; font-size: 1.3rem;">home</span>
           <span>Inicio</span>
         </a>
         
@@ -111,20 +119,21 @@
           <a routerLink="/dashboard" 
              routerLinkActive="mobile-link-active" 
              class="mobile-nav-link"
-             (click)="closeMobileMenu()">
-            <span class="material-symbols-outlined" style="margin-right: 0.75rem;">dashboard</span>
-            <span>Dashboard</span>
+             (click)="closeMobileMenu()"
+             style="color: rgba(255,255,255,0.9); padding: 1rem; text-decoration: none; font-family: var(--font-titulos); font-weight: 600; display: flex; align-items: center; transition: var(--transition);">
+            <span class="material-symbols-outlined" style="margin-right: 0.75rem; font-size: 1.3rem;">dashboard</span>
+            <span>Panel de Control</span>
           </a>
 
           <!-- Divisor -->
-          <div style="height: 1px; background: var(--gray-200); margin: 0.5rem 0;"></div>
+          <div style="height: 2px; background: var(--color-resalte); margin: 0.5rem 1rem; border-radius: 1px;"></div>
 
           <!-- Logout -->
           <button 
             (click)="logout(); closeMobileMenu()" 
             class="mobile-nav-link" 
-            style="width: 100%; text-align: left; background: none; border: none; color: var(--danger-600);">
-            <span class="material-symbols-outlined" style="margin-right: 0.75rem;">logout</span>
+            style="width: 100%; text-align: left; background: none; border: none; color: var(--color-resalte); padding: 1rem; font-family: var(--font-titulos); font-weight: 600; display: flex; align-items: center; transition: var(--transition);">
+            <span class="material-symbols-outlined" style="margin-right: 0.75rem; font-size: 1.3rem;">logout</span>
             <span>Cerrar Sesión</span>
           </button>
           
@@ -137,8 +146,9 @@
           <a routerLink="/login" 
              routerLinkActive="mobile-link-active" 
              class="mobile-nav-link"
-             (click)="closeMobileMenu()">
-            <span class="material-symbols-outlined" style="margin-right: 0.75rem;">login</span>
+             (click)="closeMobileMenu()"
+             style="color: rgba(255,255,255,0.9); padding: 1rem; text-decoration: none; font-family: var(--font-titulos); font-weight: 600; display: flex; align-items: center; transition: var(--transition);">
+            <span class="material-symbols-outlined" style="margin-right: 0.75rem; font-size: 1.3rem;">login</span>
             <span>Iniciar Sesión</span>
           </a>
           
@@ -146,8 +156,9 @@
           <a routerLink="/register" 
              routerLinkActive="mobile-link-active" 
              class="mobile-nav-link"
-             (click)="closeMobileMenu()">
-            <span class="material-symbols-outlined" style="margin-right: 0.75rem;">person_add</span>
+             (click)="closeMobileMenu()"
+             style="color: rgba(255,255,255,0.9); padding: 1rem; text-decoration: none; font-family: var(--font-titulos); font-weight: 600; display: flex; align-items: center; transition: var(--transition);">
+            <span class="material-symbols-outlined" style="margin-right: 0.75rem; font-size: 1.3rem;">person_add</span>
             <span>Crear Cuenta</span>
           </a>
           

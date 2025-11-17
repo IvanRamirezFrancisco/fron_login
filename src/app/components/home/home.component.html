@@ -1,113 +1,164 @@
 <!-- Header Principal -->
 <app-home-header></app-home-header>
 
-<!-- Hero Section -->
-<section class="hero-section" id="inicio">
-  <div class="hero-content">
+<!-- Hero Section Casa de Música Castillo -->
+<section class="hero-section" id="inicio" style="background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-dark) 100%); position: relative; overflow: hidden;">
+  <div class="hero-content" style="max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; min-height: 90vh;">
+    
     <div class="hero-text">
-      <h1 class="hero-title">
-        Descubre la <span class="highlight">Música</span> 
-        en Casa de Música Castillo
-      </h1>
-      <p class="hero-subtitle">
+      <!-- Logo y título principal -->
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div style="width: 60px; height: 60px; background: var(--color-resalte); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg);">
+          <span class="material-symbols-outlined" style="color: var(--color-primario); font-size: 2rem;">music_note</span>
+        </div>
+        <div>
+          <h1 style="color: var(--color-resalte); font-family: var(--font-titulos); font-weight: 700; margin: 0; font-size: 2.5rem; line-height: 1;">Casa de Música</h1>
+          <p style="color: white; margin: 0; font-family: var(--font-titulos); font-weight: 600; font-size: 1.2rem; letter-spacing: 2px;">CASTILLO</p>
+        </div>
+      </div>
+      
+      <h2 style="color: white; font-family: var(--font-titulos); font-weight: 700; font-size: 3rem; line-height: 1.2; margin-bottom: 1.5rem; text-shadow: 2px 4px 8px rgba(0,0,0,0.3);">
+        Descubre la <span style="color: var(--color-resalte); text-decoration: underline; text-decoration-color: var(--color-accion);">Música</span> 
+        que te Inspira
+      </h2>
+      
+      <p style="color: rgba(255,255,255,0.95); font-family: var(--font-cuerpo); font-size: 1.2rem; line-height: 1.6; margin-bottom: 2rem; text-shadow: 1px 2px 4px rgba(0,0,0,0.2);">
         Los mejores instrumentos musicales, equipos de audio profesional y accesorios para músicos de todos los niveles. Calidad garantizada y precios increíbles.
       </p>
-      <div class="hero-actions">
-        <button class="btn-primary" (click)="viewCatalog()">
+      
+      <div class="hero-actions" style="display: flex; gap: 1rem; margin-bottom: 3rem; flex-wrap: wrap;">
+        <button class="boton-accion" (click)="viewCatalog()" style="display: flex; align-items: center; gap: 0.5rem; padding: 1rem 2rem; font-size: 1.1rem; box-shadow: var(--shadow-lg);">
           <span class="material-symbols-outlined">music_note</span>
           Explorar Catálogo
         </button>
-        <button class="btn-secondary" (click)="viewOffers()">
+        <button class="boton-secundario" (click)="viewOffers()" style="display: flex; align-items: center; gap: 0.5rem; padding: 1rem 2rem; font-size: 1.1rem; background: rgba(255,255,255,0.1); color: white; border: 2px solid var(--color-resalte);">
           <span class="material-symbols-outlined">local_offer</span>
           Ver Ofertas
         </button>
       </div>
       
-      <!-- Estadísticas -->
-      <div class="hero-stats">
-        <div class="stat">
-          <span class="stat-number">500+</span>
-          <span class="stat-label">Instrumentos</span>
+      <!-- Estadísticas Casa de Música -->
+      <div class="hero-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+        <div class="stat" style="text-align: center;">
+          <div style="background: rgba(255,255,255,0.15); border-radius: var(--border-radius-xl); padding: 1.5rem; backdrop-filter: blur(10px); box-shadow: var(--shadow-md);">
+            <span style="display: block; font-family: var(--font-titulos); font-weight: 700; font-size: 2.5rem; color: var(--color-resalte); margin-bottom: 0.5rem;">500+</span>
+            <span style="font-family: var(--font-cuerpo); color: rgba(255,255,255,0.9); font-size: 0.9rem; font-weight: 500;">Instrumentos</span>
+          </div>
         </div>
-        <div class="stat">
-          <span class="stat-number">50+</span>
-          <span class="stat-label">Marcas</span>
+        <div class="stat" style="text-align: center;">
+          <div style="background: rgba(255,255,255,0.15); border-radius: var(--border-radius-xl); padding: 1.5rem; backdrop-filter: blur(10px); box-shadow: var(--shadow-md);">
+            <span style="display: block; font-family: var(--font-titulos); font-weight: 700; font-size: 2.5rem; color: var(--color-resalte); margin-bottom: 0.5rem;">50+</span>
+            <span style="font-family: var(--font-cuerpo); color: rgba(255,255,255,0.9); font-size: 0.9rem; font-weight: 500;">Marcas</span>
+          </div>
         </div>
-        <div class="stat">
-          <span class="stat-number">1000+</span>
-          <span class="stat-label">Clientes Satisfechos</span>
+        <div class="stat" style="text-align: center;">
+          <div style="background: rgba(255,255,255,0.15); border-radius: var(--border-radius-xl); padding: 1.5rem; backdrop-filter: blur(10px); box-shadow: var(--shadow-md);">
+            <span style="display: block; font-family: var(--font-titulos); font-weight: 700; font-size: 2.5rem; color: var(--color-resalte); margin-bottom: 0.5rem;">1000+</span>
+            <span style="font-family: var(--font-cuerpo); color: rgba(255,255,255,0.9); font-size: 0.9rem; font-weight: 500;">Clientes Satisfechos</span>
+          </div>
         </div>
       </div>
     </div>
     
-    <div class="hero-image">
-      <img src="/assets/images/hero-music-store.jpg" alt="Casa de Música Castillo" />
+    <!-- Imagen del héroe con elementos flotantes -->
+    <div class="hero-image" style="position: relative; display: flex; justify-content: center; align-items: center;">
+      <div style="width: 400px; height: 400px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid var(--color-resalte); box-shadow: var(--shadow-xl); backdrop-filter: blur(10px);">
+        <span class="material-symbols-outlined" style="font-size: 12rem; color: var(--color-resalte); text-shadow: 2px 4px 8px rgba(0,0,0,0.2);">music_note</span>
+      </div>
       
-      <!-- Elementos flotantes -->
-      <div class="floating-element note-1">
-        <span class="material-symbols-outlined">music_note</span>
+      <!-- Elementos flotantes animados -->
+      <div class="floating-element note-1" style="position: absolute; top: 10%; left: 10%; animation: float 3s ease-in-out infinite;">
+        <div style="background: var(--color-accion); color: white; padding: 1rem; border-radius: 50%; box-shadow: var(--shadow-lg);">
+          <span class="material-symbols-outlined" style="font-size: 1.5rem;">piano</span>
+        </div>
       </div>
-      <div class="floating-element note-2">
-        <span class="material-symbols-outlined">queue_music</span>
+      <div class="floating-element note-2" style="position: absolute; top: 20%; right: 10%; animation: float 3s ease-in-out infinite 0.5s;">
+        <div style="background: var(--color-resalte); color: var(--color-primario); padding: 1rem; border-radius: 50%; box-shadow: var(--shadow-lg);">
+          <span class="material-symbols-outlined" style="font-size: 1.5rem;">music_note</span>
+        </div>
       </div>
-      <div class="floating-element note-3">
-        <span class="material-symbols-outlined">radio</span>
+      <div class="floating-element note-3" style="position: absolute; bottom: 20%; left: 20%; animation: float 3s ease-in-out infinite 1s;">
+        <div style="background: var(--color-primario-light); color: white; padding: 1rem; border-radius: 50%; box-shadow: var(--shadow-lg);">
+          <span class="material-symbols-outlined" style="font-size: 1.5rem;">guitar_pick</span>
+        </div>
       </div>
     </div>
   </div>
+  
+  <!-- Patrón de fondo decorativo -->
+  <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.1; pointer-events: none; background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.1) 35px, rgba(255,255,255,0.1) 70px);"></div>
 </section>
 
-<!-- Categorías Principales -->
-<section class="categories-section" id="productos">
-  <div class="container">
-    <div class="section-header">
-      <h2>Explora por Categorías</h2>
-      <p>Encuentra exactamente lo que necesitas para tu música</p>
+<!-- Categorías Principales Casa de Música -->
+<section class="categories-section" id="productos" style="padding: 4rem 0; background-color: var(--color-fondo);">
+  <div class="contenedor">
+    <div class="section-header" style="text-align: center; margin-bottom: 3rem;">
+      <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
+        <div style="width: 50px; height: 50px; background: var(--color-primario); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);">
+          <span class="material-symbols-outlined" style="color: white; font-size: 1.5rem;">category</span>
+        </div>
+        <h2 style="color: var(--color-primario); font-family: var(--font-titulos); font-weight: 700; margin: 0; font-size: 2.5rem;">Explora por Categorías</h2>
+      </div>
+      <p style="color: var(--color-texto-principal); font-family: var(--font-cuerpo); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Encuentra exactamente lo que necesitas para tu música</p>
     </div>
     
-    <div class="categories-grid">
+    <div class="categories-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
       <div 
-        class="category-card" 
+        class="category-card card-modern transicion cursor-pointer" 
         *ngFor="let category of categories"
         (click)="viewCategory(category)"
+        style="padding: 2rem; text-align: center; border-radius: var(--border-radius-xl); box-shadow: var(--shadow-sm); border: 2px solid transparent; background: white;"
+        onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='var(--shadow-xl)'; this.style.borderColor='var(--color-accion)';"
+        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'; this.style.borderColor='transparent';"
       >
-        <div class="category-icon">
-          <span class="material-symbols-outlined">{{ category.icon }}</span>
+        <div class="category-icon" style="margin-bottom: 1.5rem;">
+          <div style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--color-accion), var(--color-accion-hover)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: var(--shadow-lg);">
+            <span class="material-symbols-outlined" style="color: white; font-size: 2.5rem;">{{ category.icon }}</span>
+          </div>
         </div>
-        <h3>{{ category.name }}</h3>
-        <p>{{ getCategoryDescription(category.id) }}</p>
-        <span class="category-arrow">
-          <span class="material-symbols-outlined">arrow_forward</span>
-        </span>
+        <h3 style="color: var(--color-primario); font-family: var(--font-titulos); font-weight: 600; margin-bottom: 1rem; font-size: 1.3rem;">{{ category.name }}</h3>
+        <p style="color: var(--color-texto-principal); font-family: var(--font-cuerpo); margin-bottom: 1.5rem; line-height: 1.5;">{{ getCategoryDescription(category.id) }}</p>
+        <div class="category-arrow" style="color: var(--color-accion); transition: var(--transition);">
+          <span class="material-symbols-outlined" style="font-size: 1.5rem;">arrow_forward</span>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Productos Destacados -->
-<section class="featured-section">
-  <div class="container">
-    <div class="section-header">
-      <h2>Productos Destacados</h2>
-      <p>Los favoritos de nuestros clientes y las mejores ofertas del mes</p>
-      <button class="btn-link" routerLink="/catalogo">
+<!-- Productos Destacados Casa de Música -->
+<section class="featured-section" style="padding: 4rem 0; background: white;">
+  <div class="contenedor">
+    <div class="section-header" style="text-align: center; margin-bottom: 3rem;">
+      <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
+        <div style="width: 50px; height: 50px; background: var(--color-accion); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);">
+          <span class="material-symbols-outlined" style="color: white; font-size: 1.5rem;">star</span>
+        </div>
+        <h2 style="color: var(--color-primario); font-family: var(--font-titulos); font-weight: 700; margin: 0; font-size: 2.5rem;">Productos Destacados</h2>
+      </div>
+      <p style="color: var(--color-texto-principal); font-family: var(--font-cuerpo); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2rem;">Los favoritos de nuestros clientes y las mejores ofertas del mes</p>
+      <button class="boton-secundario" routerLink="/catalogo" style="display: inline-flex; align-items: center; gap: 0.5rem;">
         Ver todos los productos
         <span class="material-symbols-outlined">arrow_forward</span>
       </button>
     </div>
     
-    <div class="products-grid" *ngIf="!loadingFeatured">
+    <div class="products-grid" *ngIf="!loadingFeatured" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
       <app-product-card
         *ngFor="let product of featuredProducts"
         [product]="product"
         (productClick)="viewProduct($event)"
         (quickViewClick)="openQuickView($event)"
         (favoriteToggle)="onFavoriteToggle($event)"
+        class="product-card transicion"
+        style="border-radius: var(--border-radius-xl); overflow: hidden; box-shadow: var(--shadow-sm); background: white; border: 2px solid transparent;"
+        onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)'; this.style.borderColor='var(--color-resalte)';"
+        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'; this.style.borderColor='transparent';"
       ></app-product-card>
     </div>
     
-    <div class="loading-products" *ngIf="loadingFeatured">
-      <div class="product-skeleton" *ngFor="let item of [1,2,3,4]"></div>
+    <div class="loading-products" *ngIf="loadingFeatured" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+      <div class="product-skeleton" *ngFor="let item of [1,2,3,4]" style="background: var(--gray-100); border-radius: var(--border-radius-xl); height: 400px; animation: pulse 1.5s ease-in-out infinite alternate;"></div>
     </div>
   </div>
 </section>
@@ -129,7 +180,7 @@
         </button>
       </div>
       <div class="offer-image">
-        <img src="/assets/images/special-offers.jpg" alt="Ofertas especiales" />
+        <img src="/assets/logoP.png" alt="Ofertas especiales" />
       </div>
     </div>
   </div>
@@ -145,7 +196,7 @@
     
     <div class="brands-carousel">
       <div class="brand-item" *ngFor="let brand of brands">
-        <img [src]="'/assets/images/brands/' + brand.logo" [alt]="brand.name" />
+        <img src="/assets/logoP.png" [alt]="brand.name" />
       </div>
     </div>
   </div>

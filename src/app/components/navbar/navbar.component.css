@@ -1,17 +1,20 @@
 /* ========================================
-   NAVBAR MODERNO - DISEÑO ELEGANTE
+   NAVBAR CASA DE MÚSICA CASTILLO
 ======================================== */
 
-/* Navbar principal */
+/* Navbar principal Casa de Música */
 .navbar-modern {
   background-color: var(--color-primario);
-  border-bottom: 1px solid var(--color-primario-dark);
-  box-shadow: var(--shadow-sm);
-  position: sticky;
+  border-bottom: 2px solid var(--color-resalte);
+  box-shadow: var(--shadow-lg);
+  position: fixed;
   top: 0;
-  z-index: 1020;
+  left: 0;
+  right: 0;
+  z-index: 1000;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  font-family: var(--font-cuerpo);
 }
 
 /* Marca/Logo */
@@ -33,51 +36,53 @@
   transform: rotate(5deg);
 }
 
-/* Enlaces de navegación modernos */
+/* Enlaces de navegación Casa de Música */
 .nav-link-modern {
   display: inline-flex;
   align-items: center;
-  padding: var(--spacing-2) var(--spacing-4);
+  padding: var(--spacing-3) var(--spacing-4);
   color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
-  font-weight: 500;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 0.95rem;
   border-radius: var(--border-radius-lg);
   transition: var(--transition);
   position: relative;
   margin: 0 0.25rem;
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-titulos);
 }
 
 .nav-link-modern:hover {
   color: white;
   background-color: var(--color-primario-light);
   text-decoration: none;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .nav-link-modern:focus {
-  outline: 2px solid var(--primary-500);
+  outline: 2px solid var(--color-resalte);
   outline-offset: 2px;
 }
 
-/* Estado activo */
+/* Estado activo Casa de Música */
 .nav-link-modern.nav-link-active {
   color: var(--color-primario);
   background-color: var(--color-resalte);
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: var(--shadow-md);
 }
 
 .nav-link-modern.nav-link-active::after {
   content: '';
   position: absolute;
-  bottom: -1px;
+  bottom: -2px;
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
-  height: 2px;
-  background-color: var(--color-primario);
-  border-radius: 1px;
+  width: 90%;
+  height: 3px;
+  background-color: var(--color-accion);
+  border-radius: 2px;
 }
 
 /* ========================================

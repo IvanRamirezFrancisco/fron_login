@@ -149,14 +149,27 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
       Authorization: `Bearer ${token}`
     });
 
-    return this.http.get<User>(`${this.API_URL}/me`, { headers }).pipe(
+    return this.http.get<any>(`${environment.apiUrl}/users/profile`, { headers }).pipe(
+      map(response => {
+        // El endpoint devuelve ApiResponse con los datos en .data
+        if (response.success && response.data) {
+          return response.data as User;
+        }
+        return null;
+      }),
       // Si hay error relacionado con token, limpiar sesión y devolver null para que el UI lo maneje
       catchError(err => {
         console.error('Error al obtener usuario:', err);
-        // Si es fallo de autorización o token inválido, forzar logout para limpiar estado
-        if (err?.status === 401 || err?.status === 400 || err?.status === 500) {
+        
+        // SOLO hacer logout si es un 401 en una petición de usuario autenticado
+        // NO hacer logout por errores en validaciones públicas o problemas de conectividad
+        if (err?.status === 401) {
+          console.warn('AuthService: Token inválido detectado, ejecutando logout');
           this.logout();
+        } else {
+          console.log('AuthService: Error no relacionado con autenticación, manteniendo sesión');
         }
+        
         return of(null);
       })
     );
@@ -188,12 +201,22 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
   }
 
   logout(): void {
-    console.log('Cerrando sesión...');
+    const currentUrl = this.router.url;
+    console.log('Cerrando sesión desde:', currentUrl);
+    
+    // Evitar logout si ya estamos en páginas públicas para prevenir loops
+    if (['/login', '/register', '/'].includes(currentUrl)) {
+      console.log('Ya estamos en página pública, evitando redirección');
+      return;
+    }
+    
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.tokenSubject.next(null);
     this.userSubject.next(null);
     this.isLoggedIn$.next(false);
+    
+    console.log('Sesión cerrada, redirigiendo a login');
     this.router.navigate(['/login']);
   }
 
@@ -307,5 +330,94 @@ private setSession(authResult: AuthResponse): void {
    */
   getAvailableTwoFactorMethods(): Observable<ApiResponse<{[key: string]: boolean}>> {
     return this.http.get<ApiResponse<{[key: string]: boolean}>>(`${environment.apiUrl}/2fa/methods`);
+  }
+
+  /**
+   * Obtener usuario actual como observable
+   */
+  getCurrentUser(): Observable<User | null> {
+    return this.userSubject.asObservable();
+  }
+
+  /**
+   * Actualizar usuario en el BehaviorSubject y localStorage
+   */
+  updateCurrentUser(user: User | null): void {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+      this.userSubject.next(user);
+    } else {
+      localStorage.removeItem('user');
+      this.userSubject.next(null);
+    }
+  }
+
+  /**
+   * Generar códigos de respaldo
+   */
+  generateBackupCodes(): Observable<ApiResponse<{codes: string[]}>> {
+    return this.http.post<ApiResponse<{codes: string[]}>>(`${environment.apiUrl}/2fa/backup-codes/generate`, {});
+  }
+
+  /**
+   * Obtener estado de códigos de respaldo
+   */
+  getBackupCodesStatus(): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/2fa/backup-codes/status`);
+  }
+
+  /**
+   * Verificar código de respaldo
+   */
+  verifyBackupCode(payload: { email: string; code: string }): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/2fa/backup-codes/verify`, payload);
+  }
+
+  /**
+   * Verificar código de respaldo para login (devuelve JWT)
+   */
+  verifyBackupCodeForLogin(email: string, code: string): Observable<any> {
+    const payload = {
+      email: email,
+      code: code,
+      method: 'BACKUP_CODE'
+    };
+    
+    return this.http.post<any>(`${environment.apiUrl}/2fa/verify`, payload).pipe(
+      tap(response => {
+        if (response.success) {
+          console.log('✅ Backup code verification successful for login');
+        }
+      }),
+      catchError(error => {
+        console.error('❌ Backup code verification failed for login:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Verificar email con token
+   */
+  verifyEmail(token: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/auth/verify-email`, { token })
+      .pipe(
+        tap(response => {
+          if (response.success) {
+            console.log('✅ Email verification successful');
+          }
+        }),
+        catchError(error => {
+          console.error('❌ Email verification failed:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  /**
+   * Desactivar códigos de respaldo
+   */
+  disableBackupCodes(): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/2fa/backup-codes/disable`, {});
   }
 }

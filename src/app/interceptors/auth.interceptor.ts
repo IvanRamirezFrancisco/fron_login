@@ -8,11 +8,37 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // No agregar token a las rutas de autenticación
-  const authUrls = ['/login', '/register'];
-  const isAuthUrl = authUrls.some(url => req.url.includes(url));
+  // Rutas públicas que NO deben redirigir a login en caso de 401
+  const publicUrls = [
+    '/auth/check-username',        // Validación username - variante 1
+    '/api/auth/check-username',    // Validación username - variante 2
+    '/login',                      // Login de usuario
+    '/register',                   // Registro de usuario
+    '/check-username',             // Validación username - variante 3
+    '/forgot-password',            // Recuperación de contraseña
+    '/reset-password',             // Reset de contraseña
+    '/verify-email',               // Verificación de email
+    '/auth/login',                 // Login alternativo
+    '/auth/register'               // Registro alternativo
+  ];
+  
+  const isPublicUrl = publicUrls.some(url => req.url.includes(url));
+  
+  // También detectar peticiones marcadas como públicas por headers
+  const isMarkedAsPublic = req.headers.has('X-Public-Request');
+  
+  const isPublicRequest = isPublicUrl || isMarkedAsPublic;
 
-  if (isAuthUrl) {
+  console.log(`🔍 Interceptor: ${req.method} ${req.url}`, {
+    originalUrl: req.url,
+    isPublicUrl,
+    isMarkedAsPublic, 
+    isPublicRequest
+  });
+
+  // No agregar token a las rutas públicas de autenticación
+  if (isPublicRequest) {
+    console.log(`🌐 Interceptor: Petición pública, sin agregar token`);
     return next(req);
   }
 
@@ -27,15 +53,26 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         Authorization: `Bearer ${token}`
       }
     });
+    console.log(`🔐 Interceptor: Token agregado a petición protegida`);
   }
 
   return next(authReq).pipe(
     catchError(error => {
-      // Si el token es inválido (401), logout automático
-      if (error.status === 401) {
+      console.log(`❌ Interceptor: Error ${error.status} en ${req.url}`, {
+        isPublicRequest,
+        willRedirect: error.status === 401 && !isPublicRequest
+      });
+      
+      // SOLO redirigir a login si es un 401 en rutas protegidas
+      // NO redirigir en rutas públicas o validaciones
+      if (error.status === 401 && !isPublicRequest) {
+        console.warn('🚨 Token inválido detectado en ruta protegida, redirigiendo a login');
         authService.logout();
         router.navigate(['/login']);
+      } else if (error.status === 401 && isPublicRequest) {
+        console.log('ℹ️ Error 401 en petición pública, NO redirigiendo');
       }
+      
       return throwError(() => error);
     })
   );

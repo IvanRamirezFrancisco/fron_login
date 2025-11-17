@@ -22,7 +22,7 @@
         <li><a href="#contacto" (click)="scrollToSection('contacto')" class="nav-link">Contacto</a></li>
         <li><a (click)="navigateToCatalog()" class="nav-link catalog-link">
           <span class="material-symbols-outlined">store</span>
-          Tienda
+          Ayuda
         </a></li>
       </ul>
     </nav>
@@ -74,15 +74,19 @@
           </div>
           
           <nav class="dropdown-nav">
-            <a routerLink="/profile" class="dropdown-link" (click)="cerrarMenuUsuario()">
+            <a routerLink="/dashboard" class="dropdown-link" (click)="cerrarMenuUsuario()">
+              <span class="material-symbols-outlined">dashboard</span>
+              Mi Dashboard
+            </a>
+            <a routerLink="/dashboard/seguridad" class="dropdown-link" (click)="cerrarMenuUsuario()">
               <span class="material-symbols-outlined">person</span>
               Mi Perfil
             </a>
-            <a routerLink="/orders" class="dropdown-link" (click)="cerrarMenuUsuario()">
+            <a routerLink="/dashboard/pedidos" class="dropdown-link" (click)="cerrarMenuUsuario()">
               <span class="material-symbols-outlined">receipt_long</span>
               Mis Pedidos
             </a>
-            <a routerLink="/wishlist" class="dropdown-link" (click)="cerrarMenuUsuario()">
+            <a routerLink="/dashboard/favoritos" class="dropdown-link" (click)="cerrarMenuUsuario()">
               <span class="material-symbols-outlined">favorite</span>
               Lista de Deseos
             </a>

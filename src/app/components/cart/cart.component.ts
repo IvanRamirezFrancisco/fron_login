@@ -157,7 +157,7 @@ export class CartComponent implements OnInit, OnDestroy {
 
   // Manejar error de imagen
   onImageError(event: any): void {
-    event.target.src = '/assets/images/placeholder-product.jpg';
+    event.target.src = '/assets/logoP.png';
   }
 
   // TrackBy para optimizar *ngFor

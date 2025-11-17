@@ -27,6 +27,9 @@ html, body {
 
 /* Variables CSS globales - Casa de Música Castillo */
 :root {
+
+
+  
   /* --- Paleta Principal Modificada --- */
   --color-primario: #3E2723;       /* Marrón Espresso (para Headers, Footers, Admin Sidebar) */
   --color-primario-light: #5D4037; /* Marrón más claro para hover */

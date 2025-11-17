@@ -1,0 +1,268 @@
+<app-header-loggedin></app-header-loggedin>
+
+<div class="user-dashboard">
+  <!-- Header del Dashboard -->
+  <div class="dashboard-header">
+    <div class="container">
+      <div class="welcome-section">
+        <div class="user-avatar">
+          <span class="material-symbols-outlined">account_circle</span>
+        </div>
+        <div class="welcome-content">
+          <h1 class="welcome-title">
+            ¡Bienvenido, {{ currentUser?.firstName || 'Usuario' }}!
+          </h1>
+          <p class="welcome-subtitle">
+            Gestiona tu perfil, pedidos y descubre nuevos instrumentos musicales
+          </p>
+        </div>
+      </div>
+      
+      <div class="quick-actions">
+        <button class="action-btn primary" (click)="continueShopping()">
+          <span class="material-symbols-outlined">store</span>
+          Seguir Comprando
+        </button>
+        <button class="action-btn secondary" (click)="navigateToCart()">
+          <span class="material-symbols-outlined">shopping_cart</span>
+          Mi Carrito ({{ dashboardStats.cartItems }})
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navegación del Dashboard -->
+  <div class="dashboard-nav">
+    <div class="container">
+      <nav class="nav-tabs">
+        <button 
+          class="nav-tab" 
+          [class.active]="activeSection === 'overview'"
+          (click)="setActiveSection('overview')"
+        >
+          <span class="material-symbols-outlined">dashboard</span>
+          Resumen
+        </button>
+        <button 
+          class="nav-tab" 
+          [class.active]="activeSection === 'orders'"
+          (click)="setActiveSection('orders')"
+        >
+          <span class="material-symbols-outlined">receipt_long</span>
+          Mis Pedidos
+        </button>
+        <button 
+          class="nav-tab" 
+          [class.active]="activeSection === 'favorites'"
+          (click)="setActiveSection('favorites')"
+        >
+          <span class="material-symbols-outlined">favorite</span>
+          Favoritos
+        </button>
+        <button 
+          class="nav-tab" 
+          [class.active]="activeSection === 'profile'"
+          (click)="setActiveSection('profile')"
+        >
+          <span class="material-symbols-outlined">person</span>
+          Mi Perfil
+        </button>
+        <button 
+          class="nav-tab" 
+          [class.active]="activeSection === 'security'"
+          (click)="setActiveSection('security')"
+        >
+          <span class="material-symbols-outlined">security</span>
+          Seguridad
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Contenido del Dashboard -->
+  <div class="dashboard-content">
+    <div class="container">
+      
+      <!-- Sección: Resumen -->
+      <div class="content-section" *ngIf="activeSection === 'overview'">
+        
+        <!-- Estadísticas Rápidas -->
+        <div class="stats-grid">
+          <div class="stat-card orders">
+            <div class="stat-icon">
+              <span class="material-symbols-outlined">shopping_bag</span>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ dashboardStats.totalOrders }}</div>
+              <div class="stat-label">Pedidos Realizados</div>
+            </div>
+            <button class="stat-action" (click)="navigateToOrders()">
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
+
+          <div class="stat-card spending">
+            <div class="stat-icon">
+              <span class="material-symbols-outlined">payments</span>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ formatPrice(dashboardStats.totalSpent) }}</div>
+              <div class="stat-label">Total Invertido en Música</div>
+            </div>
+          </div>
+
+          <div class="stat-card favorites">
+            <div class="stat-icon">
+              <span class="material-symbols-outlined">favorite</span>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ dashboardStats.favoriteProducts }}</div>
+              <div class="stat-label">Productos Favoritos</div>
+            </div>
+            <button class="stat-action" (click)="navigateToWishlist()">
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
+
+          <div class="stat-card cart">
+            <div class="stat-icon">
+              <span class="material-symbols-outlined">shopping_cart</span>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ dashboardStats.cartItems }}</div>
+              <div class="stat-label">Productos en Carrito</div>
+            </div>
+            <button class="stat-action" (click)="navigateToCart()">
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pedidos Recientes y Productos Favoritos -->
+        <div class="dashboard-grid">
+          
+          <!-- Pedidos Recientes -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h3>
+                <span class="material-symbols-outlined">receipt_long</span>
+                Pedidos Recientes
+              </h3>
+              <button class="btn-link" (click)="viewAllOrders()">Ver todos</button>
+            </div>
+            <div class="card-content">
+              <div class="orders-list" *ngIf="recentOrders.length > 0; else noOrders">
+                <div class="order-item" *ngFor="let order of recentOrders">
+                  <div class="order-info">
+                    <div class="order-id">{{ order.id }}</div>
+                    <div class="order-date">{{ order.date | date:'dd/MM/yyyy' }}</div>
+                  </div>
+                  <div class="order-details">
+                    <div class="order-total">{{ formatPrice(order.total) }}</div>
+                    <div class="order-items">{{ order.items }} productos</div>
+                  </div>
+                  <div class="order-status">
+                    <span class="status-badge" [class]="getStatusColor(order.status)">
+                      {{ getStatusText(order.status) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noOrders>
+                <div class="empty-state">
+                  <span class="material-symbols-outlined">shopping_bag</span>
+                  <p>Aún no has realizado ningún pedido</p>
+                  <button class="btn-primary" (click)="continueShopping()">Explorar Productos</button>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Productos Favoritos -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h3>
+                <span class="material-symbols-outlined">favorite</span>
+                Tus Favoritos
+              </h3>
+              <button class="btn-link" (click)="viewAllFavorites()">Ver todos</button>
+            </div>
+            <div class="card-content">
+              <div class="favorites-grid" *ngIf="favoriteProducts.length > 0; else noFavorites">
+                <div class="favorite-item" *ngFor="let product of favoriteProducts" (click)="navigateToProduct(product.id)">
+                  <div class="product-image">
+                    <img [src]="product.image" [alt]="product.name" />
+                  </div>
+                  <div class="product-info">
+                    <h4 class="product-name">{{ product.name }}</h4>
+                    <p class="product-category">{{ product.category }}</p>
+                    <div class="product-price">{{ formatPrice(product.price) }}</div>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noFavorites>
+                <div class="empty-state">
+                  <span class="material-symbols-outlined">favorite_border</span>
+                  <p>No tienes productos favoritos aún</p>
+                  <button class="btn-primary" (click)="continueShopping()">Descubrir Instrumentos</button>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Otras secciones del dashboard -->
+      <div class="content-section" *ngIf="activeSection === 'orders'">
+        <div class="section-header">
+          <h2>Historial de Pedidos</h2>
+          <p>Revisa todos tus pedidos y su estado actual</p>
+        </div>
+        <!-- Contenido de pedidos detallado -->
+        <div class="coming-soon">
+          <span class="material-symbols-outlined">construction</span>
+          <h3>Próximamente</h3>
+          <p>Esta sección estará disponible pronto con tu historial completo de pedidos.</p>
+        </div>
+      </div>
+
+      <div class="content-section" *ngIf="activeSection === 'favorites'">
+        <div class="section-header">
+          <h2>Lista de Deseos</h2>
+          <p>Todos tus instrumentos y equipos musicales favoritos</p>
+        </div>
+        <!-- Contenido de favoritos detallado -->
+        <div class="coming-soon">
+          <span class="material-symbols-outlined">construction</span>
+          <h3>Próximamente</h3>
+          <p>Aquí podrás gestionar tu lista completa de deseos musicales.</p>
+        </div>
+      </div>
+
+      <div class="content-section" *ngIf="activeSection === 'profile'">
+        <div class="section-header">
+          <h2>Mi Perfil</h2>
+          <p>Administra tu información personal y preferencias</p>
+        </div>
+        <!-- Contenido de perfil -->
+        <div class="coming-soon">
+          <span class="material-symbols-outlined">construction</span>
+          <h3>Próximamente</h3>
+          <p>Pronto podrás editar tu perfil, direcciones de envío y preferencias musicales.</p>
+        </div>
+      </div>
+
+      <div class="content-section" *ngIf="activeSection === 'security'">
+        <div class="section-header">
+          <h2>Configuración de Seguridad</h2>
+          <p>Gestiona la autenticación de dos factores y la seguridad de tu cuenta</p>
+        </div>
+        <!-- Integración con el dashboard existente -->
+        <div class="security-content">
+          <app-dashboard></app-dashboard>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

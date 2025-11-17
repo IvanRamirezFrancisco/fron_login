@@ -1,0 +1,190 @@
+<!-- Header de Navegación para Usuario Logueado -->
+<header class="navigation-header" [class.scrolled]="isScrolled">
+  <nav class="navbar">
+    
+    <!-- Logo y Marca -->
+    <div class="navbar-brand" (click)="navigateToHome()">
+      <div class="logo-container">
+        <i class="fas fa-music logo-icon"></i>
+        <div class="brand-text">
+          <h1 class="brand-title">Casa de Música</h1>
+          <span class="brand-subtitle">Castillo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navegación Principal - Desktop -->
+    <div class="navbar-nav desktop-nav">
+      <a class="nav-link" (click)="navigateToHome()">
+        <i class="fas fa-home nav-icon"></i>
+        <span>Inicio</span>
+      </a>
+      <a class="nav-link" (click)="navigateToProducts()">
+        <i class="fas fa-guitar nav-icon"></i>
+        <span>Productos</span>
+      </a>
+      <a class="nav-link" (click)="navigateToAccount()">
+        <i class="fas fa-user-music nav-icon"></i>
+        <span>Mi Cuenta</span>
+      </a>
+      <a class="nav-link" (click)="navigateToDashboard()">
+        <i class="fas fa-tachometer-alt nav-icon"></i>
+        <span>Dashboard</span>
+      </a>
+    </div>
+
+    <!-- Acciones del Usuario - Desktop -->
+    <div class="navbar-actions desktop-actions">
+      
+      <!-- Carrito de Compras -->
+      <div class="action-item cart-button" (click)="navigateToCart()">
+        <div class="action-icon-container">
+          <i class="fas fa-shopping-cart action-icon"></i>
+          <span class="cart-badge">3</span>
+        </div>
+        <span class="action-label">Carrito</span>
+      </div>
+
+      <!-- Menú de Perfil -->
+      <div class="profile-menu" [class.active]="isProfileMenuOpen">
+        <div class="profile-trigger" (click)="toggleProfileMenu()">
+          <div class="profile-avatar">
+            <span class="profile-initials">{{ getInitials(currentUser!) }}</span>
+          </div>
+          <div class="profile-info">
+            <span class="profile-greeting">{{ getGreeting() }}</span>
+            <span class="profile-name">{{ getUserDisplayName(currentUser!) }}</span>
+          </div>
+          <i class="fas fa-chevron-down profile-arrow" [class.rotated]="isProfileMenuOpen"></i>
+        </div>
+
+        <!-- Dropdown del Perfil -->
+        <div class="profile-dropdown" *ngIf="isProfileMenuOpen">
+          <div class="profile-header">
+            <div class="profile-avatar-large">
+              <span>{{ getInitials(currentUser!) }}</span>
+            </div>
+            <div class="profile-details">
+              <h4>{{ getUserDisplayName(currentUser!) }}</h4>
+              <p>{{ currentUser?.email }}</p>
+            </div>
+          </div>
+
+          <div class="profile-menu-items">
+            <a class="profile-menu-item" (click)="navigateToAccount()">
+              <i class="fas fa-user"></i>
+              <span>Mi Perfil</span>
+            </a>
+            <a class="profile-menu-item" (click)="navigateTo('/mi-cuenta/pedidos')">
+              <i class="fas fa-shopping-bag"></i>
+              <span>Mis Pedidos</span>
+            </a>
+            <a class="profile-menu-item" (click)="navigateTo('/mi-cuenta/favoritos')">
+              <i class="fas fa-heart"></i>
+              <span>Lista de Deseos</span>
+            </a>
+            <a class="profile-menu-item" (click)="navigateToDashboard()">
+              <i class="fas fa-cog"></i>
+              <span>Configuración</span>
+            </a>
+            <div class="profile-menu-divider"></div>
+            <a class="profile-menu-item logout-item" (click)="logout()">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Cerrar Sesión</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón Menú Móvil -->
+    <div class="mobile-menu-button" (click)="toggleMobileMenu()">
+      <div class="hamburger" [class.active]="isMenuOpen">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+
+  </nav>
+
+  <!-- Menú Móvil -->
+  <div class="mobile-menu" [class.active]="isMenuOpen">
+    
+    <!-- Header del Menú Móvil -->
+    <div class="mobile-menu-header">
+      <div class="mobile-profile">
+        <div class="mobile-avatar">
+          <span>{{ getInitials(currentUser!) }}</span>
+        </div>
+        <div class="mobile-profile-info">
+          <h4>{{ getUserDisplayName(currentUser!) }}</h4>
+          <p>{{ currentUser?.email }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Items del Menú Móvil -->
+    <div class="mobile-menu-items">
+      <a class="mobile-menu-item" (click)="navigateToHome()">
+        <i class="fas fa-home"></i>
+        <span>Inicio</span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      <a class="mobile-menu-item" (click)="navigateToProducts()">
+        <i class="fas fa-guitar"></i>
+        <span>Productos</span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      <a class="mobile-menu-item" (click)="navigateToCart()">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Mi Carrito</span>
+        <span class="mobile-cart-badge">3</span>
+      </a>
+      <a class="mobile-menu-item" (click)="navigateToAccount()">
+        <i class="fas fa-user-music"></i>
+        <span>Mi Cuenta</span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      <a class="mobile-menu-item" (click)="navigateToDashboard()">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      
+      <div class="mobile-menu-divider"></div>
+      
+      <a class="mobile-menu-item" (click)="navigateTo('/mi-cuenta/pedidos')">
+        <i class="fas fa-shopping-bag"></i>
+        <span>Mis Pedidos</span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      <a class="mobile-menu-item" (click)="navigateTo('/mi-cuenta/favoritos')">
+        <i class="fas fa-heart"></i>
+        <span>Lista de Deseos</span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      <a class="mobile-menu-item" (click)="navigateTo('/ofertas')">
+        <i class="fas fa-tags"></i>
+        <span>Ofertas Especiales</span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      
+      <div class="mobile-menu-divider"></div>
+      
+      <a class="mobile-menu-item logout-item" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Cerrar Sesión</span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Overlay para cerrar menús -->
+  <div class="mobile-overlay" 
+       [class.active]="isMenuOpen || isProfileMenuOpen" 
+       (click)="closeMenus()">
+  </div>
+       
+</header>

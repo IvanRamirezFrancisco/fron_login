@@ -1,0 +1,161 @@
+/* =================================================================
+   DASHBOARD LAYOUT - CASA DE MÚSICA CASTILLO
+   Layout con header principal y contenido simplificado
+   ================================================================= */
+
+:root {
+  --primary-marron: #3E2723;
+  --secondary-naranja: #C75D2C;
+  --highlight-mamey: #FFCF71;
+  --neutral-dark: #2C2825;
+  --neutral-medium: #F5F3F0;
+  --neutral-light: #FAFAF9;
+  --text-primary: #2C2825;
+  --text-secondary: #6B5B4F;
+  --white: #FFFFFF;
+  --success-green: #2E7D32;
+  --error-red: #D32F2F;
+  --shadow-soft: 0 2px 12px rgba(62, 39, 35, 0.08);
+  --shadow-medium: 0 4px 24px rgba(62, 39, 35, 0.12);
+  --shadow-strong: 0 8px 32px rgba(62, 39, 35, 0.16);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --border-radius: 12px;
+  --font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Tahoma', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.dashboard-container {
+  min-height: calc(100vh - 80px);
+  background: linear-gradient(135deg, var(--neutral-light) 0%, var(--neutral-medium) 100%);
+  font-family: var(--font-body);
+  padding: 3rem 0;
+}
+
+/* ===== HEADER DE PÁGINA ===== */
+.page-header {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem 3rem;
+  text-align: center;
+}
+
+.page-title-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.title-icon {
+  font-size: 3rem;
+  color: var(--secondary-naranja);
+  margin-bottom: 0.5rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.page-title {
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-marron);
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.page-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin: 0.5rem 0 2rem;
+  line-height: 1.5;
+}
+
+/* ===== BOTÓN CERRAR SESIÓN ===== */
+.logout-button {
+  background: linear-gradient(135deg, var(--error-red) 0%, #B71C1C 100%);
+  color: var(--white);
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: var(--border-radius);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.logout-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-strong);
+  background: linear-gradient(135deg, #B71C1C 0%, var(--error-red) 100%);
+}
+
+.logout-button:active {
+  transform: translateY(0);
+}
+
+.logout-button .material-symbols-outlined {
+  font-size: 1.2rem;
+}
+
+/* ===== CONTENIDO PRINCIPAL ===== */
+.dashboard-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 2rem 0;
+  }
+  
+  .page-header {
+    padding: 0 1rem 2rem;
+  }
+  
+  .page-title {
+    font-size: 2rem;
+  }
+  
+  .page-subtitle {
+    font-size: 1rem;
+  }
+  
+  .logout-button {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .dashboard-content {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.75rem;
+  }
+  
+  .title-icon {
+    font-size: 2.5rem;
+  }
+  
+  .logout-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+}

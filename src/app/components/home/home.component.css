@@ -1,28 +1,14 @@
-/* Hero Section */
+/* Hero Section Casa de Música Castillo */
 .hero-section {
-  background: linear-gradient(135deg, rgba(62, 39, 35, 0.85) 0%, rgba(74, 44, 42, 0.85) 100%),
-              url('/assets/images/hero-music-store.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  color: var(--color-blanco);
-  padding: 170px 0 100px; /* Ajuste para el header fijo */
+  background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-dark) 100%);
+  color: white;
+  padding: 120px 0 60px; /* Ajuste para el header fijo */
   min-height: 100vh;
   display: flex;
   align-items: center;
   position: relative;
   overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.5) 100%);
-    z-index: 1;
-  }
+  font-family: var(--font-cuerpo);
 }
 
 .hero-content {
@@ -777,6 +763,7 @@ blockquote {
   }
 }
 
+/* Casa de Música Animations */
 @keyframes float {
   0%, 100% {
     transform: translateY(0px);
@@ -784,6 +771,33 @@ blockquote {
   50% {
     transform: translateY(-15px);
   }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
+
+/* Casa de Música specific styles */
+.transicion {
+  transition: all 0.3s ease;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.contenedor {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 
 @keyframes skeleton-loading {

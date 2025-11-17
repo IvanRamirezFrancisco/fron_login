@@ -1,37 +1,45 @@
-<!-- Contenedor principal con diseño moderno -->
-<div class="d-flex justify-content-center align-items-center" style="min-height: 100vh; background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);">
+<!-- Header de navegación -->
+<app-home-header></app-home-header>
+
+<!-- Contenedor principal Casa de Música -->
+<div class="d-flex justify-content-center align-items-center" style="min-height: 100vh; background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-dark) 100%); padding: 2rem 1rem; padding-top: calc(2rem + 80px);">
   <div class="container-sm-modern">
     
-    <!-- Card principal de login -->
-    <div class="card-modern card-elevated-modern fade-in">
+    <!-- Card principal de login Casa de Música -->
+    <div class="card-modern card-elevated-modern fade-in" style="max-width: 420px; margin: 0 auto; border-radius: var(--border-radius-2xl); overflow: hidden; box-shadow: var(--shadow-xl);">
       
-      <!-- Header del card -->
-      <div class="card-header-modern text-center" style="background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%); color: white; border: none;">
-        <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-          <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-            <span class="material-symbols-outlined" style="color: white; font-size: 1.2rem;">lock</span>
+      <!-- Header del card Casa de Música -->
+      <div class="card-header-modern text-center" style="background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-dark) 100%); color: white; border: none; padding: 2.5rem 2rem;">
+        <!-- Logo Casa de Música -->
+        <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
+          <div style="width: 50px; height: 50px; background: var(--color-resalte); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg);">
+            <span class="material-symbols-outlined" style="color: var(--color-primario); font-size: 1.5rem;">music_note</span>
           </div>
-          <h2 class="h3 mb-0" style="color: white; font-weight: 600;">Iniciar Sesión</h2>
+          <div class="text-start">
+            <h1 style="color: white; font-weight: 700; font-family: var(--font-titulos); margin: 0; font-size: 1.4rem; line-height: 1.2;">Casa de Música</h1>
+            <p style="color: var(--color-resalte); margin: 0; font-size: 0.8rem; font-family: var(--font-titulos); font-weight: 600;">CASTILLO</p>
+          </div>
         </div>
-        <p class="mb-0" style="color: rgba(255,255,255,0.9); font-size: 0.9rem;">Accede a tu cuenta de forma segura</p>
+        <h2 style="color: white; font-weight: 600; font-family: var(--font-titulos); margin-bottom: 0.5rem; font-size: 1.5rem;">Iniciar Sesión</h2>
+        <p class="mb-0" style="color: rgba(255,255,255,0.9); font-size: 0.9rem; font-family: var(--font-cuerpo);">Accede a tu cuenta de forma segura</p>
       </div>
 
-      <!-- Body del card -->
-      <div class="card-body-modern">
+      <!-- Body del card Casa de Música -->
+      <div class="card-body-modern" style="padding: 2rem;">
         
         <!-- Mensaje de error global -->
-        <div *ngIf="errorMessage" class="alert-modern alert-danger-modern mb-4">
-          <span class="material-symbols-outlined" style="color: var(--danger-600);">warning</span>
-          <span>{{ errorMessage }}</span>
+        <div *ngIf="errorMessage" class="alert-modern alert-danger-modern mb-4" style="background: var(--color-error); color: white; border-radius: var(--border-radius-lg); padding: 1rem; border: none;">
+          <span class="material-symbols-outlined" style="color: white; margin-right: 0.5rem;">warning</span>
+          <span style="font-family: var(--font-cuerpo);">{{ errorMessage }}</span>
         </div>
 
-        <!-- Formulario -->
+        <!-- Formulario Casa de Música -->
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="d-flex flex-column gap-4">
           
           <!-- Campo Email -->
           <div class="form-group">
-            <label for="email" class="form-label">
-              <span class="material-symbols-outlined" style="margin-right: 0.5rem; color: var(--gray-600); font-size: 16px;">email</span>
+            <label for="email" class="form-label" style="color: var(--color-primario); font-family: var(--font-titulos); font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center;">
+              <span class="material-symbols-outlined" style="margin-right: 0.5rem; color: var(--color-primario); font-size: 1.2rem;">email</span>
               Correo Electrónico
             </label>
             <input 
@@ -43,25 +51,26 @@
               [class.is-valid]="email?.valid && email?.touched"
               placeholder="tu-email@ejemplo.com"
               autocomplete="email"
+              style="border: 2px solid var(--gray-300); border-radius: var(--border-radius-lg); padding: 0.875rem 1rem; font-family: var(--font-cuerpo); transition: var(--transition);"
             >
-            <div *ngIf="email?.invalid && email?.touched" class="invalid-feedback">
-              <span class="material-symbols-outlined">cancel</span>
+            <div *ngIf="email?.invalid && email?.touched" class="invalid-feedback" style="color: var(--color-error); font-family: var(--font-cuerpo); margin-top: 0.5rem;">
+              <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 0.25rem;">cancel</span>
               <span *ngIf="email?.errors?.['required']">El email es requerido</span>
               <span *ngIf="email?.errors?.['email']">Formato de email inválido</span>
             </div>
-            <div *ngIf="email?.valid && email?.touched" class="valid-feedback">
-              <span class="material-symbols-outlined">check_circle</span>
+            <div *ngIf="email?.valid && email?.touched" class="valid-feedback" style="color: var(--color-exito); font-family: var(--font-cuerpo); margin-top: 0.5rem;">
+              <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 0.25rem;">check_circle</span>
               <span>Email válido</span>
             </div>
           </div>
 
           <!-- Campo Contraseña -->
           <div class="form-group">
-            <label for="password" class="form-label">
-              <span class="material-symbols-outlined" style="margin-right: 0.5rem; color: var(--gray-600); font-size: 16px;">lock</span>
+            <label for="password" class="form-label" style="color: var(--color-primario); font-family: var(--font-titulos); font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center;">
+              <span class="material-symbols-outlined" style="margin-right: 0.5rem; color: var(--color-primario); font-size: 1.2rem;">lock</span>
               Contraseña
             </label>
-            <div class="input-group">
+            <div class="input-group" style="position: relative;">
               <input 
                 [type]="showPassword ? 'text' : 'password'"
                 id="password" 
@@ -71,37 +80,39 @@
                 [class.is-valid]="password?.valid && password?.touched"
                 placeholder="Ingresa tu contraseña"
                 autocomplete="current-password"
+                style="border: 2px solid var(--gray-300); border-radius: var(--border-radius-lg); padding: 0.875rem 3rem 0.875rem 1rem; font-family: var(--font-cuerpo); transition: var(--transition);"
               >
               <button 
                 type="button" 
                 class="btn-icon"
                 (click)="togglePasswordVisibility()"
-                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--gray-500); cursor: pointer; z-index: 10;"
+                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--color-primario); cursor: pointer; z-index: 10; transition: var(--transition);"
               >
-                <span *ngIf="!showPassword" class="material-symbols-outlined">visibility</span>
-                <span *ngIf="showPassword" class="material-symbols-outlined">visibility_off</span>
+                <span *ngIf="!showPassword" class="material-symbols-outlined" style="font-size: 1.2rem;">visibility</span>
+                <span *ngIf="showPassword" class="material-symbols-outlined" style="font-size: 1.2rem;">visibility_off</span>
               </button>
             </div>
-            <div *ngIf="password?.invalid && password?.touched" class="invalid-feedback">
-              <span class="material-symbols-outlined">cancel</span>
+            <div *ngIf="password?.invalid && password?.touched" class="invalid-feedback" style="color: var(--color-error); font-family: var(--font-cuerpo); margin-top: 0.5rem;">
+              <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 0.25rem;">cancel</span>
               <span *ngIf="password?.errors?.['required']">La contraseña es requerida</span>
               <span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres</span>
             </div>
-            <div *ngIf="password?.valid && password?.touched" class="valid-feedback">
-              <span class="material-symbols-outlined">check_circle</span>
+            <div *ngIf="password?.valid && password?.touched" class="valid-feedback" style="color: var(--color-exito); font-family: var(--font-cuerpo); margin-top: 0.5rem;">
+              <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 0.25rem;">check_circle</span>
               <span>Contraseña válida</span>
             </div>
           </div>
 
-          <!-- Botón de submit -->
+          <!-- Botón de submit Casa de Música -->
           <button 
             type="submit" 
             [disabled]="loginForm.invalid || isLoading"
-            class="btn btn-primary btn-lg w-100"
+            class="boton-primario w-100 border-0"
             [class.loading]="isLoading"
+            style="padding: 1rem; font-size: 1rem; margin-top: 1rem; transition: var(--transition);"
           >
             <span *ngIf="!isLoading" class="d-flex align-items-center justify-content-center gap-2">
-              <span class="material-symbols-outlined">login</span>
+              <span class="material-symbols-outlined" style="font-size: 1.2rem;">login</span>
               <span>Iniciar Sesión</span>
             </span>
           </button>
@@ -109,34 +120,32 @@
         </form>
       </div>
 
-      <!-- Footer del card -->
-      <div class="card-footer-modern">
+      <!-- Footer del card Casa de Música -->
+      <div class="card-footer-modern" style="background: var(--color-fondo); padding: 1.5rem 2rem; border-top: 2px solid var(--color-resalte);">
         <div class="d-flex flex-column gap-3 text-center">
           
           <!-- Enlace olvidar contraseña -->
           <div>
             <a 
               routerLink="/forgot-password" 
-              class="text-decoration-none"
-              style="color: var(--primary-600); font-weight: 500; font-size: 0.9rem;"
+              class="text-decoration-none transicion"
+              style="color: var(--color-primario); font-weight: 600; font-size: 0.9rem; font-family: var(--font-titulos); display: inline-flex; align-items: center; gap: 0.5rem;"
             >
-              <span class="material-symbols-outlined" style="margin-right: 0.5rem; font-size: 16px;">key</span>
+              <span class="material-symbols-outlined" style="font-size: 1rem;">key</span>
               ¿Olvidaste tu contraseña?
             </a>
           </div>
-          
-          <!-- Divisor -->
-          <div style="height: 1px; background: var(--gray-200); margin: 0.5rem 0;"></div>
-          
+
+
           <!-- Enlace registro -->
           <div>
-            <span style="color: var(--gray-600); font-size: 0.9rem;">¿No tienes cuenta?</span>
+            <span style="color: var(--color-texto-principal); font-size: 0.9rem; font-family: var(--font-cuerpo);">¿No tienes cuenta?</span>
             <a 
               routerLink="/register" 
-              class="text-decoration-none"
-              style="color: var(--primary-600); font-weight: 600; margin-left: 0.5rem;"
+              class="text-decoration-none transicion"
+              style="color: var(--color-accion); font-weight: 700; margin-left: 0.5rem; font-family: var(--font-titulos); display: inline-flex; align-items: center; gap: 0.5rem;"
             >
-              <span class="material-symbols-outlined" style="margin-right: 0.5rem; font-size: 16px;">person_add</span>
+              <span class="material-symbols-outlined" style="font-size: 1rem;">person_add</span>
               Crear cuenta
             </a>
           </div>
@@ -163,15 +172,15 @@
       <!-- Selección de método 2FA -->
       <div *ngIf="!selectedMethod">
         
-        <!-- Header -->
-        <div class="card-header-modern text-center" style="background: linear-gradient(135deg, var(--info-500) 0%, var(--info-600) 100%); color: white; border: none;">
-          <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-            <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-              <span class="material-symbols-outlined" style="color: white; font-size: 1.2rem;">security</span>
+        <!-- Header Casa de Música -->
+        <div class="card-header-modern text-center" style="background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-dark) 100%); color: white; border: none; padding: 2rem;">
+          <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
+            <div style="width: 50px; height: 50px; background: var(--color-resalte); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);">
+              <span class="material-symbols-outlined" style="color: var(--color-primario); font-size: 1.5rem;">security</span>
             </div>
-            <h3 class="mb-0" style="color: white; font-weight: 600;">Verificación en dos pasos</h3>
+            <h3 class="mb-0" style="color: white; font-weight: 700; font-family: var(--font-titulos); font-size: 1.3rem;">Verificación en dos pasos</h3>
           </div>
-          <p class="mb-0" style="color: rgba(255,255,255,0.9); font-size: 0.9rem;">Elige cómo verificar tu identidad</p>
+          <p class="mb-0" style="color: rgba(255,255,255,0.9); font-size: 0.9rem; font-family: var(--font-cuerpo);">Elige cómo verificar tu identidad</p>
         </div>
 
         <!-- Body -->
@@ -282,36 +291,105 @@
           <!-- Formulario de código -->
           <form (ngSubmit)="verifyTwoFactor()" *ngIf="codeSent" class="d-flex flex-column gap-4">
             
-            <!-- Input de código -->
-            <div class="form-group text-center">
+            <!-- Input de código normal (6 dígitos) -->
+            <div *ngIf="!useBackupCode" class="form-group text-center">
               <label class="form-label">Código de verificación</label>
               <input 
                 type="text" 
                 maxlength="6" 
-                [(ngModel)]="twoFactorCode" 
+                [value]="twoFactorCode"
+                (input)="onCodeInput($event)"
                 name="twoFactorCode" 
                 required 
                 placeholder="000000"
                 class="form-control text-center"
                 pattern="[0-9]{6}"
-                style="font-size: 1.5rem; font-weight: 600; letter-spacing: 0.5rem; font-family: monospace;"
+                inputmode="numeric"
+                style="font-size: 1.5rem; font-weight: 600; letter-spacing: 0.5rem; font-family: var(--font-cuerpo);"
                 autocomplete="one-time-code"
+                #codeInput
               />
               <div class="mt-2" style="font-size: 0.75rem; color: var(--gray-500);">
                 Ingresa los 6 dígitos del código
               </div>
             </div>
+
+            <!-- Input de código de respaldo -->
+            <div *ngIf="useBackupCode" class="form-group text-center">
+              <label class="form-label" style="color: var(--color-primario); font-family: var(--font-titulos); font-weight: 600;">
+                <span class="material-symbols-outlined" style="margin-right: 0.5rem; color: var(--color-accion);">backup</span>
+                Código de Respaldo
+              </label>
+              <input 
+                type="text" 
+                [(ngModel)]="backupCode"
+                name="backupCode" 
+                required 
+                placeholder="12345678"
+                class="form-control text-center"
+                pattern="^[0-9]{4}-?[0-9]{4}$"
+                inputmode="numeric"
+                style="font-size: 1.2rem; font-weight: 600; letter-spacing: 0.2rem; font-family: var(--font-cuerpo); border: 2px solid var(--color-accion); border-radius: var(--border-radius-lg);"
+                autocomplete="off"
+              />
+              <div class="mt-2" style="font-size: 0.75rem; color: var(--color-accion);">
+                <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 0.25rem;">info</span>
+                Ingresa uno de tus códigos de respaldo de 8 dígitos
+              </div>
+            </div>
             
-            <!-- Botón verificar -->
+            <!-- Enlace para usar código de respaldo -->
+            <div *ngIf="!useBackupCode" class="text-center mb-3">
+              <a 
+                (click)="toggleBackupCodeMode()" 
+                class="text-decoration-none" 
+                style="color: var(--color-accion); font-weight: 600; font-size: 0.9rem; font-family: var(--font-titulos); cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;"
+              >
+                <span class="material-symbols-outlined" style="font-size: 1rem;">phone_disabled</span>
+                ¿Perdiste tu teléfono? Usar un código de respaldo
+              </a>
+            </div>
+
+            <!-- Enlace para volver a código normal -->
+            <div *ngIf="useBackupCode" class="text-center mb-3">
+              <a 
+                (click)="toggleBackupCodeMode()" 
+                class="text-decoration-none" 
+                style="color: var(--color-primario); font-weight: 600; font-size: 0.9rem; font-family: var(--font-titulos); cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;"
+              >
+                <span class="material-symbols-outlined" style="font-size: 1rem;">smartphone</span>
+                Volver a código de 6 dígitos
+              </a>
+            </div>
+
+            <!-- Botón verificar - código normal -->
             <button 
+              *ngIf="!useBackupCode"
               type="submit" 
               [disabled]="isLoading || !twoFactorCode || twoFactorCode.length !== 6"
-              class="btn btn-success btn-lg"
+              class="boton-primario w-100 border-0"
               [class.loading]="isLoading"
+              style="padding: 1rem; font-size: 1rem;"
             >
               <span *ngIf="!isLoading" class="d-flex align-items-center justify-content-center gap-2">
-                <i class="fas fa-check"></i>
-                <span>Verificar código</span>
+                <span class="material-symbols-outlined">check_circle</span>
+                <span>Verificar Código</span>
+              </span>
+            </button>
+
+            <!-- Botón verificar - código de respaldo -->
+            <button 
+              *ngIf="useBackupCode"
+              type="button"
+              (click)="verifyBackupCode()"
+              [disabled]="isLoading || !backupCode || backupCode.length < 8"
+              class="boton-accion w-100 border-0"
+              [class.loading]="isLoading"
+              style="padding: 1rem; font-size: 1rem;"
+            >
+              <span *ngIf="!isLoading" class="d-flex align-items-center justify-content-center gap-2">
+                <span class="material-symbols-outlined">backup</span>
+                <span>Verificar Código de Respaldo</span>
               </span>
             </button>
 

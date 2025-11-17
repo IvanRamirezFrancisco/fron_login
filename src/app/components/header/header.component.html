@@ -145,12 +145,11 @@
             <!-- Usuario no logueado -->
             <ng-template #loginPrompt>
               <div class="login-prompt">
-                <a routerLink="/login" class="btn-login">
-                  <span class="material-symbols-outlined">person</span>
-                  <div class="login-text">
-                    <span class="login-primary">Iniciar Sesión</span>
-                    <span class="login-secondary">o Crear Cuenta</span>
-                  </div>
+                <a routerLink="/login" class="btn-login-ghost">
+                  Iniciar Sesión
+                </a>
+                <a routerLink="/register" class="btn-register-primary">
+                  Registrarse
                 </a>
               </div>
             </ng-template>
@@ -223,7 +222,7 @@
                 </ul>
               </div>
               <div class="menu-promo">
-                <img src="/assets/images/menu-promo.jpg" alt="Ofertas especiales" />
+                <img src="/assets/logoP.png" alt="Ofertas especiales" />
                 <div class="promo-content">
                   <h5>Ofertas Especiales</h5>
                   <p>Hasta 30% de descuento</p>
