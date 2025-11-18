@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { AuthService } from '../../services/auth.service';
+import { PasswordResetService } from '../../services/password-reset.service';
 import { User } from '../../models/user.model';
 import { environment } from '../../../environments/environment';
 import { Subscription } from 'rxjs';
@@ -81,6 +82,7 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
+    private passwordResetService: PasswordResetService,
     private http: HttpClient
   ) {}
 
@@ -187,31 +189,27 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.clearMessages();
 
-    const headers = this.getAuthHeaders();
-    const passwordData = {
-      currentPassword: this.passwordForm.currentPassword,
-      newPassword: this.passwordForm.newPassword
-    };
-
-    // Llamar al endpoint de cambio de contraseña
-    this.http.post<ApiResponse>(`${environment.apiUrl}/users/change-password`, passwordData, { headers })
-      .subscribe({
-        next: (response: ApiResponse) => {
-          this.loading = false;
-          if (response.success) {
-            this.successMessage = 'Contraseña actualizada correctamente';
-            this.showPasswordForm = false;
-            this.resetPasswordForm();
-            this.lastPasswordChange = new Date();
-          } else {
-            this.errorMessage = response.message || 'Error al cambiar contraseña';
-          }
-        },
-        error: (error: any) => {
-          this.loading = false;
-          this.errorMessage = error.error?.message || 'Error al cambiar contraseña';
+    // Usar el servicio de password reset para cambiar la contraseña
+    this.passwordResetService.changePassword(
+      this.passwordForm.currentPassword,
+      this.passwordForm.newPassword
+    ).subscribe({
+      next: (response: ApiResponse) => {
+        this.loading = false;
+        if (response.success) {
+          this.successMessage = 'Contraseña actualizada correctamente';
+          this.showPasswordForm = false;
+          this.resetPasswordForm();
+          this.lastPasswordChange = new Date();
+        } else {
+          this.errorMessage = response.message || 'Error al cambiar contraseña';
         }
-      });
+      },
+      error: (error: any) => {
+        this.loading = false;
+        this.errorMessage = error.error?.message || 'Error al cambiar contraseña';
+      }
+    });
   }
 
   private validatePasswordForm(): boolean {

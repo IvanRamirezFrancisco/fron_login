@@ -25,11 +25,9 @@ export class PasswordResetService {
    * Resetear contraseña con token
    */
   resetPassword(token: string, newPassword: string): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/reset-password`, null, {
-      params: { 
-        token,
-        password: newPassword
-      }
+    return this.http.post<ApiResponse>(`${this.apiUrl}/reset-password`, {
+      token: token,
+      newPassword: newPassword
     });
   }
 
@@ -39,6 +37,16 @@ export class PasswordResetService {
   validateResetToken(token: string): Observable<ApiResponse> {
     return this.http.get<ApiResponse>(`${this.apiUrl}/validate-reset-token`, {
       params: { token }
+    });
+  }
+
+  /**
+   * Cambiar contraseña para usuarios autenticados
+   */
+  changePassword(currentPassword: string, newPassword: string): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(`${environment.apiUrl}/users/change-password`, {
+      currentPassword: currentPassword,
+      newPassword: newPassword
     });
   }
 }
