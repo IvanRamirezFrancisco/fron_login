@@ -77,11 +77,5 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./google-auth-setup/google-auth-setup.component').then(m => m.GoogleAuthSetupComponent)
   },
-  {
-    path: 'sms-setup',
-    loadComponent: () =>
-      import('./components/sms-setup/sms-setup.component').then(m => m.SmsSetupComponent),
-    canActivate: [AuthGuard]
-  },
   { path: '**', redirectTo: '' }
 ];

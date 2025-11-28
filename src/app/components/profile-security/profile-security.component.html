@@ -232,7 +232,7 @@
       </div>
     </section>
 
-    <!-- Two Factor Authentication Card -->
+    <!-- Two Factor Authentication Card - Métodos Separados -->
     <section class="card twofa-card">
       <div class="card-header">
         <span class="material-symbols-outlined">shield</span>
@@ -240,6 +240,7 @@
       </div>
       
       <div class="card-content">
+        <!-- Estado General 2FA -->
         <div class="twofa-status">
           <div class="status-indicator" [class.active]="isTwoFactorEnabled">
             <span class="material-symbols-outlined">
@@ -250,33 +251,110 @@
               <p>
                 {{ isTwoFactorEnabled 
                   ? 'Tu cuenta está protegida con 2FA' 
-                  : 'Activa 2FA para mayor seguridad' }}
+                  : 'Activa al menos un método de 2FA para mayor seguridad' }}
               </p>
             </div>
           </div>
         </div>
 
-        <div class="twofa-actions">
-          <button 
-            class="btn btn-primary" 
-            *ngIf="!isTwoFactorEnabled"
-            (click)="toggle2FASetup()"
-            [disabled]="loading">
-            <span class="material-symbols-outlined">add_circle</span>
-            Configurar 2FA
-          </button>
-          
-          <button 
-            class="btn btn-danger" 
-            *ngIf="isTwoFactorEnabled"
-            (click)="disable2FA()"
-            [disabled]="loading">
-            <span class="material-symbols-outlined">cancel</span>
-            Desactivar 2FA
-          </button>
+        <!-- Separador -->
+        <hr class="methods-divider" style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--gray-200);">
+
+        <!-- ===== MÉTODO 1: GOOGLE AUTHENTICATOR ===== -->
+        <div class="twofa-method" style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid var(--gray-200); border-radius: var(--border-radius-lg);">
+          <div class="method-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div class="method-info" style="display: flex; align-items: center; gap: 1rem;">
+              <div class="method-icon" style="width: 48px; height: 48px; background: var(--color-fondo); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <span class="material-symbols-outlined" style="color: var(--color-primario); font-size: 1.5rem;">smartphone</span>
+              </div>
+              <div>
+                <h4 style="margin: 0; color: var(--color-primario); font-weight: 600;">Google Authenticator</h4>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--color-texto-secundario);">Usa la app para generar códigos de 6 dígitos</p>
+              </div>
+            </div>
+            <div class="method-status">
+              <span 
+                class="badge" 
+                [style.background]="isGoogleAuthEnabled ? 'var(--success-500)' : 'var(--gray-400)'"
+                style="color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                {{ isGoogleAuthEnabled ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="method-actions">
+            <!-- Si NO está activado, mostrar botón para configurar -->
+            <button 
+              class="btn btn-primary" 
+              *ngIf="!isGoogleAuthEnabled"
+              (click)="toggle2FASetup()"
+              [disabled]="loading"
+              style="width: 100%;">
+              <span class="material-symbols-outlined">add_circle</span>
+              Configurar Google Authenticator
+            </button>
+            
+            <!-- Si ESTÁ activado, mostrar botón para desactivar -->
+            <button 
+              class="btn btn-outline btn-danger-outline" 
+              *ngIf="isGoogleAuthEnabled"
+              (click)="disableGoogleAuth()"
+              [disabled]="loading"
+              style="width: 100%; border-color: var(--color-error); color: var(--color-error);">
+              <span class="material-symbols-outlined">cancel</span>
+              Desactivar Google Authenticator
+            </button>
+          </div>
         </div>
 
-        <!-- 2FA Setup Form -->
+        <!-- ===== MÉTODO 2: VERIFICACIÓN POR EMAIL ===== -->
+        <div class="twofa-method" style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid var(--gray-200); border-radius: var(--border-radius-lg);">
+          <div class="method-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div class="method-info" style="display: flex; align-items: center; gap: 1rem;">
+              <div class="method-icon" style="width: 48px; height: 48px; background: var(--color-fondo); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <span class="material-symbols-outlined" style="color: var(--color-accion); font-size: 1.5rem;">mail</span>
+              </div>
+              <div>
+                <h4 style="margin: 0; color: var(--color-primario); font-weight: 600;">Verificación por Email</h4>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--color-texto-secundario);">Recibe un código de verificación en tu correo</p>
+              </div>
+            </div>
+            <div class="method-status">
+              <span 
+                class="badge" 
+                [style.background]="isEmailTwoFactorEnabled ? 'var(--success-500)' : 'var(--gray-400)'"
+                style="color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                {{ isEmailTwoFactorEnabled ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="method-actions">
+            <!-- Si NO está activado, mostrar botón para activar -->
+            <button 
+              class="btn btn-primary" 
+              *ngIf="!isEmailTwoFactorEnabled"
+              (click)="enableEmail2FA()"
+              [disabled]="loading"
+              style="width: 100%; background: var(--color-accion);">
+              <span class="material-symbols-outlined">mail</span>
+              Activar Verificación por Email
+            </button>
+            
+            <!-- Si ESTÁ activado, mostrar botón para desactivar -->
+            <button 
+              class="btn btn-outline btn-danger-outline" 
+              *ngIf="isEmailTwoFactorEnabled"
+              (click)="disableEmail2FA()"
+              [disabled]="loading"
+              style="width: 100%; border-color: var(--color-error); color: var(--color-error);">
+              <span class="material-symbols-outlined">cancel</span>
+              Desactivar Verificación por Email
+            </button>
+          </div>
+        </div>
+
+        <!-- Setup de Google Authenticator (Se muestra cuando se configura) -->
         <div class="twofa-setup" *ngIf="show2FASetup" [@slideIn]>
           <div class="setup-steps">
             
@@ -302,6 +380,7 @@
               <div class="step-number">2</div>
               <div class="step-content">
                 <h4>Escanea el código QR</h4>
+                <!-- QR disponible -->
                 <div class="qr-container" *ngIf="twoFactorData.qrCode">
                   <img [src]="twoFactorData.qrCode" alt="Código QR para 2FA" class="qr-image">
                   <div class="manual-entry">
@@ -309,9 +388,19 @@
                     <code class="secret-code">{{ twoFactorData.secret }}</code>
                   </div>
                 </div>
+                <!-- Cargando QR -->
                 <div class="loading-qr" *ngIf="!twoFactorData.qrCode && loading">
-                  <span class="material-symbols-outlined">autorenew</span>
+                  <span class="material-symbols-outlined spinning">autorenew</span>
                   <p>Generando código QR...</p>
+                </div>
+                <!-- Error: QR no disponible -->
+                <div class="qr-error" *ngIf="!twoFactorData.qrCode && !loading" style="text-align: center; padding: 1rem; background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107;">
+                  <span class="material-symbols-outlined" style="font-size: 2rem; color: #856404;">warning</span>
+                  <p style="margin: 0.5rem 0; color: #856404;">No se pudo cargar el código QR.</p>
+                  <button class="btn btn-outline" (click)="generate2FAQRCode()" style="margin-top: 0.5rem;">
+                    <span class="material-symbols-outlined">refresh</span>
+                    Reintentar
+                  </button>
                 </div>
               </div>
             </div>
@@ -356,7 +445,7 @@
       </div>
     </section>
 
-    <!-- Backup Codes Card -->
+    <!-- Backup Codes Card - Visible si cualquier método 2FA está activo -->
     <section class="card backup-codes-card" *ngIf="isTwoFactorEnabled">
       <div class="card-header">
         <span class="material-symbols-outlined">key</span>
@@ -369,52 +458,42 @@
             <strong>Códigos disponibles:</strong> {{ backupCodesCount }}
           </p>
           <p class="codes-description">
-            Los códigos de respaldo te permiten acceder a tu cuenta si pierdes el acceso a tu aplicación authenticator.
+            Los códigos de respaldo te permiten acceder a tu cuenta si pierdes el acceso a tu aplicación authenticator o email.
           </p>
         </div>
 
         <div class="backup-actions">
-          <!-- Mostrar "Generar Nuevos" si no hay códigos -->
+          <!-- Botón principal para generar códigos -->
           <button 
             class="btn btn-primary" 
-            *ngIf="backupCodes.length === 0"
             (click)="generateCodes()"
-            [disabled]="loading || !isTwoFactorEnabled">
-            <span class="material-symbols-outlined" *ngIf="loading">autorenew</span>
-            <span class="material-symbols-outlined" *ngIf="!loading">add_circle</span>
-            {{ loading ? 'Generando...' : 'Generar Nuevos' }}
-          </button>
-          
-          <!-- Mostrar "Ver Códigos" si ya hay códigos -->
-          <button 
-            class="btn btn-outline" 
-            *ngIf="backupCodes.length > 0"
-            (click)="viewExistingCodes()"
-            [disabled]="loading || !isTwoFactorEnabled">
-            <span class="material-symbols-outlined">visibility</span>
-            Ver Códigos
+            [disabled]="loading">
+            <span class="material-symbols-outlined spinning" *ngIf="loading">autorenew</span>
+            <span class="material-symbols-outlined" *ngIf="!loading">{{ backupCodes.length > 0 || backupCodesCount > 0 ? 'refresh' : 'add_circle' }}</span>
+            {{ loading ? 'Generando...' : (backupCodes.length > 0 || backupCodesCount > 0 ? 'Regenerar Códigos' : 'Generar 10 Códigos') }}
           </button>
         </div>
 
-        <!-- Backup Codes Display -->
-        <div class="backup-codes-display" *ngIf="showBackupCodes" [@slideIn]>
+        <!-- Loading mientras se generan los códigos -->
+        <div class="codes-loading" *ngIf="backupCodes.length === 0 && loading" style="text-align: center; padding: 1rem;">
+          <span class="material-symbols-outlined spinning">autorenew</span>
+          <p>Generando códigos de respaldo...</p>
+        </div>
+
+        <!-- Backup Codes Display - Solo cuando hay códigos -->
+        <div class="backup-codes-display" *ngIf="backupCodes.length > 0" [@slideIn]>
           <div class="codes-warning">
             <span class="material-symbols-outlined">warning</span>
             <p><strong>¡Importante!</strong> Guarda estos códigos en un lugar seguro. Cada código solo se puede usar una vez.</p>
           </div>
           
-          <div class="codes-grid" *ngIf="backupCodes.length > 0">
+          <div class="codes-grid">
             <div class="code-item" *ngFor="let code of backupCodes">
               <code class="backup-code">{{ code }}</code>
             </div>
           </div>
           
-          <div class="codes-loading" *ngIf="backupCodes.length === 0 && loading">
-            <span class="material-symbols-outlined">autorenew</span>
-            <p>Cargando códigos...</p>
-          </div>
-          
-          <div class="codes-actions" *ngIf="backupCodes.length > 0">
+          <div class="codes-actions">
             <button 
               class="btn btn-outline"
               (click)="copyBackupCodes()">

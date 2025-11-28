@@ -1,17 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { PasswordResetService } from '../../services/password-reset.service';
+import { HomeHeaderComponent } from '../home-header/home-header.component';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, HomeHeaderComponent],
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.css']
 })
-export class ForgotPasswordComponent {
+export class ForgotPasswordComponent implements OnInit, AfterViewInit {
+  @ViewChild('emailInput') emailInput!: ElementRef;
+  
   forgotPasswordForm: FormGroup;
   loading = false;
   submitted = false;
@@ -21,11 +24,30 @@ export class ForgotPasswordComponent {
   constructor(
     private fb: FormBuilder,
     private passwordResetService: PasswordResetService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.forgotPasswordForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]]
     });
+  }
+
+  ngOnInit(): void {
+    // Leer email del query param si existe
+    this.route.queryParams.subscribe(params => {
+      if (params['email']) {
+        this.forgotPasswordForm.patchValue({ email: params['email'] });
+      }
+    });
+  }
+
+  ngAfterViewInit(): void {
+    // Enfocar el campo de email
+    setTimeout(() => {
+      if (this.emailInput) {
+        this.emailInput.nativeElement.focus();
+      }
+    }, 100);
   }
 
   get f() {
@@ -80,6 +102,11 @@ export class ForgotPasswordComponent {
   }
 
   goBack(): void {
-    this.router.navigate(['/login']);
+    const currentEmail = this.forgotPasswordForm.get('email')?.value || '';
+    if (currentEmail && currentEmail.trim()) {
+      this.router.navigate(['/login'], { queryParams: { email: currentEmail.trim() } });
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 }

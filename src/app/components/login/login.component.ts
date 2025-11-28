@@ -1,41 +1,52 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
-import { SmsService } from '../../services/sms.service';
+import { SanitizationService } from '../../services/sanitization.service';
 import { CommonModule } from '@angular/common';
 import { AuthResponse, User } from '../../models/user.model';
-import { TwoFactorMethod } from '../../models/sms.model';
 import { environment } from '../../../environments/environment';
 import { HomeHeaderComponent } from '../home-header/home-header.component';
+import { SecureInputDirective } from '../../directives/security.directives';
+
+// Interface para métodos 2FA disponibles
+interface TwoFactorMethod {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  enabled: boolean;
+}
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule,ReactiveFormsModule, CommonModule, RouterModule, HomeHeaderComponent],
+  imports: [FormsModule, ReactiveFormsModule, CommonModule, RouterModule, HomeHeaderComponent, SecureInputDirective],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements AfterViewInit {
+  @ViewChild('emailInput') emailInput!: ElementRef;
+  @ViewChild('twoFactorInput') twoFactorInput!: ElementRef;
+  
   loginForm: FormGroup;
   isLoading = false;
   errorMessage = '';
   showTwoFactorForm = false;
   pendingUser: any = null;
-  twoFactorCode: string = ''; // CRITICAL: Inicializar explícitamente como string
-  showPassword = false; // Nueva propiedad para controlar visibilidad de contraseña
+  twoFactorCode: string = '';
+  showPassword = false;
   
-  // Estados para SMS 2FA
+  // Estados para 2FA
   selectedMethod: string = '';
   codeSent = false;
   availableMethods: TwoFactorMethod[] = [];
 
-
-
   // Estados para códigos de respaldo
   useBackupCode = false;
   backupCode = '';
+  backupCodesAvailable = false; // Indica si el usuario tiene códigos de respaldo activos
 
   cancelTwoFactor(): void {
     this.showTwoFactorForm = false;
@@ -45,13 +56,14 @@ export class LoginComponent {
     this.codeSent = false;
     this.useBackupCode = false; // Reset backup code mode
     this.backupCode = ''; // Reset backup code input
+    this.backupCodesAvailable = false; // Reset backup codes availability
     this.errorMessage = '';
   }
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private smsService: SmsService,
+    private sanitizationService: SanitizationService,
     private router: Router,
     private http: HttpClient
   ) {
@@ -59,6 +71,15 @@ export class LoginComponent {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
+  }
+
+  ngAfterViewInit(): void {
+    // Enfocar automáticamente el campo de email al cargar
+    setTimeout(() => {
+      if (this.emailInput) {
+        this.emailInput.nativeElement.focus();
+      }
+    }, 100);
   }
 
   // onSubmit(): void {
@@ -97,10 +118,24 @@ export class LoginComponent {
     this.errorMessage = 'Completa los campos correctamente';
     return;
   }
+
+  // Sanitizar datos antes de enviar
+  const rawFormData = this.loginForm.value;
+  const formData = {
+    email: this.sanitizationService.sanitizeUserInput(rawFormData.email || ''),
+    password: this.sanitizationService.sanitizeUserInput(rawFormData.password || '')
+  };
+  
+  // Validación adicional de seguridad
+  if (!this.sanitizationService.isValidEmail(formData.email)) {
+    this.errorMessage = 'Email no válido';
+    return;
+  }
+
   this.isLoading = true;
   this.errorMessage = '';
 
-  this.authService.login(this.loginForm.value).subscribe({
+  this.authService.login(formData).subscribe({
     next: (response) => {
       this.isLoading = false;
       // Si el backend indica que se requiere 2FA
@@ -130,44 +165,65 @@ export class LoginComponent {
     }
   });
 }
+
   /**
-   * Configurar métodos de 2FA disponibles basado en el usuario
+   * Configurar métodos de 2FA disponibles basado en los métodos ACTIVOS del usuario
+   * 
+   * CASOS DE USO:
+   * Caso 1: Google=on, Email=off, Backup=exists → Muestra Google Auth + opción backup
+   * Caso 2: Google=off, Email=on, Backup=exists → Muestra Email + opción backup
+   * Caso 3: Google=off, Email=off, Backup=exists → Login normal (no llega aquí)
+   * Caso 4: Google=on, Email=on, Backup=none → Muestra ambos métodos sin backup
    */
   setupTwoFactorMethods(): void {
     this.availableMethods = [];
+    this.backupCodesAvailable = false;
     
     if (this.pendingUser) {
-      // Google Authenticator siempre disponible si está habilitado
+      // Google Authenticator - método principal
       if (this.pendingUser.googleAuthEnabled) {
         this.availableMethods.push({
           id: 'GOOGLE_AUTHENTICATOR',
           name: 'Google Authenticator',
           description: 'Usa la aplicación Google Authenticator',
-          icon: 'fas fa-mobile-alt',
+          icon: 'smartphone',
           enabled: true
         });
       }
 
-      // SMS disponible si está habilitado - PRIORIDAD ALTA
-      if (this.pendingUser.smsEnabled) {
+      // Email - método principal
+      if (this.pendingUser.emailEnabled) {
         this.availableMethods.push({
-          id: 'SMS',
-          name: 'SMS',
-          description: `Enviar código a ${this.formatPhone(this.pendingUser.phone)}`,
-          icon: 'fas fa-sms',
+          id: 'EMAIL',
+          name: 'Email',
+          description: `Enviar código a ${this.maskEmail(this.pendingUser.email)}`,
+          icon: 'mail',
           enabled: true
         });
       }
 
-      // Email como alternativa - nota sobre limitaciones
-      this.availableMethods.push({
-        id: 'EMAIL',
-        name: 'Email',
-        description: `Enviar código a ${this.pendingUser.email} (puede fallar en producción)`,
-        icon: 'fas fa-envelope',
-        enabled: true
-      });
+      // Códigos de respaldo - disponibles como ALTERNATIVA solo si:
+      // 1. El usuario los tiene generados Y
+      // 2. Hay al menos un método principal activo (Google o Email)
+      if (this.pendingUser.backupCodesEnabled && this.availableMethods.length > 0) {
+        this.backupCodesAvailable = true;
+      }
+
+      // Si solo hay un método disponible, seleccionarlo automáticamente
+      if (this.availableMethods.length === 1) {
+        this.selectMethod(this.availableMethods[0].id);
+      }
     }
+  }
+
+  /**
+   * Enmascarar email para mostrar parcialmente (ej: u***@gmail.com)
+   */
+  private maskEmail(email: string): string {
+    if (!email) return '';
+    const [local, domain] = email.split('@');
+    if (local.length <= 2) return email;
+    return `${local[0]}***@${domain}`;
   }
 
   /**
@@ -181,15 +237,21 @@ export class LoginComponent {
     // Si es Google Authenticator, no necesita envío de código
     if (methodId === 'GOOGLE_AUTHENTICATOR') {
       this.codeSent = true;
+      // Enfocar automáticamente el campo de código
+      setTimeout(() => {
+        if (this.twoFactorInput) {
+          this.twoFactorInput.nativeElement.focus();
+        }
+      }, 100);
       return;
     }
 
-    // Para SMS y Email, enviar código automáticamente
+    // Para Email, enviar código automáticamente
     this.sendVerificationCode();
   }
 
   /**
-   * Enviar código de verificación
+   * Enviar código de verificación por Email
    */
   sendVerificationCode(): void {
     if (!this.selectedMethod || !this.pendingUser) return;
@@ -197,18 +259,20 @@ export class LoginComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
-    const method = this.selectedMethod as 'SMS' | 'EMAIL';
+    const method = this.selectedMethod as 'EMAIL';
     
-    this.smsService.sendLoginCode(this.pendingUser.email, method).subscribe({
+    this.authService.sendTwoFactorCode(this.pendingUser.email, method).subscribe({
       next: (response: any) => {
         this.isLoading = false;
         if (response.success) {
           this.codeSent = true;
-          // Mensaje específico según el método
-          const target = method === 'SMS' 
-            ? this.formatPhone(this.pendingUser.phone)
-            : this.pendingUser.email;
-          this.errorMessage = ''; // Limpiar errores
+          this.errorMessage = '';
+          // Enfocar automáticamente el campo de código
+          setTimeout(() => {
+            if (this.twoFactorInput) {
+              this.twoFactorInput.nativeElement.focus();
+            }
+          }, 100);
         } else {
           this.errorMessage = response.message || 'Error enviando código';
         }
@@ -221,25 +285,16 @@ export class LoginComponent {
   }
 
   /**
-   * MÉTODO EXTREMO: Verificar código 2FA con FORZADO de strings
+   * Verificar código 2FA
    */
   verifyTwoFactor(): void {
-    console.log('�💥 MÉTODO EXTREMO INICIADO 💥🚀');
-    console.log('Initial twoFactorCode:', this.twoFactorCode, 'Type:', typeof this.twoFactorCode);
-    
     if (!this.twoFactorCode || !this.pendingUser || !this.selectedMethod) {
-      console.log('❌ Faltan datos requeridos');
+      this.errorMessage = 'Por favor ingresa el código de verificación';
       return;
     }
     
-    // QUINTUPLE conversión de string para garantía absoluta
+    // Limpiar y validar código
     let codeString = String(this.twoFactorCode).trim();
-    codeString = `${codeString}`;  // Template literal
-    codeString = codeString.toString();  // Explicit toString
-    codeString = JSON.parse(JSON.stringify(codeString)); // JSON roundtrip
-    codeString = new String(codeString).valueOf(); // String object conversion
-    
-    console.log('QUINTUPLE converted code:', codeString, 'Type:', typeof codeString);
     
     // Validar que solo contenga dígitos
     if (!/^\d+$/.test(codeString)) {
@@ -253,39 +308,17 @@ export class LoginComponent {
       codeString = codeString.substring(0, 6);
     }
     
-    console.log('Final normalized code:', codeString, 'Type:', typeof codeString);
-    
     this.isLoading = true;
     this.errorMessage = '';
 
-    // CREAR REQUEST CON FORZADO EXTREMO DE STRINGS
-    const emailString = String(this.pendingUser.email);
-    const methodString = String(this.selectedMethod);
-    
-    // Usar Object.create para garantizar tipos primitivos
-    const requestData = Object.create(null);
-    requestData.email = emailString;
-    requestData.code = codeString;  // GUARANTEED STRING
-    requestData.method = methodString;
-    
-    // Verificar que todo sean strings
-    console.log('🔍 REQUEST VALIDATION:');
-    console.log('  email:', requestData.email, 'Type:', typeof requestData.email);
-    console.log('  code:', requestData.code, 'Type:', typeof requestData.code);
-    console.log('  method:', requestData.method, 'Type:', typeof requestData.method);
-    console.log('🚀 Sending request with EXTREME string forcing:', requestData);
-    
-    // JSON stringify manual para inspección
-    const jsonString = JSON.stringify(requestData);
-    console.log('📤 JSON que se enviará:', jsonString);
-    
-    this.smsService.verifyLoginCode(
-      emailString,
-      codeString,
-      methodString as 'SMS' | 'EMAIL' | 'GOOGLE_AUTHENTICATOR'
-    ).subscribe({
+    const payload = {
+      email: String(this.pendingUser.email),
+      code: codeString,
+      method: String(this.selectedMethod)
+    };
+
+    this.authService.verifyTwoFactor(payload).subscribe({
       next: (response: any) => {
-        console.log('✅ Respuesta exitosa:', response);
         this.isLoading = false;
         const token = response.data?.accessToken || response.accessToken;
         const user = response.data?.user || response.user;
@@ -294,11 +327,10 @@ export class LoginComponent {
           this.authService.completeLogin(token, user);
           this.router.navigate(['/']);
         } else {
-          this.errorMessage = 'Código inválido o respuesta inválida';
+          this.errorMessage = 'Código inválido o expirado';
         }
       },
       error: (err: any) => {
-        console.error('💥 Error en verificación EXTREMA:', err);
         this.errorMessage = this.getErrorMessage(err);
         this.isLoading = false;
       }
@@ -458,7 +490,29 @@ export class LoginComponent {
     this.showPassword = !this.showPassword;
   }
 
+  /**
+   * Navegar a forgot-password con el email actual
+   */
+  goToForgotPassword(): void {
+    const currentEmail = this.loginForm.get('email')?.value || '';
+    if (currentEmail && currentEmail.trim()) {
+      this.router.navigate(['/forgot-password'], { queryParams: { email: currentEmail.trim() } });
+    } else {
+      this.router.navigate(['/forgot-password']);
+    }
+  }
 
+  /**
+   * Navegar a register con el email actual
+   */
+  goToRegister(): void {
+    const currentEmail = this.loginForm.get('email')?.value || '';
+    if (currentEmail && currentEmail.trim()) {
+      this.router.navigate(['/register'], { queryParams: { email: currentEmail.trim() } });
+    } else {
+      this.router.navigate(['/register']);
+    }
+  }
 
   get email() { return this.loginForm.get('email'); }
   get password() { return this.loginForm.get('password'); }

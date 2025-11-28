@@ -1,18 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { SanitizationService } from '../../services/sanitization.service';
 import { CommonModule } from '@angular/common';
 import { HomeHeaderComponent } from '../home-header/home-header.component';
+import { SecureInputDirective } from '../../directives/security.directives';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule, HomeHeaderComponent],
+  imports: [ReactiveFormsModule, CommonModule, RouterModule, HomeHeaderComponent, SecureInputDirective],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
   isLoading = false;
   errorMessage = '';
@@ -22,7 +24,9 @@ export class RegisterComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private sanitizationService: SanitizationService,
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     console.log('🚀 RegisterComponent constructor iniciado - FORMULARIO SIMPLIFICADO');
     
@@ -42,6 +46,16 @@ export class RegisterComponent {
     });
 
     console.log('✅ RegisterForm SIMPLIFICADO creado exitosamente - Sin validaciones HTTP');
+  }
+
+  ngOnInit(): void {
+    // Si viene email como query param desde el login, lo pre-llena
+    this.route.queryParams.subscribe(params => {
+      if (params['email']) {
+        this.registerForm.patchValue({ email: params['email'] });
+        console.log('📧 Email pre-llenado desde login:', params['email']);
+      }
+    });
   }
 
   // Getters para acceder fácilmente a los controles del formulario
@@ -262,8 +276,25 @@ export class RegisterComponent {
   onSubmit(): void {
     console.log('🚀 Enviando formulario de registro...');
     
-    // Validación de contraseñas primero (sin validators complejos)
-    if (this.registerForm.value.password !== this.registerForm.value.confirmPassword) {
+    // Sanitizar datos antes de validar
+    const rawData = this.registerForm.value;
+    const sanitizedData = {
+      username: this.sanitizationService.sanitizeUserInput(rawData.username || ''),
+      email: this.sanitizationService.sanitizeUserInput(rawData.email || ''),
+      password: this.sanitizationService.sanitizeUserInput(rawData.password || ''),
+      confirmPassword: this.sanitizationService.sanitizeUserInput(rawData.confirmPassword || ''),
+      firstName: this.sanitizationService.sanitizeUserInput(rawData.firstName || ''),
+      lastName: this.sanitizationService.sanitizeUserInput(rawData.lastName || '')
+    };
+    
+    // Validación adicional de seguridad
+    if (!this.sanitizationService.isValidEmail(sanitizedData.email)) {
+      this.errorMessage = 'Email no válido o contiene caracteres peligrosos';
+      return;
+    }
+    
+    // Validación de contraseñas
+    if (sanitizedData.password !== sanitizedData.confirmPassword) {
       this.errorMessage = 'Las contraseñas no coinciden. Por favor verifica que ambas contraseñas sean idénticas.';
       return;
     }
@@ -272,16 +303,15 @@ export class RegisterComponent {
       this.isLoading = true;
       this.errorMessage = '';
 
-      const formData = this.registerForm.value;
-      console.log('📋 Datos del formulario:', formData);
+      console.log('📋 Datos del formulario sanitizados:', sanitizedData);
 
       // Preparar datos en el formato exacto que espera el backend
       const registerData = {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        firstName: formData.firstName,
-        lastName: formData.lastName
+        username: sanitizedData.username,
+        email: sanitizedData.email,
+        password: sanitizedData.password,
+        firstName: sanitizedData.firstName,
+        lastName: sanitizedData.lastName
       };
 
       console.log('🌐 Enviando datos al backend:', registerData);

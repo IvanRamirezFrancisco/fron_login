@@ -8,6 +8,9 @@
 /* Importar Google Material Symbols para iconos profesionales */
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
+/* Importar estilos de seguridad */
+@import url('./app/styles/security.css');
+
 /* Estilos globales de la aplicación */
 * {
   margin: 0;

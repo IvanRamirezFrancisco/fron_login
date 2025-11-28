@@ -45,7 +45,10 @@
             <input 
               type="email" 
               id="email" 
+              #emailInput
               formControlName="email"
+              appSecureInput
+              inputType="email"
               class="form-control"
               [class.is-invalid]="email?.invalid && email?.touched"
               [class.is-valid]="email?.valid && email?.touched"
@@ -75,6 +78,8 @@
                 [type]="showPassword ? 'text' : 'password'"
                 id="password" 
                 formControlName="password"
+                appSecureInput
+                inputType="password"
                 class="form-control"
                 [class.is-invalid]="password?.invalid && password?.touched"
                 [class.is-valid]="password?.valid && password?.touched"
@@ -127,9 +132,9 @@
           <!-- Enlace olvidar contraseña -->
           <div>
             <a 
-              routerLink="/forgot-password" 
+              (click)="goToForgotPassword()"
               class="text-decoration-none transicion"
-              style="color: var(--color-primario); font-weight: 600; font-size: 0.9rem; font-family: var(--font-titulos); display: inline-flex; align-items: center; gap: 0.5rem;"
+              style="color: var(--color-primario); font-weight: 600; font-size: 0.9rem; font-family: var(--font-titulos); display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer;"
             >
               <span class="material-symbols-outlined" style="font-size: 1rem;">key</span>
               ¿Olvidaste tu contraseña?
@@ -141,9 +146,9 @@
           <div>
             <span style="color: var(--color-texto-principal); font-size: 0.9rem; font-family: var(--font-cuerpo);">¿No tienes cuenta?</span>
             <a 
-              routerLink="/register" 
+              (click)="goToRegister()"
               class="text-decoration-none transicion"
-              style="color: var(--color-accion); font-weight: 700; margin-left: 0.5rem; font-family: var(--font-titulos); display: inline-flex; align-items: center; gap: 0.5rem;"
+              style="color: var(--color-accion); font-weight: 700; margin-left: 0.5rem; font-family: var(--font-titulos); display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer;"
             >
               <span class="material-symbols-outlined" style="font-size: 1rem;">person_add</span>
               Crear cuenta
@@ -184,37 +189,34 @@
         </div>
 
         <!-- Body -->
-        <div class="card-body-modern">
+        <div class="card-body-modern" style="padding: 1.5rem;">
           
           <!-- Mensaje de error -->
-          <div *ngIf="errorMessage" class="alert-modern alert-danger-modern mb-4">
-            <i class="fas fa-exclamation-triangle"></i>
+          <div *ngIf="errorMessage" class="alert-modern alert-danger-modern mb-4" style="background: var(--color-error); color: white; border-radius: var(--border-radius-lg); padding: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span class="material-symbols-outlined">warning</span>
             <span>{{ errorMessage }}</span>
           </div>
 
-          <!-- Grid de métodos -->
+          <!-- Grid de métodos - Solo muestra los activos del usuario -->
           <div class="d-flex flex-column gap-3">
             <div 
               *ngFor="let method of availableMethods" 
-              class="card-modern p-4 cursor-pointer transition-all"
-              [class.card-primary-modern]="method.enabled"
-              [style.opacity]="method.enabled ? '1' : '0.5'"
-              [style.cursor]="method.enabled ? 'pointer' : 'not-allowed'"
-              (click)="method.enabled && selectMethod(method.id)"
-              style="border: 2px solid var(--gray-200); transition: all 0.2s ease;"
-              onmouseover="if(this.style.cursor === 'pointer') { this.style.borderColor = 'var(--primary-300)'; this.style.transform = 'translateY(-2px)'; }"
-              onmouseout="if(this.style.cursor === 'pointer') { this.style.borderColor = 'var(--gray-200)'; this.style.transform = 'translateY(0)'; }"
+              class="card-modern p-4 cursor-pointer"
+              (click)="selectMethod(method.id)"
+              style="border: 2px solid var(--gray-200); border-radius: var(--border-radius-lg); transition: all 0.2s ease; cursor: pointer;"
+              onmouseover="this.style.borderColor = 'var(--color-resalte)'; this.style.transform = 'translateY(-2px)'; this.style.boxShadow = 'var(--shadow-md)';"
+              onmouseout="this.style.borderColor = 'var(--gray-200)'; this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none';"
             >
-              <div class="d-flex align-items-center gap-4">
+              <div class="d-flex align-items-center gap-3">
                 <div class="d-flex align-items-center justify-content-center" 
-                     style="width: 50px; height: 50px; background: var(--primary-50); border-radius: 50%; color: var(--primary-600);">
-                  <i [class]="method.icon" style="font-size: 1.3rem;"></i>
+                     style="width: 50px; height: 50px; background: var(--color-fondo); border-radius: 50%; color: var(--color-primario);">
+                  <span class="material-symbols-outlined" style="font-size: 1.5rem;">{{ method.icon }}</span>
                 </div>
                 <div class="flex-grow-1">
-                  <h5 class="mb-1" style="color: var(--gray-900); font-weight: 600;">{{ method.name }}</h5>
-                  <p class="mb-0" style="color: var(--gray-600); font-size: 0.875rem;">{{ method.description }}</p>
+                  <h5 class="mb-1" style="color: var(--color-primario); font-weight: 600; font-family: var(--font-titulos);">{{ method.name }}</h5>
+                  <p class="mb-0" style="color: var(--color-texto-secundario); font-size: 0.85rem; font-family: var(--font-cuerpo);">{{ method.description }}</p>
                 </div>
-                <div *ngIf="method.enabled" style="color: var(--primary-500); font-size: 1.2rem;">
+                <div style="color: var(--color-resalte); font-size: 1.2rem;">
                   <span class="material-symbols-outlined">arrow_forward</span>
                 </div>
               </div>
@@ -249,42 +251,39 @@
               class="btn btn-sm"
               style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;"
             >
-              <i class="fas fa-arrow-left"></i>
+              <span class="material-symbols-outlined">arrow_back</span>
             </button>
             <div class="d-flex align-items-center gap-2">
-              <i [class]="getSelectedMethodInfo()?.icon" style="font-size: 1.2rem; color: white;"></i>
-              <h4 class="mb-0" style="color: white; font-weight: 600;">{{ getSelectedMethodInfo()?.name }}</h4>
+              <span class="material-symbols-outlined" style="font-size: 1.2rem; color: white;">{{ getSelectedMethodInfo()?.icon }}</span>
+              <h4 class="mb-0" style="color: white; font-weight: 600; font-family: var(--font-titulos);">{{ getSelectedMethodInfo()?.name }}</h4>
             </div>
           </div>
-          <p class="mb-0" style="color: rgba(255,255,255,0.9); font-size: 0.9rem;">Ingresa el código de verificación</p>
+          <p class="mb-0" style="color: rgba(255,255,255,0.9); font-size: 0.9rem; font-family: var(--font-cuerpo);">Ingresa el código de verificación</p>
         </div>
 
         <!-- Body -->
-        <div class="card-body-modern">
+        <div class="card-body-modern" style="padding: 1.5rem;">
           
           <!-- Instrucciones específicas por método -->
-          <div class="alert-modern alert-info-modern mb-4">
-            <i class="fas fa-lightbulb"></i>
-            <div>
+          <div class="alert-modern mb-4" style="background: var(--color-fondo); border-radius: var(--border-radius-lg); padding: 1rem; display: flex; align-items: flex-start; gap: 0.75rem; border: 1px solid var(--gray-200);">
+            <span class="material-symbols-outlined" style="color: var(--color-resalte);">lightbulb</span>
+            <div style="font-family: var(--font-cuerpo); color: var(--color-texto-principal); font-size: 0.9rem;">
               <p class="mb-0" *ngIf="selectedMethod === 'GOOGLE_AUTHENTICATOR'">
                 Ingresa el código de 6 dígitos de tu aplicación Google Authenticator
               </p>
-              <p class="mb-0" *ngIf="selectedMethod === 'SMS' && codeSent">
-                Hemos enviado un código a tu teléfono terminado en {{ formatPhone(pendingUser?.phone || '') }}
-              </p>
               <p class="mb-0" *ngIf="selectedMethod === 'EMAIL' && codeSent">
-                Hemos enviado un código a {{ pendingUser?.email }}
+                Hemos enviado un código a <strong>{{ pendingUser?.email }}</strong>
               </p>
-              <div *ngIf="(selectedMethod === 'SMS' || selectedMethod === 'EMAIL') && !codeSent" class="d-flex align-items-center gap-2">
-                <div class="spinner-border-sm"></div>
+              <div *ngIf="selectedMethod === 'EMAIL' && !codeSent" class="d-flex align-items-center gap-2">
+                <div class="spinner-border spinner-border-sm" style="color: var(--color-resalte);"></div>
                 <span>Enviando código...</span>
               </div>
             </div>
           </div>
 
           <!-- Mensaje de error -->
-          <div *ngIf="errorMessage" class="alert-modern alert-danger-modern mb-4">
-            <i class="fas fa-exclamation-triangle"></i>
+          <div *ngIf="errorMessage" class="alert-modern alert-danger-modern mb-4" style="background: var(--color-error); color: white; border-radius: var(--border-radius-lg); padding: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span class="material-symbols-outlined">warning</span>
             <span>{{ errorMessage }}</span>
           </div>
 
@@ -293,23 +292,25 @@
             
             <!-- Input de código normal (6 dígitos) -->
             <div *ngIf="!useBackupCode" class="form-group text-center">
-              <label class="form-label">Código de verificación</label>
+              <label class="form-label" style="color: var(--color-primario); font-family: var(--font-titulos); font-weight: 600;">Código de verificación</label>
               <input 
                 type="text" 
+                #twoFactorInput
                 maxlength="6" 
                 [value]="twoFactorCode"
                 (input)="onCodeInput($event)"
+                appSecureInput
+                inputType="text"
                 name="twoFactorCode" 
                 required 
                 placeholder="000000"
                 class="form-control text-center"
                 pattern="[0-9]{6}"
                 inputmode="numeric"
-                style="font-size: 1.5rem; font-weight: 600; letter-spacing: 0.5rem; font-family: var(--font-cuerpo);"
+                style="font-size: 2rem; font-weight: 700; letter-spacing: 0.75rem; font-family: var(--font-cuerpo); border: 2px solid var(--color-primario); border-radius: var(--border-radius-lg); padding: 1rem;"
                 autocomplete="one-time-code"
-                #codeInput
               />
-              <div class="mt-2" style="font-size: 0.75rem; color: var(--gray-500);">
+              <div class="mt-2" style="font-size: 0.8rem; color: var(--color-texto-secundario); font-family: var(--font-cuerpo);">
                 Ingresa los 6 dígitos del código
               </div>
             </div>
@@ -329,7 +330,7 @@
                 class="form-control text-center"
                 pattern="^[0-9]{4}-?[0-9]{4}$"
                 inputmode="numeric"
-                style="font-size: 1.2rem; font-weight: 600; letter-spacing: 0.2rem; font-family: var(--font-cuerpo); border: 2px solid var(--color-accion); border-radius: var(--border-radius-lg);"
+                style="font-size: 1.5rem; font-weight: 600; letter-spacing: 0.3rem; font-family: var(--font-cuerpo); border: 2px solid var(--color-accion); border-radius: var(--border-radius-lg); padding: 1rem;"
                 autocomplete="off"
               />
               <div class="mt-2" style="font-size: 0.75rem; color: var(--color-accion);">
@@ -338,15 +339,15 @@
               </div>
             </div>
             
-            <!-- Enlace para usar código de respaldo -->
-            <div *ngIf="!useBackupCode" class="text-center mb-3">
+            <!-- Enlace para usar código de respaldo - Solo si el usuario tiene códigos de respaldo activos -->
+            <div *ngIf="!useBackupCode && backupCodesAvailable" class="text-center mb-3">
               <a 
                 (click)="toggleBackupCodeMode()" 
                 class="text-decoration-none" 
                 style="color: var(--color-accion); font-weight: 600; font-size: 0.9rem; font-family: var(--font-titulos); cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;"
               >
                 <span class="material-symbols-outlined" style="font-size: 1rem;">phone_disabled</span>
-                ¿Perdiste tu teléfono? Usar un código de respaldo
+                ¿Perdiste tu dispositivo? Usar un código de respaldo
               </a>
             </div>
 
@@ -375,6 +376,10 @@
                 <span class="material-symbols-outlined">check_circle</span>
                 <span>Verificar Código</span>
               </span>
+              <span *ngIf="isLoading" class="d-flex align-items-center justify-content-center gap-2">
+                <span class="spinner-border spinner-border-sm"></span>
+                <span>Verificando...</span>
+              </span>
             </button>
 
             <!-- Botón verificar - código de respaldo -->
@@ -391,18 +396,23 @@
                 <span class="material-symbols-outlined">backup</span>
                 <span>Verificar Código de Respaldo</span>
               </span>
+              <span *ngIf="isLoading" class="d-flex align-items-center justify-content-center gap-2">
+                <span class="spinner-border spinner-border-sm"></span>
+                <span>Verificando...</span>
+              </span>
             </button>
 
-            <!-- Opción de reenvío -->
-            <div *ngIf="selectedMethod === 'SMS' || selectedMethod === 'EMAIL'" class="text-center mt-3">
-              <p class="mb-2" style="color: var(--gray-600); font-size: 0.875rem;">¿No recibiste el código?</p>
+            <!-- Opción de reenvío solo para Email -->
+            <div *ngIf="selectedMethod === 'EMAIL'" class="text-center mt-3">
+              <p class="mb-2" style="color: var(--color-texto-secundario); font-size: 0.875rem; font-family: var(--font-cuerpo);">¿No recibiste el código?</p>
               <button 
                 type="button" 
                 (click)="sendVerificationCode()" 
                 class="btn btn-outline-primary btn-sm"
                 [disabled]="isLoading"
+                style="border-color: var(--color-resalte); color: var(--color-primario);"
               >
-                <i class="fas fa-redo" style="margin-right: 0.5rem;"></i>
+                <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 0.5rem;">refresh</span>
                 Reenviar código
               </button>
             </div>
@@ -412,13 +422,14 @@
         </div>
 
         <!-- Footer -->
-        <div class="card-footer-modern text-center">
+        <div class="card-footer-modern text-center" style="background: var(--color-fondo); padding: 1.5rem; border-top: 1px solid var(--gray-200);">
           <button 
             type="button" 
             (click)="cancelTwoFactor()" 
             class="btn btn-outline-secondary"
+            style="display: inline-flex; align-items: center; gap: 0.5rem;"
           >
-            <i class="fas fa-times" style="margin-right: 0.5rem;"></i>
+            <span class="material-symbols-outlined">close</span>
             Cancelar verificación
           </button>
         </div>
@@ -428,5 +439,7 @@
     </div>
   </div>
 </div>
+
+
 
 

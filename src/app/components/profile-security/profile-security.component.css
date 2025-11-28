@@ -2219,3 +2219,39 @@ input:focus,
 .modal-body {
   padding: 10px 0;
 }
+
+/* ===== ANIMACIÓN SPINNING PARA LOADING ===== */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* ===== ESTILOS PARA QR ERROR ===== */
+.qr-error {
+  text-align: center;
+  padding: 1.5rem;
+  background: #fff3cd;
+  border-radius: var(--border-radius);
+  border: 1px solid #ffc107;
+  margin: 1rem 0;
+}
+
+.qr-error .material-symbols-outlined {
+  font-size: 2.5rem;
+  color: #856404;
+  margin-bottom: 0.5rem;
+}
+
+.qr-error p {
+  margin: 0.5rem 0;
+  color: #856404;
+  font-weight: 500;
+}
+
+.qr-error .btn {
+  margin-top: 0.75rem;
+}

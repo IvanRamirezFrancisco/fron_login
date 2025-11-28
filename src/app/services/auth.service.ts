@@ -313,8 +313,19 @@ private setSession(authResult: AuthResponse): void {
 
 
   verifyTwoFactor(payload: { email: string; code: string; method: string }): Observable<any> {
-  return this.http.post<any>(`${environment.apiUrl}/2fa/verify`, payload);
-}
+    return this.http.post<any>(`${environment.apiUrl}/2fa/verify`, payload);
+  }
+
+  /**
+   * Enviar código 2FA por email durante el login
+   */
+  sendTwoFactorCode(email: string, method: 'EMAIL'): Observable<any> {
+    // El endpoint en el backend es /api/2fa/send-login-code
+    return this.http.post<any>(`${environment.apiUrl}/2fa/send-login-code`, {
+      email: email,
+      method: method
+    });
+  }
 
   // ===== NUEVOS MÉTODOS PARA MÚLTIPLES 2FA =====
 

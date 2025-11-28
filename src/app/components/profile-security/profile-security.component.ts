@@ -40,9 +40,19 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
   loading: boolean = false;
   private subscription: Subscription = new Subscription();
   
-  // Estados dinámicos basados en currentUser
-  get isTwoFactorEnabled(): boolean {
+  // Estados dinámicos basados en currentUser - Google Authenticator
+  get isGoogleAuthEnabled(): boolean {
     return this.currentUser?.googleAuthEnabled || false;
+  }
+
+  // Estado dinámico - Email 2FA
+  get isEmailTwoFactorEnabled(): boolean {
+    return this.currentUser?.emailEnabled || false;
+  }
+
+  // Estado general de 2FA (cualquier método activo)
+  get isTwoFactorEnabled(): boolean {
+    return this.isGoogleAuthEnabled || this.isEmailTwoFactorEnabled;
   }
   
   get backupCodesEnabled(): boolean {
@@ -54,7 +64,8 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
   
   // Estados de formularios
   showPasswordForm: boolean = false;
-  show2FASetup: boolean = false;
+  show2FASetup: boolean = false;   // Para Google Authenticator
+  showEmail2FASetup: boolean = false; // Para Email 2FA
   showBackupCodes: boolean = false;
   
   // Estados para modales de códigos de respaldo
@@ -247,12 +258,13 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
     this.show2FASetup = !this.show2FASetup;
     this.clearMessages();
     
-    if (this.show2FASetup && !this.isTwoFactorEnabled) {
+    // Generar QR si se abre el setup y Google Auth NO está habilitado
+    if (this.show2FASetup && !this.isGoogleAuthEnabled) {
       this.generate2FAQRCode();
     }
   }
 
-  private generate2FAQRCode(): void {
+  generate2FAQRCode(): void {
     this.loading = true;
     this.clearMessages();
     
@@ -260,54 +272,42 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
     
     console.log('🔄 Iniciando configuración de Google Authenticator...');
     
-    // Paso 1: Habilitar Google Authenticator (genera secreto)
+    // Paso 1: Habilitar Google Authenticator (genera secreto y QR)
     this.http.post<ApiResponse>(`${environment.apiUrl}/2fa/google/enable`, {}, { headers })
       .subscribe({
         next: (response: ApiResponse) => {
           console.log('✅ Google Authenticator habilitado:', response);
-          if (response.success) {
+          console.log('📦 response.data completo:', JSON.stringify(response.data, null, 2));
+          
+          if (response.success && response.data) {
+            // Buscar qrCode y secret en response.data (estructura plana desde el backend)
+            const qrCode = response.data.qrCode;
+            const manualKey = response.data.manualEntryKey || response.data.secret;
             
-            // Paso 2: Obtener QR Code y Manual Code
-            this.http.get<ApiResponse>(`${environment.apiUrl}/2fa/google/qrcode`, { headers })
-              .subscribe({
-                next: (qrResponse: ApiResponse) => {
-                  this.loading = false;
-                  console.log('✅ QR Code obtenido:', qrResponse);
-                  
-                  if (qrResponse.success && qrResponse.data) {
-                    this.twoFactorData = {
-                      qrCode: qrResponse.data.qrCode,
-                      secret: qrResponse.data.manualEntryKey || qrResponse.data.secret || 'N/A',
-                      verificationCode: ''
-                    };
-                    
-                    console.log('🔍 Datos 2FA configurados:');
-                    console.log('  - QR Code:', this.twoFactorData.qrCode ? '✅ Generado' : '❌ No disponible');
-                    console.log('  - Manual Key:', this.twoFactorData.secret);
-                    console.log('  - Issuer:', qrResponse.data.issuer);
-                    console.log('  - Account:', qrResponse.data.accountName);
-                    
-                    this.successMessage = 'QR Code y código manual generados correctamente. Escanea el QR con tu app Google Authenticator.';
-                    
-                  } else {
-                    console.error('❌ Respuesta QR sin datos válidos:', qrResponse);
-                    this.errorMessage = qrResponse.message || 'No se pudo generar el código QR';
-                  }
-                },
-                error: (error: any) => {
-                  this.loading = false;
-                  console.error('❌ Error obteniendo QR:', error);
-                  console.error('  Status:', error.status);
-                  console.error('  Error body:', error.error);
-                  
-                  if (error.status === 400) {
-                    this.errorMessage = error.error?.message || 'Error: Debes habilitar Google Authenticator primero';
-                  } else {
-                    this.errorMessage = 'Error de conexión al obtener el código QR';
-                  }
-                }
-              });
-              
+            console.log('🔍 Extrayendo datos:');
+            console.log('  - qrCode encontrado:', qrCode ? '✅ SÍ' : '❌ NO');
+            console.log('  - manualKey encontrado:', manualKey ? '✅ SÍ' : '❌ NO');
+            
+            if (qrCode || manualKey) {
+              this.loading = false;
+              this.twoFactorData = {
+                qrCode: qrCode || '',
+                secret: manualKey || 'N/A',
+                verificationCode: ''
+              };
+
+              console.log('🎉 Datos 2FA configurados desde enable:');
+              console.log('  - QR Code (primeros 50 chars):', this.twoFactorData.qrCode.substring(0, 50) + '...');
+              console.log('  - Manual Key:', this.twoFactorData.secret);
+
+              this.successMessage = 'QR Code y código manual generados correctamente. Escanea el QR con tu app Google Authenticator.';
+              return;
+            }
+            
+            // Fallback: solicitar QR existente si el enable no incluyó los datos
+            console.log('⚠️ El enable no devolvió QR/secret, haciendo fallback a GET /qrcode...');
+            this.fetchQRCodeFallback(headers);
+            
           } else {
             this.loading = false;
             console.error('❌ Error en respuesta de enable:', response);
@@ -318,14 +318,55 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
           console.error('❌ Error habilitando Google Auth:', error);
           console.error('  Status:', error.status);
           console.error('  Error body:', error.error);
-          
+
           // Si ya está habilitado, intentar obtener QR directamente
-          if (error.status === 400 && error.error?.message?.includes('already enabled')) {
+          const msg = (error.error?.message || '').toString().toLowerCase();
+          if (error.status === 400 && (msg.includes('already enabled') || msg.includes('ya está habilitado') || msg.includes('ya esta habilitado'))) {
             console.log('ℹ️ Google Auth ya habilitado, obteniendo QR existente...');
             this.getExistingQRCode();
           } else {
             this.loading = false;
             this.errorMessage = error.error?.message || 'Error al habilitar Google Authenticator';
+          }
+        }
+      });
+  }
+
+  private fetchQRCodeFallback(headers: HttpHeaders): void {
+    this.http.get<ApiResponse>(`${environment.apiUrl}/2fa/google/qrcode`, { headers })
+      .subscribe({
+        next: (qrResponse: ApiResponse) => {
+          this.loading = false;
+          console.log('✅ QR Code obtenido (fallback):', qrResponse);
+          console.log('📦 qrResponse.data completo:', JSON.stringify(qrResponse.data, null, 2));
+
+          if (qrResponse.success && qrResponse.data) {
+            this.twoFactorData = {
+              qrCode: qrResponse.data.qrCode || '',
+              secret: qrResponse.data.manualEntryKey || qrResponse.data.secret || 'N/A',
+              verificationCode: ''
+            };
+            
+            console.log('🎉 Datos 2FA configurados desde fallback:');
+            console.log('  - QR Code (primeros 50 chars):', this.twoFactorData.qrCode.substring(0, 50) + '...');
+            console.log('  - Manual Key:', this.twoFactorData.secret);
+
+            this.successMessage = 'QR Code y código manual generados correctamente. Escanea el QR con tu app Google Authenticator.';
+          } else {
+            console.error('❌ Respuesta QR sin datos válidos (fallback):', qrResponse);
+            this.errorMessage = qrResponse.message || 'No se pudo generar el código QR';
+          }
+        },
+        error: (error: any) => {
+          this.loading = false;
+          console.error('❌ Error obteniendo QR (fallback):', error);
+          console.error('  Status:', error.status);
+          console.error('  Error body:', error.error);
+
+          if (error.status === 400) {
+            this.errorMessage = error.error?.message || 'Error: Debes habilitar Google Authenticator primero';
+          } else {
+            this.errorMessage = 'Error de conexión al obtener el código QR';
           }
         }
       });
@@ -366,6 +407,96 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
           this.errorMessage = error.error?.message || 'Código de verificación incorrecto';
         }
       });
+  }
+
+  // ===== MÉTODOS DE EMAIL 2FA =====
+
+  toggleEmail2FA(): void {
+    if (this.isEmailTwoFactorEnabled) {
+      this.disableEmail2FA();
+    } else {
+      this.enableEmail2FA();
+    }
+  }
+
+  enableEmail2FA(): void {
+    this.loading = true;
+    this.clearMessages();
+
+    const headers = this.getAuthHeaders();
+
+    this.http.post<ApiResponse>(`${environment.apiUrl}/2fa/email/enable`, {}, { headers })
+      .subscribe({
+        next: (response: ApiResponse) => {
+          this.loading = false;
+          if (response.success) {
+            this.successMessage = 'Verificación por Email activada exitosamente';
+            this.reloadUserFromBackend();
+          } else {
+            this.errorMessage = response.message || 'Error al activar verificación por Email';
+          }
+        },
+        error: (error: any) => {
+          this.loading = false;
+          this.errorMessage = error.error?.message || 'Error al activar verificación por Email';
+        }
+      });
+  }
+
+  disableEmail2FA(): void {
+    if (confirm('¿Estás seguro de que deseas desactivar la verificación por Email?')) {
+      this.loading = true;
+      this.clearMessages();
+
+      const headers = this.getAuthHeaders();
+
+      this.http.post<ApiResponse>(`${environment.apiUrl}/2fa/email/disable`, {}, { headers })
+        .subscribe({
+          next: (response: ApiResponse) => {
+            this.loading = false;
+            if (response.success) {
+              this.successMessage = 'Verificación por Email desactivada';
+              this.reloadUserFromBackend();
+            } else {
+              this.errorMessage = response.message || 'Error al desactivar verificación por Email';
+            }
+          },
+          error: (error: any) => {
+            this.loading = false;
+            this.errorMessage = error.error?.message || 'Error al desactivar verificación por Email';
+          }
+        });
+    }
+  }
+
+  // ===== MÉTODOS DE GOOGLE AUTHENTICATOR =====
+
+  disableGoogleAuth(): void {
+    if (confirm('¿Estás seguro de que deseas desactivar Google Authenticator?')) {
+      this.loading = true;
+      this.clearMessages();
+
+      const headers = this.getAuthHeaders();
+
+      this.http.post<ApiResponse>(`${environment.apiUrl}/2fa/google/disable`, {}, { headers })
+        .subscribe({
+          next: (response: ApiResponse) => {
+            this.loading = false;
+            if (response.success) {
+              this.successMessage = 'Google Authenticator desactivado';
+              this.backupCodes = [];
+              this.backupCodesCount = 0;
+              this.reloadUserFromBackend();
+            } else {
+              this.errorMessage = response.message || 'Error al desactivar Google Authenticator';
+            }
+          },
+          error: (error: any) => {
+            this.loading = false;
+            this.errorMessage = error.error?.message || 'Error al desactivar Google Authenticator';
+          }
+        });
+    }
   }
 
   disable2FA(): void {
@@ -445,7 +576,7 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
    */
   generateCodes(): void {
     if (!this.isTwoFactorEnabled) {
-      this.errorMessage = 'Debes tener Google Authenticator activado primero para generar códigos de respaldo';
+      this.errorMessage = 'Debes tener al menos un método 2FA activado para generar códigos de respaldo';
       return;
     }
 

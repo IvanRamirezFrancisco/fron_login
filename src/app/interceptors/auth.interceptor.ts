@@ -16,7 +16,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/register',                   // Registro de usuario
     '/check-username',             // Validación username - variante 3
     '/forgot-password',            // Recuperación de contraseña
-    '/reset-password',             // Reset de contraseña
+    '/reset-password',             // Reset de contraseña (frontend route)
+    '/validate-reset-token',       // Validación del token de reset (backend endpoint)
+    '/api/auth/validate-reset-token', // Validación (ruta completa) - coincidencia adicional
     '/verify-email',               // Verificación de email
     '/auth/login',                 // Login alternativo
     '/auth/register'               // Registro alternativo
