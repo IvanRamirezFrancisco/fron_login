@@ -48,6 +48,19 @@ export interface SpringBootAuthResponse {
   success: boolean;
   message: string;
   data?: {
+    // ✅ AGREGADO: Estructura para respuesta con jwtResponse
+    jwtResponse?: {
+      accessToken?: string;
+      tokenType?: string;
+      expiresIn?: number;
+      user?: User;
+    };
+    sessionManagement?: {
+      activeSessions?: number;
+      maxSessions?: number;
+      sessionInfo?: string;
+    };
+    // Estructura anterior para compatibilidad
     accessToken?: string;
     tokenType?: string;
     expiresIn?: number;
@@ -108,6 +121,8 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
   return this.http.post<SpringBootAuthResponse>(`${this.API_URL}/login`, credentials)
     .pipe(
       map(response => {
+        console.log('🔍 Login response received:', response);
+        
         // Maneja el caso donde la respuesta indica que se requiere 2FA
         if (response.data?.twoFactorRequired || response.twoFactorRequired) {
           return {
@@ -115,16 +130,29 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
             pendingUser: response.data?.user ?? response.user
           } as AuthResponse;
         }
-        // Maneja el caso donde la respuesta contiene el token y usuario en data
-        const token = response.data?.accessToken ?? response.accessToken ?? response.token;
-        const user = response.data?.user ?? response.user;
+        
+        // ✅ CORREGIDO: Buscar token en la estructura correcta de respuesta
+        const token = response.data?.jwtResponse?.accessToken ?? 
+                     response.data?.accessToken ?? 
+                     response.accessToken ?? 
+                     response.token;
+                     
+        const user = response.data?.jwtResponse?.user ?? 
+                    response.data?.user ?? 
+                    response.user;
+        
+        console.log('🔍 Extracted token:', token ? 'Found' : 'Not found');
+        console.log('🔍 Extracted user:', user ? 'Found' : 'Not found');
+        
         if (token && user) {
           return {
             token,
             user
           } as AuthResponse;
         }
+        
         // Si no hay token ni usuario, respuesta inválida
+        console.error('❌ No token or user found in response');
         return {
           message: 'Respuesta de login inválida'
         } as AuthResponse;
