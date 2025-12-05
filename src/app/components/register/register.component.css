@@ -672,51 +672,219 @@
 }
 
 /* ========================================
-   INDICADORES DE CONTRASEÑA
+   INDICADORES DE CONTRASEÑA MEJORADOS
 ======================================== */
 
-.password-hints {
-  margin-top: 0.75rem;
-  padding: 1rem;
-  background: #f8f9fa;
+/* Container para input con botón de toggle */
+.input-password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-password {
+  padding-right: 3rem !important;
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
   border-radius: 8px;
-  border-left: 4px solid #C75D2C;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
 }
 
-.hint-text {
+.toggle-password-btn:hover {
+  background: rgba(62, 39, 35, 0.1);
+  transform: scale(1.05);
+}
+
+.toggle-password-btn .material-symbols-outlined {
+  font-size: 1.2rem;
+  color: var(--color-texto);
+  transition: all 0.3s ease;
+}
+
+.toggle-password-btn:hover .material-symbols-outlined {
+  color: var(--color-primario);
+}
+
+/* Requisitos de contraseña mejorados */
+.password-requirements {
+  margin-top: 0.75rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #F8F9FB, #F1F3F6);
+  border-radius: 12px;
+  border: 1px solid #E5E8EB;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.requirements-title {
   display: block;
-  font-size: 0.85rem;
-  color: #3E2723;
+  font-size: 0.875rem;
+  color: var(--color-primario);
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-titulos);
 }
 
-.requirements-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.requirements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.5rem;
 }
 
-.requirements-list li {
+.requirement-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.25rem 0;
-  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
   color: #666;
+  background: rgba(255, 255, 255, 0.6);
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.requirement-item.valid {
+  color: #059669;
+  background: linear-gradient(135deg, #ECFDF5, #D1FAE5);
+  border-color: #10B981;
+  transform: scale(1.02);
+}
+
+.requirement-item .material-symbols-outlined {
+  font-size: 1rem;
+  color: #D1D5DB;
   transition: all 0.3s ease;
 }
 
-.requirements-list li.valid {
-  color: #4CAF50;
+.requirement-item.valid .material-symbols-outlined {
+  color: #059669;
+  animation: checkmark-bounce 0.4s ease-out;
 }
 
-.requirements-list li .material-symbols-outlined {
-  font-size: 1.1rem;
-  color: #ccc;
-  transition: all 0.3s ease;
+@keyframes checkmark-bounce {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); }
 }
 
-.requirements-list li.valid .material-symbols-outlined {
-  color: #4CAF50;
+/* Estilos para mensajes de validación mejorados */
+.mensaje-validacion.warning {
+  color: #D97706;
+  background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
+  border-left: 4px solid #D97706;
+}
+
+.mensaje-validacion.warning .material-symbols-outlined {
+  color: #D97706;
+  animation: warning-pulse 2s infinite;
+}
+
+@keyframes warning-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Estilos para input con warning */
+.input-campo.input-warning {
+  border-color: #D97706;
+  background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
+}
+
+.input-campo.input-warning:focus {
+  border-color: #D97706;
+  box-shadow: 
+    0 0 0 4px rgba(217, 119, 6, 0.12),
+    inset 0 1px 3px rgba(0, 0, 0, 0.02),
+    0 4px 12px rgba(217, 119, 6, 0.08);
+}
+
+/* Animaciones para retroalimentación en tiempo real */
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mensaje-validacion {
+  animation: slide-in-up 0.3s ease-out;
+}
+
+.password-requirements {
+  animation: slide-in-up 0.4s ease-out;
+}
+
+/* Mejoras para campos de nombres */
+.input-campo.input-valid:focus {
+  border-color: #10B981;
+  box-shadow: 
+    0 0 0 4px rgba(16, 185, 129, 0.12),
+    inset 0 1px 3px rgba(0, 0, 0, 0.02),
+    0 4px 12px rgba(16, 185, 129, 0.08);
+}
+
+/* Indicadores de progreso para formulario */
+.campo-completo,
+.campo-mitad {
+  position: relative;
+}
+
+.campo-completo:has(.input-valid)::after,
+.campo-mitad:has(.input-valid)::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, #10B981, #059669);
+  border-radius: 0 8px 8px 0;
+  opacity: 0.8;
+}
+
+/* Responsive mejorado */
+@media (max-width: 640px) {
+  .requirements-grid {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+  
+  .requirement-item {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.6rem;
+  }
+  
+  .fila-campos {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .input-password-container {
+    position: relative;
+  }
+  
+  .toggle-password-btn {
+    right: 0.75rem;
+  }
+}
+
+/* Transiciones suaves para mejor UX */
+* {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }

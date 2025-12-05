@@ -121,7 +121,7 @@
             </div>
           </div>
 
-          <!-- Campo Email -->
+          <!-- Campo Email con validación mejorada -->
           <div class="campo-completo">
             <label for="email" class="etiqueta">
               <span class="material-symbols-outlined">email</span>
@@ -133,72 +133,120 @@
               formControlName="email"
               class="input-campo"
               [class.input-error]="email?.invalid && email?.touched"
-              [class.input-valid]="email?.valid && email?.touched"
-              placeholder="ejemplo@correo.com"
+              [class.input-valid]="email?.valid && email?.touched && !getFieldError('email')"
+              [class.input-warning]="emailValidationMessage.includes('⚠️')"
+              placeholder="ejemplo&#64;gmail.com"
               autocomplete="email"
             >
+            <!-- Error de email -->
             <div *ngIf="getFieldError('email')" class="mensaje-validacion error">
               <span class="material-symbols-outlined">error</span>
               <span>{{ getFieldError('email') }}</span>
             </div>
-            <div *ngIf="isFieldValid('email')" class="mensaje-validacion success">
+            <!-- Mensaje de validación en tiempo real del dominio -->
+            <div *ngIf="emailValidationMessage && !getFieldError('email')" 
+                 class="mensaje-validacion"
+                 [class.success]="emailValidationMessage.includes('✅')"
+                 [class.warning]="emailValidationMessage.includes('⚠️')"
+                 [class.error]="emailValidationMessage.includes('❌')">
+              <span class="material-symbols-outlined">
+                {{ emailValidationMessage.includes('✅') ? 'verified' : 
+                   emailValidationMessage.includes('⚠️') ? 'warning' : 'error' }}
+              </span>
+              <span [innerHTML]="emailValidationMessage"></span>
+            </div>
+            <!-- Éxito para email válido -->
+            <div *ngIf="email?.valid && email?.touched && emailValidationMessage.includes('✅')" 
+                 class="mensaje-validacion success">
               <span class="material-symbols-outlined">verified</span>
-              <span>Correo electrónico válido</span>
+              <span>Correo electrónico válido y dominio oficial</span>
             </div>
           </div>
 
-          <!-- Campo Contraseña -->
+          <!-- Campo Contraseña con toggle de visibilidad -->
           <div class="campo-completo">
             <label for="password" class="etiqueta">
               <span class="material-symbols-outlined">lock</span>
               Contraseña
             </label>
-            <input 
-              type="password" 
-              id="password" 
-              formControlName="password"
-              class="input-campo"
-              [class.input-error]="password?.invalid && password?.touched"
-              [class.input-valid]="password?.valid && password?.touched"
-              placeholder="Mínimo 6 caracteres"
-              autocomplete="new-password"
-            >
-            <!-- Errores de contraseña -->
+            <div class="input-password-container">
+              <input 
+                [type]="showPassword ? 'text' : 'password'" 
+                id="password" 
+                formControlName="password"
+                class="input-campo input-password"
+                [class.input-error]="password?.invalid && password?.touched"
+                [class.input-valid]="password?.valid && password?.touched && passwordStrengthMessage.includes('✅')"
+                [class.input-warning]="passwordStrengthMessage.includes('⚠️')"
+                placeholder="Mínimo 8 caracteres"
+                autocomplete="new-password"
+              >
+              <button 
+                type="button" 
+                class="toggle-password-btn"
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+              >
+                <span class="material-symbols-outlined">
+                  {{ showPassword ? 'visibility_off' : 'visibility' }}
+                </span>
+              </button>
+            </div>
+            
+            <!-- Error de contraseña -->
             <div *ngIf="getFieldError('password')" class="mensaje-validacion error">
               <span class="material-symbols-outlined">error</span>
               <span>{{ getFieldError('password') }}</span>
             </div>
-            <!-- Indicador de contraseña válida -->
-            <div *ngIf="isFieldValid('password')" class="mensaje-validacion success">
-              <span class="material-symbols-outlined">verified_user</span>
-              <span>Contraseña segura</span>
+            
+            <!-- Mensaje de fortaleza en tiempo real -->
+            <div *ngIf="passwordStrengthMessage && !getFieldError('password')" 
+                 class="mensaje-validacion"
+                 [class.success]="passwordStrengthMessage.includes('✅')"
+                 [class.warning]="passwordStrengthMessage.includes('⚠️')"
+                 [class.error]="passwordStrengthMessage.includes('❌')">
+              <span class="material-symbols-outlined">
+                {{ passwordStrengthMessage.includes('✅') ? 'verified_user' : 
+                   passwordStrengthMessage.includes('⚠️') ? 'warning' : 'error' }}
+              </span>
+              <span [innerHTML]="passwordStrengthMessage"></span>
             </div>
             
             <!-- Requisitos de contraseña (cuando está escribiendo) -->
-            <div *ngIf="password?.value && password?.invalid && password?.touched" class="password-hints">
-              <small class="hint-text">La contraseña debe contener:</small>
-              <ul class="requirements-list">
-                <li [class.valid]="hasMinLength(password?.value || '')">
-                  <span class="material-symbols-outlined">{{ hasMinLength(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}</span>
-                  Al menos 8 caracteres
-                </li>
-                <li [class.valid]="hasUpperCase(password?.value || '')">
-                  <span class="material-symbols-outlined">{{ hasUpperCase(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}</span>
-                  Una letra mayúscula
-                </li>
-                <li [class.valid]="hasLowerCase(password?.value || '')">
-                  <span class="material-symbols-outlined">{{ hasLowerCase(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}</span>
-                  Una letra minúscula
-                </li>
-                <li [class.valid]="hasNumbers(password?.value || '')">
-                  <span class="material-symbols-outlined">{{ hasNumbers(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}</span>
-                  Un número
-                </li>
-                <li [class.valid]="hasSpecialChars(password?.value || '')">
-                  <span class="material-symbols-outlined">{{ hasSpecialChars(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}</span>
-                  Un carácter especial (&#64;$!%*?&._-)
-                </li>
-              </ul>
+            <div *ngIf="password?.value && password?.touched" class="password-requirements">
+              <small class="requirements-title">Requisitos de contraseña:</small>
+              <div class="requirements-grid">
+                <div class="requirement-item" [class.valid]="hasMinLength(password?.value || '')">
+                  <span class="material-symbols-outlined">
+                    {{ hasMinLength(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}
+                  </span>
+                  <span>8+ caracteres</span>
+                </div>
+                <div class="requirement-item" [class.valid]="hasUpperCase(password?.value || '')">
+                  <span class="material-symbols-outlined">
+                    {{ hasUpperCase(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}
+                  </span>
+                  <span>Mayúscula</span>
+                </div>
+                <div class="requirement-item" [class.valid]="hasLowerCase(password?.value || '')">
+                  <span class="material-symbols-outlined">
+                    {{ hasLowerCase(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}
+                  </span>
+                  <span>Minúscula</span>
+                </div>
+                <div class="requirement-item" [class.valid]="hasNumbers(password?.value || '')">
+                  <span class="material-symbols-outlined">
+                    {{ hasNumbers(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}
+                  </span>
+                  <span>Número</span>
+                </div>
+                <div class="requirement-item" [class.valid]="hasSpecialChars(password?.value || '')">
+                  <span class="material-symbols-outlined">
+                    {{ hasSpecialChars(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}
+                  </span>
+                  <span>Símbolo (&#64;$!%*?&)</span>
+                </div>
+              </div>
             </div>
           </div>
 

@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -26,7 +26,7 @@ interface TwoFactorMethod {
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements AfterViewInit {
+export class LoginComponent implements AfterViewInit, OnDestroy {
   @ViewChild('emailInput') emailInput!: ElementRef;
   @ViewChild('twoFactorInput') twoFactorInput!: ElementRef;
   
@@ -47,6 +47,12 @@ export class LoginComponent implements AfterViewInit {
   useBackupCode = false;
   backupCode = '';
   backupCodesAvailable = false; // Indica si el usuario tiene códigos de respaldo activos
+
+  // Estados para rate limiting y cuenta regresiva
+  isBlocked = false;
+  blockTimeLeft = 0;
+  blockSecondsLeft = 0;
+  private countdownTimer: any;
 
   cancelTwoFactor(): void {
     this.showTwoFactorForm = false;
@@ -160,8 +166,15 @@ export class LoginComponent implements AfterViewInit {
       }
     },
     error: (error) => {
-      this.errorMessage = error.error?.message || error.message || 'Error al iniciar sesión';
       this.isLoading = false;
+      
+      // Verificar si es un error de rate limiting (429)
+      if (error.status === 429 && error.error?.remainingTimeSeconds) {
+        this.handleRateLimitError(error.error);
+      } else {
+        this.errorMessage = error.error?.message || error.message || 'Error al iniciar sesión';
+        this.clearCountdown(); // Limpiar cualquier countdown previo
+      }
     }
   });
 }
@@ -512,6 +525,95 @@ export class LoginComponent implements AfterViewInit {
     } else {
       this.router.navigate(['/register']);
     }
+  }
+
+  /**
+   * Formatear el tiempo restante para mostrar al usuario
+   */
+  formatTimeLeft(): string {
+    if (this.blockTimeLeft > 0 && this.blockSecondsLeft > 0) {
+      return `${this.blockTimeLeft} minutos y ${this.blockSecondsLeft} segundos`;
+    } else if (this.blockTimeLeft > 0) {
+      return `${this.blockTimeLeft} minutos`;
+    } else if (this.blockSecondsLeft > 0) {
+      return `${this.blockSecondsLeft} segundos`;
+    }
+    return '0 segundos';
+  }
+
+  /**
+   * Manejar errores de rate limiting con cuenta regresiva
+   */
+  private handleRateLimitError(errorResponse: any): void {
+    this.isBlocked = true;
+    
+    if (errorResponse.remainingTimeSeconds) {
+      const totalSeconds = errorResponse.remainingTimeSeconds;
+      this.blockTimeLeft = Math.floor(totalSeconds / 60);
+      this.blockSecondsLeft = totalSeconds % 60;
+      
+      // Mensaje inicial
+      this.updateBlockMessage();
+      
+      // Iniciar countdown con tiempo real
+      this.startCountdown(totalSeconds);
+    } else {
+      this.errorMessage = errorResponse.message || 'Cuenta bloqueada temporalmente. Intenta más tarde.';
+    }
+  }
+
+  /**
+   * Iniciar countdown en tiempo real
+   */
+  private startCountdown(totalSeconds: number): void {
+    let remainingSeconds = totalSeconds;
+    
+    this.countdownTimer = setInterval(() => {
+      remainingSeconds--;
+      
+      if (remainingSeconds <= 0) {
+        this.clearCountdown();
+        this.errorMessage = '';
+        this.isBlocked = false;
+      } else {
+        this.blockTimeLeft = Math.floor(remainingSeconds / 60);
+        this.blockSecondsLeft = remainingSeconds % 60;
+        this.updateBlockMessage();
+      }
+    }, 1000);
+  }
+
+  /**
+   * Actualizar mensaje de bloqueo con tiempo restante
+   */
+  private updateBlockMessage(): void {
+    if (this.blockTimeLeft > 0 && this.blockSecondsLeft > 0) {
+      this.errorMessage = `Cuenta bloqueada temporalmente por múltiples intentos fallidos. Intenta de nuevo en ${this.blockTimeLeft} minutos y ${this.blockSecondsLeft} segundos.`;
+    } else if (this.blockTimeLeft > 0) {
+      this.errorMessage = `Cuenta bloqueada temporalmente por múltiples intentos fallidos. Intenta de nuevo en ${this.blockTimeLeft} minutos.`;
+    } else if (this.blockSecondsLeft > 0) {
+      this.errorMessage = `Cuenta bloqueada temporalmente por múltiples intentos fallidos. Intenta de nuevo en ${this.blockSecondsLeft} segundos.`;
+    }
+  }
+
+  /**
+   * Limpiar countdown
+   */
+  private clearCountdown(): void {
+    if (this.countdownTimer) {
+      clearInterval(this.countdownTimer);
+      this.countdownTimer = null;
+    }
+    this.isBlocked = false;
+    this.blockTimeLeft = 0;
+    this.blockSecondsLeft = 0;
+  }
+
+  /**
+   * Cleanup al destruir el componente
+   */
+  ngOnDestroy(): void {
+    this.clearCountdown();
   }
 
   get email() { return this.loginForm.get('email'); }

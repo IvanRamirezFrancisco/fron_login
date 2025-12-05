@@ -204,6 +204,15 @@ export class ForgotPasswordComponent implements OnInit, AfterViewInit, OnDestroy
         this.resetAttemptCount();
         this.error = '';
         this.message = 'Ya puedes intentar nuevamente.';
+        // Esperar un momento para que el usuario vea el mensaje y luego redirigir al login
+        setTimeout(() => {
+          const email = this.forgotPasswordForm.get('email')?.value?.trim();
+          if (email) {
+            this.router.navigate(['/login'], { queryParams: { email } });
+          } else {
+            this.router.navigate(['/login']);
+          }
+        }, 2000);
       } else {
         this.blockTimeLeft = Math.floor(remainingSeconds / 60);
         this.blockSecondsLeft = remainingSeconds % 60;
@@ -223,6 +232,15 @@ export class ForgotPasswordComponent implements OnInit, AfterViewInit, OnDestroy
         this.resetAttemptCount();
         this.error = '';
         this.message = 'Ya puedes intentar nuevamente.';
+        // Redirigir al login después de un momento para que el usuario vea el mensaje
+        setTimeout(() => {
+          const email = this.forgotPasswordForm.get('email')?.value?.trim();
+          if (email) {
+            this.router.navigate(['/login'], { queryParams: { email } });
+          } else {
+            this.router.navigate(['/login']);
+          }
+        }, 2000);
       } else {
         this.error = `Has excedido el límite de intentos. Espera ${this.blockTimeLeft} minutos antes de intentar nuevamente.`;
       }
