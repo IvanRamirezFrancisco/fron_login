@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
@@ -12,7 +12,7 @@ import { HomeHeaderComponent } from '../home-header/home-header.component';
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.css']
 })
-export class ForgotPasswordComponent implements OnInit, AfterViewInit {
+export class ForgotPasswordComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('emailInput') emailInput!: ElementRef;
   
   forgotPasswordForm: FormGroup;
@@ -20,6 +20,12 @@ export class ForgotPasswordComponent implements OnInit, AfterViewInit {
   submitted = false;
   message = '';
   error = '';
+  isBlocked = false;
+  blockTimeLeft = 0;
+  blockSecondsLeft = 0;
+  attemptCount = 0;
+  maxAttempts = 3;
+  private blockTimer: any;
 
   constructor(
     private fb: FormBuilder,
@@ -63,6 +69,12 @@ export class ForgotPasswordComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    // Verificar si está bloqueado
+    if (this.isBlocked) {
+      this.error = `Demasiados intentos. Espera ${this.blockTimeLeft} minutos antes de intentar nuevamente.`;
+      return;
+    }
+
     this.loading = true;
     const email = this.forgotPasswordForm.get('email')?.value;
 
@@ -73,6 +85,7 @@ export class ForgotPasswordComponent implements OnInit, AfterViewInit {
           this.message = response.message || 'Se ha enviado un enlace de recuperación a tu email.';
           this.forgotPasswordForm.reset();
           this.submitted = false;
+          this.resetAttemptCount(); // Resetear contador en caso de éxito
           
           // Redirigir al login después de 3 segundos
           setTimeout(() => {
@@ -82,31 +95,158 @@ export class ForgotPasswordComponent implements OnInit, AfterViewInit {
           }, 3000);
         } else {
           this.error = response.message || 'Error al procesar la solicitud';
+          this.incrementAttemptCount();
         }
       },
       error: (err) => {
         this.loading = false;
         console.error('Error in forgot password:', err);
         
-        if (err.error?.message) {
+        if (err.status === 429) {
+          // Rate limit exceeded - usar la información de tiempo del servidor
+          this.handleRateLimitError(err.error);
+        } else if (err.error?.message) {
           this.error = err.error.message;
+          this.incrementAttemptCount();
         } else if (err.status === 404) {
           this.error = 'No se encontró una cuenta con ese email';
-        } else if (err.status === 429) {
-          this.error = 'Demasiadas solicitudes. Intenta nuevamente más tarde';
+          this.incrementAttemptCount();
         } else {
           this.error = 'Error del servidor. Intenta nuevamente más tarde';
+          this.incrementAttemptCount();
         }
       }
     });
   }
 
+  /**
+   * Maneja errores de rate limiting del servidor
+   */
+  private handleRateLimitError(errorResponse?: any): void {
+    this.isBlocked = true;
+    
+    if (errorResponse?.remainingTimeSeconds) {
+      // Usar tiempo real del servidor
+      const totalSeconds = errorResponse.remainingTimeSeconds;
+      this.blockTimeLeft = Math.floor(totalSeconds / 60);
+      this.blockSecondsLeft = totalSeconds % 60;
+      this.attemptCount = errorResponse.attemptCount || this.attemptCount;
+      this.maxAttempts = errorResponse.maxAttempts || this.maxAttempts;
+      
+      this.error = errorResponse.message || 
+        `Has excedido el límite de ${this.maxAttempts} intentos. Espera ${this.formatTimeLeft()} antes de intentar nuevamente.`;
+      
+      // Iniciar countdown con tiempo real
+      this.startRealTimeCountdown(totalSeconds);
+    } else {
+      // Fallback al método anterior
+      this.blockTimeLeft = 5; // 5 minutos
+      this.blockSecondsLeft = 0;
+      this.error = errorResponse?.message || `Has excedido el límite de ${this.maxAttempts} intentos. Espera ${this.blockTimeLeft} minutos.`;
+      this.startBlockCountdown();
+    }
+  }
+
+  /**
+   * Incrementa el contador de intentos
+   */
+  private incrementAttemptCount(): void {
+    this.attemptCount++;
+    
+    if (this.attemptCount >= this.maxAttempts) {
+      this.isBlocked = true;
+      this.blockTimeLeft = 5; // 5 minutos
+      this.error = `Has realizado ${this.attemptCount} intentos. Espera ${this.blockTimeLeft} minutos antes de intentar nuevamente.`;
+      this.startBlockCountdown();
+    } else {
+      const remainingAttempts = this.maxAttempts - this.attemptCount;
+      this.error += ` Te quedan ${remainingAttempts} intentos.`;
+    }
+  }
+
+  /**
+   * Resetea el contador de intentos
+   */
+  private resetAttemptCount(): void {
+    this.attemptCount = 0;
+    this.isBlocked = false;
+    this.blockTimeLeft = 0;
+    this.blockSecondsLeft = 0;
+    if (this.blockTimer) {
+      clearInterval(this.blockTimer);
+    }
+  }
+
+  /**
+   * Formatea el tiempo restante para mostrar al usuario
+   */
+  private formatTimeLeft(): string {
+    if (this.blockTimeLeft > 0 && this.blockSecondsLeft > 0) {
+      return `${this.blockTimeLeft} minutos y ${this.blockSecondsLeft} segundos`;
+    } else if (this.blockTimeLeft > 0) {
+      return `${this.blockTimeLeft} minutos`;
+    } else if (this.blockSecondsLeft > 0) {
+      return `${this.blockSecondsLeft} segundos`;
+    }
+    return '0 segundos';
+  }
+
+  /**
+   * Inicia un countdown en tiempo real con la información del servidor
+   */
+  private startRealTimeCountdown(totalSeconds: number): void {
+    let remainingSeconds = totalSeconds;
+    
+    this.blockTimer = setInterval(() => {
+      remainingSeconds--;
+      
+      if (remainingSeconds <= 0) {
+        this.resetAttemptCount();
+        this.error = '';
+        this.message = 'Ya puedes intentar nuevamente.';
+      } else {
+        this.blockTimeLeft = Math.floor(remainingSeconds / 60);
+        this.blockSecondsLeft = remainingSeconds % 60;
+        this.error = `Has excedido el límite de intentos. Espera ${this.formatTimeLeft()} antes de intentar nuevamente.`;
+      }
+    }, 1000); // Cada segundo para mayor precisión
+  }
+
+  /**
+   * Inicia el countdown de bloqueo (método legacy)
+   */
+  private startBlockCountdown(): void {
+    this.blockTimer = setInterval(() => {
+      this.blockTimeLeft--;
+      
+      if (this.blockTimeLeft <= 0) {
+        this.resetAttemptCount();
+        this.error = '';
+        this.message = 'Ya puedes intentar nuevamente.';
+      } else {
+        this.error = `Has excedido el límite de intentos. Espera ${this.blockTimeLeft} minutos antes de intentar nuevamente.`;
+      }
+    }, 60000); // Cada minuto
+  }
+
+  /**
+   * Navegar de regreso al login
+   */
   goBack(): void {
     const currentEmail = this.forgotPasswordForm.get('email')?.value || '';
     if (currentEmail && currentEmail.trim()) {
       this.router.navigate(['/login'], { queryParams: { email: currentEmail.trim() } });
     } else {
       this.router.navigate(['/login']);
+    }
+  }
+
+  /**
+   * Cleanup al destruir el componente
+   */
+  ngOnDestroy(): void {
+    if (this.blockTimer) {
+      clearInterval(this.blockTimer);
     }
   }
 }
