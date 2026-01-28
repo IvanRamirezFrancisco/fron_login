@@ -1,445 +1,537 @@
-<!-- Header de navegación -->
-<app-home-header></app-home-header>
-
-<!-- Contenedor principal Casa de Música -->
-<div class="d-flex justify-content-center align-items-center" style="min-height: 100vh; background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-dark) 100%); padding: 2rem 1rem; padding-top: calc(2rem + 80px);">
-  <div class="container-sm-modern">
-    
-    <!-- Card principal de login Casa de Música -->
-    <div class="card-modern card-elevated-modern fade-in" style="max-width: 420px; margin: 0 auto; border-radius: var(--border-radius-2xl); overflow: hidden; box-shadow: var(--shadow-xl);">
-      
-      <!-- Header del card Casa de Música -->
-      <div class="card-header-modern text-center" style="background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-dark) 100%); color: white; border: none; padding: 2.5rem 2rem;">
-        <!-- Logo Casa de Música -->
-        <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
-          <div style="width: 50px; height: 50px; background: var(--color-resalte); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg);">
-            <span class="material-symbols-outlined" style="color: var(--color-primario); font-size: 1.5rem;">music_note</span>
-          </div>
-          <div class="text-start">
-            <h1 style="color: white; font-weight: 700; font-family: var(--font-titulos); margin: 0; font-size: 1.4rem; line-height: 1.2;">Casa de Música</h1>
-            <p style="color: var(--color-resalte); margin: 0; font-size: 0.8rem; font-family: var(--font-titulos); font-weight: 600;">CASTILLO</p>
-          </div>
-        </div>
-        <h2 style="color: white; font-weight: 600; font-family: var(--font-titulos); margin-bottom: 0.5rem; font-size: 1.5rem;">Iniciar Sesión</h2>
-        <p class="mb-0" style="color: rgba(255,255,255,0.9); font-size: 0.9rem; font-family: var(--font-cuerpo);">Accede a tu cuenta de forma segura</p>
+﻿<!-- Header igual que en home -->
+<header class="header-main">
+  <div class="container">
+    <div class="header-content">
+      <div class="logo-section" (click)="navigateToHome()" style="cursor: pointer;">
+        <img src="assets/logoP.png" alt="Casa de Música Castillo" class="logo-image" />
+        <span class="logo-text">CASTILLO</span>
       </div>
+      
+      <div class="search-section">
+        <div class="search-bar">
+          <span class="material-icons search-icon">search</span>
+          <input 
+            type="text" 
+            placeholder="Busca guitarras, pianos, y más..." 
+            class="search-input"
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="performSearch()"
+          />
+          <button class="search-btn" type="button" (click)="performSearch()">
+            <span class="material-icons">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="user-actions">
+        <button class="action-btn" title="Lista de deseos">
+          <span class="material-icons">favorite_border</span>
+        </button>
+        <button class="action-btn active" title="Iniciar sesión">
+          <span class="material-icons">person</span>
+        </button>
+        <button class="action-btn cart-btn" title="Carrito de compras">
+          <span class="material-icons">shopping_cart</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
 
-      <!-- Body del card Casa de Música -->
-      <div class="card-body-modern" style="padding: 2rem;">
-        
-        <!-- Mensaje de error global -->
-        <div *ngIf="errorMessage" class="alert-modern alert-danger-modern mb-4" style="background: var(--color-error); color: white; border-radius: var(--border-radius-lg); padding: 1rem; border: none;">
-          <span class="material-symbols-outlined" style="color: white; margin-right: 0.5rem;">warning</span>
-          <span style="font-family: var(--font-cuerpo);">{{ errorMessage }}</span>
+<nav class="secondary-nav">
+  <div class="container">
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a routerLink="/home" class="nav-link">
+          <span class="material-icons">home</span>
+          Inicio
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/ofertas" class="nav-link">
+          <span class="material-icons">local_offer</span>
+          Ofertas
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/catalogo" class="nav-link">
+          <span class="material-icons">inventory_2</span>
+          Catálogo
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/servicios" class="nav-link">
+          <span class="material-icons">build</span>
+          Servicios
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/ayuda" class="nav-link">
+          <span class="material-icons">help</span>
+          Ayuda
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Contenido del Login -->
+<div class="login-content">
+  <div class="container">
+    <div class="login-wrapper">
+      <div class="login-card">
+        <div class="login-header">
+          <span class="material-icons login-icon">person</span>
+          <h1>Iniciar Sesión</h1>
+          <p>Bienvenido a Casa de Música Castillo</p>
         </div>
 
-        <!-- Formulario Casa de Música -->
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="d-flex flex-column gap-4">
-          
-          <!-- Campo Email -->
+        <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <!-- Mensaje de error global -->
+          <div class="error-alert" *ngIf="errorMessage && !isBlocked">
+            <span class="material-icons">error</span>
+            <span>{{ errorMessage }}</span>
+          </div>
+
+          <!-- Mensaje de bloqueo por rate limiting -->
+          <div class="warning-alert" *ngIf="isBlocked">
+            <span class="material-icons">lock_clock</span>
+            <div class="alert-content">
+              <strong>Cuenta temporalmente bloqueada</strong>
+              <p>Demasiados intentos fallidos. Intenta nuevamente en:</p>
+              <div class="countdown-timer">
+                <div class="time-block" *ngIf="blockTimeLeft > 0">
+                  <span class="time-value">{{ blockTimeLeft }}</span>
+                  <span class="time-label">{{ blockTimeLeft === 1 ? 'minuto' : 'minutos' }}</span>
+                </div>
+                <span class="time-separator" *ngIf="blockTimeLeft > 0 && blockSecondsLeft > 0">:</span>
+                <div class="time-block">
+                  <span class="time-value">{{ blockSecondsLeft < 10 ? '0' + blockSecondsLeft : blockSecondsLeft }}</span>
+                  <span class="time-label">{{ blockSecondsLeft === 1 ? 'segundo' : 'segundos' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="form-group">
-            <label for="email" class="form-label" style="color: var(--color-primario); font-family: var(--font-titulos); font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center;">
-              <span class="material-symbols-outlined" style="margin-right: 0.5rem; color: var(--color-primario); font-size: 1.2rem;">email</span>
+            <label for="email">
+              <span class="material-icons">email</span>
               Correo Electrónico
             </label>
-            <input 
-              type="email" 
-              id="email" 
-              #emailInput
+            <input
+              type="email"
+              id="email"
               formControlName="email"
-              appSecureInput
-              inputType="email"
-              class="form-control"
-              [class.is-invalid]="email?.invalid && email?.touched"
-              [class.is-valid]="email?.valid && email?.touched"
-              placeholder="tu-email@ejemplo.com"
+              placeholder="tucorreo&#64;ejemplo.com"
               autocomplete="email"
-              style="border: 2px solid var(--gray-300); border-radius: var(--border-radius-lg); padding: 0.875rem 1rem; font-family: var(--font-cuerpo); transition: var(--transition);"
-            >
-            <div *ngIf="email?.invalid && email?.touched" class="invalid-feedback" style="color: var(--color-error); font-family: var(--font-cuerpo); margin-top: 0.5rem;">
-              <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 0.25rem;">cancel</span>
-              <span *ngIf="email?.errors?.['required']">El email es requerido</span>
-              <span *ngIf="email?.errors?.['email']">Formato de email inválido</span>
-            </div>
-            <div *ngIf="email?.valid && email?.touched" class="valid-feedback" style="color: var(--color-exito); font-family: var(--font-cuerpo); margin-top: 0.5rem;">
-              <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 0.25rem;">check_circle</span>
-              <span>Email válido</span>
+              [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+              [class.success]="loginForm.get('email')?.valid && loginForm.get('email')?.touched"
+              #emailInput
+            />
+            <div class="field-error" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+              <span class="material-icons">error</span>
+              <span *ngIf="loginForm.get('email')?.errors?.['required']">El email es requerido</span>
+              <span *ngIf="loginForm.get('email')?.errors?.['email']">Email inválido</span>
             </div>
           </div>
 
-          <!-- Campo Contraseña -->
           <div class="form-group">
-            <label for="password" class="form-label" style="color: var(--color-primario); font-family: var(--font-titulos); font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center;">
-              <span class="material-symbols-outlined" style="margin-right: 0.5rem; color: var(--color-primario); font-size: 1.2rem;">lock</span>
+            <label for="password">
+              <span class="material-icons">lock</span>
               Contraseña
             </label>
-            <div class="input-group" style="position: relative;">
-              <input 
+            <div class="password-wrapper">
+              <input
                 [type]="showPassword ? 'text' : 'password'"
-                id="password" 
+                id="password"
                 formControlName="password"
-                appSecureInput
-                inputType="password"
-                class="form-control"
-                [class.is-invalid]="password?.invalid && password?.touched"
-                [class.is-valid]="password?.valid && password?.touched"
-                placeholder="Ingresa tu contraseña"
+                placeholder="Tu contraseña"
                 autocomplete="current-password"
-                style="border: 2px solid var(--gray-300); border-radius: var(--border-radius-lg); padding: 0.875rem 3rem 0.875rem 1rem; font-family: var(--font-cuerpo); transition: var(--transition);"
+                [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                [class.success]="loginForm.get('password')?.valid && loginForm.get('password')?.touched"
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                (click)="togglePassword()"
               >
-              <button 
-                type="button" 
-                class="btn-icon"
-                (click)="togglePasswordVisibility()"
-                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--color-primario); cursor: pointer; z-index: 10; transition: var(--transition);"
-              >
-                <span *ngIf="!showPassword" class="material-symbols-outlined" style="font-size: 1.2rem;">visibility</span>
-                <span *ngIf="showPassword" class="material-symbols-outlined" style="font-size: 1.2rem;">visibility_off</span>
+                <span class="material-icons">
+                  {{ showPassword ? 'visibility_off' : 'visibility' }}
+                </span>
               </button>
             </div>
-            <div *ngIf="password?.invalid && password?.touched" class="invalid-feedback" style="color: var(--color-error); font-family: var(--font-cuerpo); margin-top: 0.5rem;">
-              <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 0.25rem;">cancel</span>
-              <span *ngIf="password?.errors?.['required']">La contraseña es requerida</span>
-              <span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres</span>
-            </div>
-            <div *ngIf="password?.valid && password?.touched" class="valid-feedback" style="color: var(--color-exito); font-family: var(--font-cuerpo); margin-top: 0.5rem;">
-              <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 0.25rem;">check_circle</span>
-              <span>Contraseña válida</span>
+            <div class="field-error" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+              <span class="material-icons">error</span>
+              <span *ngIf="loginForm.get('password')?.errors?.['required']">La contraseña es requerida</span>
+              <span *ngIf="loginForm.get('password')?.errors?.['minlength']">Mínimo 6 caracteres</span>
             </div>
           </div>
 
-          <!-- Botón de submit Casa de Música -->
-          <button 
-            type="submit" 
-            [disabled]="loginForm.invalid || isLoading"
-            class="boton-primario w-100 border-0"
-            [class.loading]="isLoading"
-            style="padding: 1rem; font-size: 1rem; margin-top: 1rem; transition: var(--transition);"
-          >
-            <span *ngIf="!isLoading" class="d-flex align-items-center justify-content-center gap-2">
-              <span class="material-symbols-outlined" style="font-size: 1.2rem;">login</span>
-              <span>Iniciar Sesión</span>
-            </span>
-          </button>
-
-        </form>
-      </div>
-
-      <!-- Footer del card Casa de Música -->
-      <div class="card-footer-modern" style="background: var(--color-fondo); padding: 1.5rem 2rem; border-top: 2px solid var(--color-resalte);">
-        <div class="d-flex flex-column gap-3 text-center">
-          
-          <!-- Enlace olvidar contraseña -->
-          <div>
-            <a 
-              (click)="goToForgotPassword()"
-              class="text-decoration-none transicion"
-              style="color: var(--color-primario); font-weight: 600; font-size: 0.9rem; font-family: var(--font-titulos); display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer;"
-            >
-              <span class="material-symbols-outlined" style="font-size: 1rem;">key</span>
+          <div class="form-options">
+            <a (click)="goToForgotPassword()" class="forgot-link" style="cursor: pointer;">
               ¿Olvidaste tu contraseña?
             </a>
           </div>
 
+          <button type="submit" class="btn-login" [disabled]="isLoading || isBlocked" [class.loading]="isLoading">
+            <span class="material-icons" *ngIf="!isLoading">login</span>
+            <span class="material-icons spinning" *ngIf="isLoading">sync</span>
+            {{ isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
+          </button>
 
-          <!-- Enlace registro -->
-          <div>
-            <span style="color: var(--color-texto-principal); font-size: 0.9rem; font-family: var(--font-cuerpo);">¿No tienes cuenta?</span>
-            <a 
-              (click)="goToRegister()"
-              class="text-decoration-none transicion"
-              style="color: var(--color-accion); font-weight: 700; margin-left: 0.5rem; font-family: var(--font-titulos); display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer;"
-            >
-              <span class="material-symbols-outlined" style="font-size: 1rem;">person_add</span>
-              Crear cuenta
-            </a>
+          <div class="register-section">
+            ¿No tienes una cuenta?
+            <a routerLink="/register">Regístrate aquí</a>
           </div>
-          
-        </div>
+        </form>
       </div>
-
     </div>
   </div>
 </div>
 
+<!-- Modal de Verificación 2FA -->
+<div class="modal-overlay" *ngIf="showTwoFactorForm" (click)="cancelTwoFactor()">
+  <div class="modal-2fa" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-icon">
+        <span class="material-icons">verified_user</span>
+      </div>
+      <h2>Verificación en Dos Pasos</h2>
+      <p>Selecciona tu método de autenticación</p>
+      <button type="button" class="modal-close" (click)="cancelTwoFactor()" title="Cancelar">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
 
+    <div class="modal-body">
+      <!-- Error en 2FA -->
+      <div class="error-alert" *ngIf="errorMessage">
+        <span class="material-icons">error</span>
+        <span>{{ errorMessage }}</span>
+      </div>
 
-    <!-- ...existing code... -->
-
-<!-- Modal de verificación 2FA moderno -->
-<div *ngIf="showTwoFactorForm" 
-     class="position-fixed w-100 h-100 d-flex justify-content-center align-items-center"
-     style="top: 0; left: 0; background: rgba(0,0,0,0.5); z-index: 1050; backdrop-filter: blur(4px);">
-  
-  <div class="container-sm-modern">
-    <div class="card-modern card-elevated-modern fade-in" style="max-width: 420px; margin: 0 auto; width: 90vw;">
-      
-      <!-- Selección de método 2FA -->
-      <div *ngIf="!selectedMethod">
-        
-        <!-- Header Casa de Música -->
-        <div class="card-header-modern text-center" style="background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-dark) 100%); color: white; border: none; padding: 2rem;">
-          <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
-            <div style="width: 50px; height: 50px; background: var(--color-resalte); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);">
-              <span class="material-symbols-outlined" style="color: var(--color-primario); font-size: 1.5rem;">security</span>
-            </div>
-            <h3 class="mb-0" style="color: white; font-weight: 700; font-family: var(--font-titulos); font-size: 1.3rem;">Verificación en dos pasos</h3>
-          </div>
-          <p class="mb-0" style="color: rgba(255,255,255,0.9); font-size: 0.9rem; font-family: var(--font-cuerpo);">Elige cómo verificar tu identidad</p>
-        </div>
-
-        <!-- Body -->
-        <div class="card-body-modern" style="padding: 1.5rem;">
-          
-          <!-- Mensaje de error -->
-          <div *ngIf="errorMessage" class="alert-modern alert-danger-modern mb-4" style="background: var(--color-error); color: white; border-radius: var(--border-radius-lg); padding: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span class="material-symbols-outlined">warning</span>
-            <span>{{ errorMessage }}</span>
-          </div>
-
-          <!-- Grid de métodos - Solo muestra los activos del usuario -->
-          <div class="d-flex flex-column gap-3">
-            <div 
-              *ngFor="let method of availableMethods" 
-              class="card-modern p-4 cursor-pointer"
-              (click)="selectMethod(method.id)"
-              style="border: 2px solid var(--gray-200); border-radius: var(--border-radius-lg); transition: all 0.2s ease; cursor: pointer;"
-              onmouseover="this.style.borderColor = 'var(--color-resalte)'; this.style.transform = 'translateY(-2px)'; this.style.boxShadow = 'var(--shadow-md)';"
-              onmouseout="this.style.borderColor = 'var(--gray-200)'; this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none';"
-            >
-              <div class="d-flex align-items-center gap-3">
-                <div class="d-flex align-items-center justify-content-center" 
-                     style="width: 50px; height: 50px; background: var(--color-fondo); border-radius: 50%; color: var(--color-primario);">
-                  <span class="material-symbols-outlined" style="font-size: 1.5rem;">{{ method.icon }}</span>
-                </div>
-                <div class="flex-grow-1">
-                  <h5 class="mb-1" style="color: var(--color-primario); font-weight: 600; font-family: var(--font-titulos);">{{ method.name }}</h5>
-                  <p class="mb-0" style="color: var(--color-texto-secundario); font-size: 0.85rem; font-family: var(--font-cuerpo);">{{ method.description }}</p>
-                </div>
-                <div style="color: var(--color-resalte); font-size: 1.2rem;">
-                  <span class="material-symbols-outlined">arrow_forward</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Footer -->
-        <div class="card-footer-modern text-center">
+      <!-- Selección de Método 2FA (si hay más de uno) -->
+      <div class="methods-selection" *ngIf="!selectedMethod && availableMethods.length > 1">
+        <h3>
+          <span class="material-icons">security</span>
+          Elige tu método de verificación
+        </h3>
+        <div class="methods-grid">
           <button 
-            type="button" 
-            (click)="cancelTwoFactor()" 
-            class="btn btn-outline-secondary"
+            *ngFor="let method of availableMethods"
+            type="button"
+            class="method-card"
+            (click)="selectMethod(method.id)"
+            [disabled]="!method.enabled"
           >
-            <span class="material-symbols-outlined" style="margin-right: 0.5rem;">close</span>
-            Cancelar
+            <span class="material-icons">{{ method.icon }}</span>
+            <h4>{{ method.name }}</h4>
+            <p>{{ method.description }}</p>
           </button>
         </div>
 
+        <!-- Opción de códigos de respaldo -->
+        <div class="backup-option" *ngIf="backupCodesAvailable">
+          <button type="button" class="backup-link" (click)="useBackupCode = true">
+            <span class="material-icons">vpn_key</span>
+            ¿Tienes un código de respaldo?
+          </button>
+        </div>
       </div>
 
-      <!-- Verificación de código -->
-      <div *ngIf="selectedMethod">
+      <!-- Formulario Google Authenticator -->
+      <div class="method-form" *ngIf="selectedMethod === 'GOOGLE_AUTHENTICATOR' && !useBackupCode">
+        <div class="method-header">
+          <span class="material-icons">smartphone</span>
+          <h3>Google Authenticator</h3>
+        </div>
+        <p class="method-instruction">Ingresa el código de 6 dígitos de tu aplicación Google Authenticator</p>
         
-        <!-- Header con botón de regreso -->
-        <div class="card-header-modern" style="background: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%); color: white; border: none;">
-          <div class="d-flex align-items-center gap-3 mb-2">
-            <button 
-              type="button" 
-              (click)="goBackToMethodSelection()" 
-              class="btn btn-sm"
-              style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;"
+        <form (submit)="verifyTwoFactorCode($event)">
+          <div class="code-input-group">
+            <label for="twoFactorCode">
+              <span class="material-icons">pin</span>
+              Código de Verificación
+            </label>
+            <input
+              type="text"
+              id="twoFactorCode"
+              [(ngModel)]="twoFactorCode"
+              name="twoFactorCode"
+              placeholder="000000"
+              maxlength="6"
+              pattern="[0-9]{6}"
+              class="code-input"
+              autocomplete="off"
+              #twoFactorInput
             >
-              <span class="material-symbols-outlined">arrow_back</span>
-            </button>
-            <div class="d-flex align-items-center gap-2">
-              <span class="material-symbols-outlined" style="font-size: 1.2rem; color: white;">{{ getSelectedMethodInfo()?.icon }}</span>
-              <h4 class="mb-0" style="color: white; font-weight: 600; font-family: var(--font-titulos);">{{ getSelectedMethodInfo()?.name }}</h4>
-            </div>
           </div>
-          <p class="mb-0" style="color: rgba(255,255,255,0.9); font-size: 0.9rem; font-family: var(--font-cuerpo);">Ingresa el código de verificación</p>
+
+          <button type="submit" class="btn-verify" [disabled]="isLoading || twoFactorCode.length !== 6">
+            <span class="material-icons" *ngIf="!isLoading">check_circle</span>
+            <span class="material-icons spinning" *ngIf="isLoading">sync</span>
+            {{ isLoading ? 'Verificando...' : 'Verificar Código' }}
+          </button>
+        </form>
+
+        <div class="alternative-methods">
+          <button type="button" class="link-btn" (click)="selectedMethod = ''" *ngIf="availableMethods.length > 1">
+            <span class="material-icons">arrow_back</span>
+            Usar otro método
+          </button>
+          <button type="button" class="link-btn" (click)="useBackupCode = true" *ngIf="backupCodesAvailable">
+            <span class="material-icons">vpn_key</span>
+            Usar código de respaldo
+          </button>
+        </div>
+      </div>
+
+      <!-- Formulario Email 2FA -->
+      <div class="method-form" *ngIf="selectedMethod === 'EMAIL' && !useBackupCode">
+        <div class="method-header">
+          <span class="material-icons">mail</span>
+          <h3>Verificación por Email</h3>
+        </div>
+        
+        <!-- Enviar código -->
+        <div *ngIf="!codeSent" class="send-code-section">
+          <p class="method-instruction">Te enviaremos un código de verificación a tu correo electrónico</p>
+          <div class="email-display">
+            <span class="material-icons">email</span>
+            <span>{{ pendingUser?.email }}</span>
+          </div>
+          <button type="button" class="btn-send-code" (click)="sendEmailCode()" [disabled]="isLoading">
+            <span class="material-icons" *ngIf="!isLoading">send</span>
+            <span class="material-icons spinning" *ngIf="isLoading">sync</span>
+            {{ isLoading ? 'Enviando...' : 'Enviar Código' }}
+          </button>
         </div>
 
-        <!-- Body -->
-        <div class="card-body-modern" style="padding: 1.5rem;">
-          
-          <!-- Instrucciones específicas por método -->
-          <div class="alert-modern mb-4" style="background: var(--color-fondo); border-radius: var(--border-radius-lg); padding: 1rem; display: flex; align-items: flex-start; gap: 0.75rem; border: 1px solid var(--gray-200);">
-            <span class="material-symbols-outlined" style="color: var(--color-resalte);">lightbulb</span>
-            <div style="font-family: var(--font-cuerpo); color: var(--color-texto-principal); font-size: 0.9rem;">
-              <p class="mb-0" *ngIf="selectedMethod === 'GOOGLE_AUTHENTICATOR'">
-                Ingresa el código de 6 dígitos de tu aplicación Google Authenticator
-              </p>
-              <p class="mb-0" *ngIf="selectedMethod === 'EMAIL' && codeSent">
-                Hemos enviado un código a <strong>{{ pendingUser?.email }}</strong>
-              </p>
-              <div *ngIf="selectedMethod === 'EMAIL' && !codeSent" class="d-flex align-items-center gap-2">
-                <div class="spinner-border spinner-border-sm" style="color: var(--color-resalte);"></div>
-                <span>Enviando código...</span>
-              </div>
-            </div>
+        <!-- Ingresar código -->
+        <div *ngIf="codeSent" class="verify-code-section">
+          <div class="success-message">
+            <span class="material-icons">mark_email_read</span>
+            <span>Código enviado. Revisa tu bandeja de entrada</span>
           </div>
 
-          <!-- Mensaje de error -->
-          <div *ngIf="errorMessage" class="alert-modern alert-danger-modern mb-4" style="background: var(--color-error); color: white; border-radius: var(--border-radius-lg); padding: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span class="material-symbols-outlined">warning</span>
-            <span>{{ errorMessage }}</span>
-          </div>
-
-          <!-- Formulario de código -->
-          <form (ngSubmit)="verifyTwoFactor()" *ngIf="codeSent" class="d-flex flex-column gap-4">
-            
-            <!-- Input de código normal (6 dígitos) -->
-            <div *ngIf="!useBackupCode" class="form-group text-center">
-              <label class="form-label" style="color: var(--color-primario); font-family: var(--font-titulos); font-weight: 600;">Código de verificación</label>
-              <input 
-                type="text" 
-                #twoFactorInput
-                maxlength="6" 
-                [value]="twoFactorCode"
-                (input)="onCodeInput($event)"
-                appSecureInput
-                inputType="text"
-                name="twoFactorCode" 
-                required 
-                placeholder="000000"
-                class="form-control text-center"
-                pattern="[0-9]{6}"
-                inputmode="numeric"
-                style="font-size: 2rem; font-weight: 700; letter-spacing: 0.75rem; font-family: var(--font-cuerpo); border: 2px solid var(--color-primario); border-radius: var(--border-radius-lg); padding: 1rem;"
-                autocomplete="one-time-code"
-              />
-              <div class="mt-2" style="font-size: 0.8rem; color: var(--color-texto-secundario); font-family: var(--font-cuerpo);">
-                Ingresa los 6 dígitos del código
-              </div>
-            </div>
-
-            <!-- Input de código de respaldo -->
-            <div *ngIf="useBackupCode" class="form-group text-center">
-              <label class="form-label" style="color: var(--color-primario); font-family: var(--font-titulos); font-weight: 600;">
-                <span class="material-symbols-outlined" style="margin-right: 0.5rem; color: var(--color-accion);">backup</span>
-                Código de Respaldo
+          <form (submit)="verifyTwoFactorCode($event)">
+            <div class="code-input-group">
+              <label for="twoFactorCodeEmail">
+                <span class="material-icons">pin</span>
+                Código de Verificación
               </label>
-              <input 
-                type="text" 
-                [(ngModel)]="backupCode"
-                name="backupCode" 
-                required 
-                placeholder="12345678"
-                class="form-control text-center"
-                pattern="^[0-9]{4}-?[0-9]{4}$"
-                inputmode="numeric"
-                style="font-size: 1.5rem; font-weight: 600; letter-spacing: 0.3rem; font-family: var(--font-cuerpo); border: 2px solid var(--color-accion); border-radius: var(--border-radius-lg); padding: 1rem;"
+              <input
+                type="text"
+                id="twoFactorCodeEmail"
+                [(ngModel)]="twoFactorCode"
+                name="twoFactorCodeEmail"
+                placeholder="000000"
+                maxlength="6"
+                pattern="[0-9]{6}"
+                class="code-input"
                 autocomplete="off"
-              />
-              <div class="mt-2" style="font-size: 0.75rem; color: var(--color-accion);">
-                <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 0.25rem;">info</span>
-                Ingresa uno de tus códigos de respaldo de 8 dígitos
-              </div>
-            </div>
-            
-            <!-- Enlace para usar código de respaldo - Solo si el usuario tiene códigos de respaldo activos -->
-            <div *ngIf="!useBackupCode && backupCodesAvailable" class="text-center mb-3">
-              <a 
-                (click)="toggleBackupCodeMode()" 
-                class="text-decoration-none" 
-                style="color: var(--color-accion); font-weight: 600; font-size: 0.9rem; font-family: var(--font-titulos); cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;"
               >
-                <span class="material-symbols-outlined" style="font-size: 1rem;">phone_disabled</span>
-                ¿Perdiste tu dispositivo? Usar un código de respaldo
-              </a>
             </div>
 
-            <!-- Enlace para volver a código normal -->
-            <div *ngIf="useBackupCode" class="text-center mb-3">
-              <a 
-                (click)="toggleBackupCodeMode()" 
-                class="text-decoration-none" 
-                style="color: var(--color-primario); font-weight: 600; font-size: 0.9rem; font-family: var(--font-titulos); cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;"
-              >
-                <span class="material-symbols-outlined" style="font-size: 1rem;">smartphone</span>
-                Volver a código de 6 dígitos
-              </a>
-            </div>
-
-            <!-- Botón verificar - código normal -->
-            <button 
-              *ngIf="!useBackupCode"
-              type="submit" 
-              [disabled]="isLoading || !twoFactorCode || twoFactorCode.length !== 6"
-              class="boton-primario w-100 border-0"
-              [class.loading]="isLoading"
-              style="padding: 1rem; font-size: 1rem;"
-            >
-              <span *ngIf="!isLoading" class="d-flex align-items-center justify-content-center gap-2">
-                <span class="material-symbols-outlined">check_circle</span>
-                <span>Verificar Código</span>
-              </span>
-              <span *ngIf="isLoading" class="d-flex align-items-center justify-content-center gap-2">
-                <span class="spinner-border spinner-border-sm"></span>
-                <span>Verificando...</span>
-              </span>
+            <button type="submit" class="btn-verify" [disabled]="isLoading || twoFactorCode.length !== 6">
+              <span class="material-icons" *ngIf="!isLoading">check_circle</span>
+              <span class="material-icons spinning" *ngIf="isLoading">sync</span>
+              {{ isLoading ? 'Verificando...' : 'Verificar Código' }}
             </button>
-
-            <!-- Botón verificar - código de respaldo -->
-            <button 
-              *ngIf="useBackupCode"
-              type="button"
-              (click)="verifyBackupCode()"
-              [disabled]="isLoading || !backupCode || backupCode.length < 8"
-              class="boton-accion w-100 border-0"
-              [class.loading]="isLoading"
-              style="padding: 1rem; font-size: 1rem;"
-            >
-              <span *ngIf="!isLoading" class="d-flex align-items-center justify-content-center gap-2">
-                <span class="material-symbols-outlined">backup</span>
-                <span>Verificar Código de Respaldo</span>
-              </span>
-              <span *ngIf="isLoading" class="d-flex align-items-center justify-content-center gap-2">
-                <span class="spinner-border spinner-border-sm"></span>
-                <span>Verificando...</span>
-              </span>
-            </button>
-
-            <!-- Opción de reenvío solo para Email -->
-            <div *ngIf="selectedMethod === 'EMAIL'" class="text-center mt-3">
-              <p class="mb-2" style="color: var(--color-texto-secundario); font-size: 0.875rem; font-family: var(--font-cuerpo);">¿No recibiste el código?</p>
-              <button 
-                type="button" 
-                (click)="sendVerificationCode()" 
-                class="btn btn-outline-primary btn-sm"
-                [disabled]="isLoading"
-                style="border-color: var(--color-resalte); color: var(--color-primario);"
-              >
-                <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 0.5rem;">refresh</span>
-                Reenviar código
-              </button>
-            </div>
-
           </form>
 
+          <div class="resend-section">
+            <button type="button" class="link-btn" (click)="sendEmailCode()">
+              <span class="material-icons">refresh</span>
+              Reenviar código
+            </button>
+          </div>
         </div>
 
-        <!-- Footer -->
-        <div class="card-footer-modern text-center" style="background: var(--color-fondo); padding: 1.5rem; border-top: 1px solid var(--gray-200);">
-          <button 
-            type="button" 
-            (click)="cancelTwoFactor()" 
-            class="btn btn-outline-secondary"
-            style="display: inline-flex; align-items: center; gap: 0.5rem;"
-          >
-            <span class="material-symbols-outlined">close</span>
-            Cancelar verificación
+        <div class="alternative-methods">
+          <button type="button" class="link-btn" (click)="selectedMethod = ''; codeSent = false" *ngIf="availableMethods.length > 1">
+            <span class="material-icons">arrow_back</span>
+            Usar otro método
+          </button>
+          <button type="button" class="link-btn" (click)="useBackupCode = true; codeSent = false" *ngIf="backupCodesAvailable">
+            <span class="material-icons">vpn_key</span>
+            Usar código de respaldo
           </button>
         </div>
-
       </div>
 
+      <!-- Formulario de Código de Respaldo -->
+      <div class="method-form" *ngIf="useBackupCode">
+        <div class="method-header">
+          <span class="material-icons">vpn_key</span>
+          <h3>Código de Respaldo</h3>
+        </div>
+        <p class="method-instruction">Ingresa uno de tus códigos de respaldo de 8 caracteres</p>
+        
+        <form (submit)="verifyBackupCodeSubmit($event)">
+          <div class="code-input-group">
+            <label for="backupCodeInput">
+              <span class="material-icons">password</span>
+              Código de Respaldo
+            </label>
+            <input
+              type="text"
+              id="backupCodeInput"
+              [(ngModel)]="backupCode"
+              name="backupCodeInput"
+              placeholder="XXXX-XXXX"
+              maxlength="9"
+              class="code-input"
+              autocomplete="off"
+            >
+          </div>
+
+          <button type="submit" class="btn-verify" [disabled]="isLoading || backupCode.length < 8">
+            <span class="material-icons" *ngIf="!isLoading">check_circle</span>
+            <span class="material-icons spinning" *ngIf="isLoading">sync</span>
+            {{ isLoading ? 'Verificando...' : 'Verificar Código' }}
+          </button>
+        </form>
+
+        <div class="alternative-methods">
+          <button type="button" class="link-btn" (click)="useBackupCode = false; backupCode = ''">
+            <span class="material-icons">arrow_back</span>
+            Volver a métodos principales
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-content">
+      <!-- Sección 1: Acerca de -->
+      <div class="footer-section">
+        <div class="footer-logo">
+          <img src="assets/logoP.png" alt="Casa de Música Castillo">
+          <span class="footer-logo-text">CASTILLO</span>
+        </div>
+        <p class="footer-description">
+          Tu destino para los mejores instrumentos musicales. Calidad, pasión y excelencia desde 1995.
+        </p>
+        <div class="social-links">
+          <a href="#" class="social-link" title="Facebook">
+            <span class="material-icons">facebook</span>
+          </a>
+          <a href="#" class="social-link" title="Instagram">
+            <span class="material-icons">photo_camera</span>
+          </a>
+          <a href="#" class="social-link" title="Twitter">
+            <span class="material-icons">tag</span>
+          </a>
+          <a href="#" class="social-link" title="YouTube">
+            <span class="material-icons">play_circle</span>
+          </a>
+        </div>
+      </div>
 
+      <!-- Sección 2: Enlaces Rápidos -->
+      <div class="footer-section">
+        <h3>
+          <span class="material-icons">menu</span>
+          Enlaces Rápidos
+        </h3>
+        <ul class="footer-links">
+          <li>
+            <a routerLink="/home">
+              <span class="material-icons">home</span>
+              Inicio
+            </a>
+          </li>
+          <li>
+            <a routerLink="/ofertas">
+              <span class="material-icons">local_offer</span>
+              Ofertas
+            </a>
+          </li>
+          <li>
+            <a routerLink="/catalogo">
+              <span class="material-icons">inventory_2</span>
+              Catálogo
+            </a>
+          </li>
+          <li>
+            <a routerLink="/servicios">
+              <span class="material-icons">build</span>
+              Servicios
+            </a>
+          </li>
+          <li>
+            <a routerLink="/ayuda">
+              <span class="material-icons">help</span>
+              Ayuda
+            </a>
+          </li>
+        </ul>
+      </div>
 
+      <!-- Sección 3: Contacto -->
+      <div class="footer-section">
+        <h3>
+          <span class="material-icons">contact_mail</span>
+          Contacto
+        </h3>
+        <ul class="contact-info">
+          <li>
+            <span class="material-icons">location_on</span>
+            <span>Av. Principal #123, Ciudad de México</span>
+          </li>
+          <li>
+            <span class="material-icons">phone</span>
+            <span>+52 55 1234 5678</span>
+          </li>
+          <li>
+            <span class="material-icons">email</span>
+            <span>info&#64;castillo.com</span>
+          </li>
+          <li>
+            <span class="material-icons">schedule</span>
+            <span>Lun - Sáb: 9:00 AM - 8:00 PM</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Sección 4: Newsletter -->
+      <div class="footer-section">
+        <h3>
+          <span class="material-icons">mail</span>
+          Newsletter
+        </h3>
+        <p>Suscríbete para recibir ofertas exclusivas y novedades</p>
+        <div class="newsletter-form">
+          <input type="email" placeholder="Tu correo electrónico" class="newsletter-input">
+          <button class="newsletter-btn">
+            <span class="material-icons">send</span>
+            Suscribirse
+          </button>
+        </div>
+        <div class="payment-methods">
+          <span class="material-icons" title="Visa">credit_card</span>
+          <span class="material-icons" title="PayPal">account_balance</span>
+          <span class="material-icons" title="Efectivo">payments</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+      <div class="footer-bottom-content">
+        <p>&copy; 2024 Casa de Música Castillo. Todos los derechos reservados.</p>
+        <div class="footer-bottom-links">
+          <a href="#">Términos y Condiciones</a>
+          <a href="#">Política de Privacidad</a>
+          <a href="#">Política de Cookies</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
 

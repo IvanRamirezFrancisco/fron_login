@@ -1,4 +1,4 @@
-<!-- Configuración de Seguridad - Casa de Música Castillo -->
+﻿<!-- Configuración de Seguridad - Casa de Música Castillo -->
 <div class="security-container">
 
   <!-- Loading Overlay -->
@@ -9,91 +9,45 @@
     <p>Procesando...</p>
   </div>
 
-  <!-- Layout Principal con Sidebar -->
-  <div class="main-layout">
+  <!-- Área de Contenido Principal -->
+  <main class="security-content">
     
-    <!-- Sidebar de Bienvenida -->
-    <aside class="welcome-sidebar">
-      <!-- Header del Sidebar -->
-      <div class="sidebar-header">
-        <!-- Logo Casa de Música -->
-        <div class="logo-brand">
-          <div class="logo-container">
-            <span class="material-symbols-outlined">music_note</span>
-          </div>
-          <div class="brand-text">
-            <h2>Casa de Música</h2>
-            <span>CASTILLO</span>
-          </div>
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+      <div class="welcome-content">
+        <div class="welcome-icon">
+          <span class="material-icons">waving_hand</span>
         </div>
-        
-        <!-- Usuario Info -->
-        <div class="user-welcome-card" *ngIf="currentUser">
-          <div class="user-avatar-large">
-            {{ (currentUser.firstName || 'U').charAt(0).toUpperCase() }}{{ (currentUser.lastName || 'S').charAt(0).toUpperCase() }}
-          </div>
-          <div class="user-welcome-details">
-            <h3>{{ getGreeting() }}, {{ currentUser.firstName || 'Usuario' }}!</h3>
-            <p>{{ currentUser.email }}</p>
-          </div>
+        <div class="welcome-text">
+          <h1 class="welcome-greeting">{{ greeting }}, {{ userName }}</h1>
+          <p class="welcome-subtitle">Administra tu perfil y configuraciones de seguridad desde aquí</p>
         </div>
       </div>
-
-      <!-- Navegación del Sidebar -->
-      <nav class="sidebar-navigation">
-        <ul class="nav-menu">
-          <li class="nav-item active">
-            <div class="nav-link-active">
-              <span class="material-symbols-outlined">security</span>
-              <span class="nav-text">Mi Perfil y Seguridad</span>
-            </div>
-          </li>
-        </ul>
-      </nav>
-
-      <!-- Footer del Sidebar -->
-      <div class="sidebar-footer">
-        <div class="footer-info">
-          <p>© 2024 Casa de Música Castillo</p>
-          <small>Versión 1.0.0</small>
-        </div>
+      <div class="welcome-decoration">
+        <span class="material-icons">shield</span>
       </div>
-    </aside>
+    </div>
 
-    <!-- Área de Contenido Principal -->
-    <main class="security-content">
-      
-      <!-- Page Header -->
-      <header class="page-header">
-        <div class="header-content">
-          <div class="header-title">
-            <span class="material-symbols-outlined">security</span>
-            <h1>Mi Perfil y Seguridad</h1>
-          </div>
-          <p class="header-subtitle">Gestiona tu información personal y configuraciones de seguridad</p>
-        </div>
-      </header>
-
-      <!-- Messages -->
-      <div class="messages-container" *ngIf="successMessage || errorMessage">
-        <div class="message success" *ngIf="successMessage">
-          <span class="material-symbols-outlined">check_circle</span>
-          <span>{{ successMessage }}</span>
-          <button class="message-close" (click)="clearMessages()">
-            <span class="material-symbols-outlined">close</span>
-          </button>
-        </div>
-        <div class="message error" *ngIf="errorMessage">
-          <span class="material-symbols-outlined">error</span>
-          <span>{{ errorMessage }}</span>
-          <button class="message-close" (click)="clearMessages()">
-            <span class="material-symbols-outlined">close</span>
-          </button>
-        </div>
+    <!-- Messages -->
+    <div class="messages-container" *ngIf="successMessage || errorMessage">
+      <div class="message success" *ngIf="successMessage">
+        <span class="material-icons">check_circle</span>
+        <span>{{ successMessage }}</span>
+        <button class="message-close" (click)="clearMessages()">
+          <span class="material-icons">close</span>
+        </button>
       </div>
+      <div class="message error" *ngIf="errorMessage">
+        <span class="material-icons">error</span>
+        <span>{{ errorMessage }}</span>
+        <button class="message-close" (click)="clearMessages()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    </div>
 
-      <!-- Main Content Grid -->
-  <div class="content-grid">
+    <!-- Main Content Grid -->
+<div class="content-grid">
 
     <!-- Profile Information Card -->
     <section class="card profile-card">
@@ -652,19 +606,17 @@
 
       <div class="modal-footer">
         <button class="btn btn-outline" (click)="closeWarningModal()">
-          <span class="material-symbols-outlined">cancel</span>
+          <span class="material-icons">cancel</span>
           Cancelar
         </button>
         <button class="btn btn-danger" (click)="confirmRegenerateCodes()">
-          <span class="material-symbols-outlined">warning</span>
+          <span class="material-icons">warning</span>
           Sí, Generar Nuevos
         </button>
         </div>
       </div>
     </div>
 
-    </main>
-
-  </div>
+  </main>
 
 </div>

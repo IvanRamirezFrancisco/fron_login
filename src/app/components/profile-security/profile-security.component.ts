@@ -40,6 +40,25 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
   loading: boolean = false;
   private subscription: Subscription = new Subscription();
   
+  // Saludo personalizado según la hora
+  get greeting(): string {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      return 'Buenos días';
+    } else if (hour >= 12 && hour < 19) {
+      return 'Buenas tardes';
+    } else {
+      return 'Buenas noches';
+    }
+  }
+
+  get userName(): string {
+    if (this.currentUser) {
+      return this.currentUser.firstName || 'Usuario';
+    }
+    return 'Usuario';
+  }
+  
   // Estados dinámicos basados en currentUser - Google Authenticator
   get isGoogleAuthEnabled(): boolean {
     return this.currentUser?.googleAuthEnabled || false;

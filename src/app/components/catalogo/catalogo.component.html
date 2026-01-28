@@ -1,0 +1,156 @@
+<!-- Banner de catálogo -->
+<div class="catalogo-banner">
+  <div class="container">
+    <h1>Catálogo</h1>
+    <p>Encuentra el instrumento perfecto para ti</p>
+  </div>
+</div>
+
+<!-- Contenido del catálogo con filtros laterales -->
+<section class="catalogo-content">
+  <div class="container">
+    <div class="catalogo-layout">
+      <!-- Barra lateral de filtros -->
+      <aside class="filtros-sidebar">
+        <div class="filtros-header">
+          <h2>Filtros</h2>
+          <button class="btn-limpiar" (click)="limpiarFiltros()">
+            <span class="material-icons">refresh</span>
+            Limpiar
+          </button>
+        </div>
+
+        <!-- Filtro por Categoría -->
+        <div class="filtro-section">
+          <h3>Categoría</h3>
+          <div class="filtro-opciones">
+            <label *ngFor="let categoria of categorias" class="checkbox-label">
+              <input 
+                type="checkbox" 
+                [checked]="categoriaSeleccionada.includes(categoria)"
+                (change)="toggleFiltroCategoria(categoria)"
+              />
+              <span>{{ categoria }}</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Filtro por Marca -->
+        <div class="filtro-section">
+          <h3>Marca</h3>
+          <div class="filtro-opciones">
+            <label *ngFor="let marca of marcas" class="checkbox-label">
+              <input 
+                type="checkbox" 
+                [checked]="marcaSeleccionada.includes(marca)"
+                (change)="toggleFiltroMarca(marca)"
+              />
+              <span>{{ marca }}</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Filtro por Precio -->
+        <div class="filtro-section">
+          <h3>Rango de Precio</h3>
+          <div class="precio-inputs">
+            <div class="precio-input-group">
+              <label>Mínimo</label>
+              <input 
+                type="number" 
+                [(ngModel)]="precioMin" 
+                class="precio-input"
+                placeholder="$0"
+              />
+            </div>
+            <div class="precio-input-group">
+              <label>Máximo</label>
+              <input 
+                type="number" 
+                [(ngModel)]="precioMax" 
+                class="precio-input"
+                placeholder="$100,000"
+              />
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Grid de productos -->
+      <div class="productos-main">
+        <div class="productos-header">
+          <h2>{{ productosFiltrados.length }} Productos Encontrados</h2>
+        </div>
+
+        <div class="productos-grid">
+          
+          <div class="producto-card" *ngFor="let producto of productosFiltrados" (click)="verDetalle(producto)">
+            <div class="producto-imagen">
+              <img *ngIf="producto.images && producto.images.length > 0" 
+                   [src]="producto.images[0]" 
+                   [alt]="producto.name"
+                   class="producto-img">
+              <div class="producto-placeholder" *ngIf="!producto.images || producto.images.length === 0">
+                <span class="material-symbols-outlined">music_note</span>
+                <div class="producto-discount" *ngIf="producto.discount">
+                -{{ producto.discount }}%
+              </div>
+              </div>
+              <div class="producto-badge" *ngIf="producto.inStock">
+                DISPONIBLE
+              </div>
+              <div class="producto-badge out-of-stock" *ngIf="!producto.inStock">
+                AGOTADO
+              </div>
+              
+            </div>
+            <div class="producto-info">
+              <h3 class="producto-nombre">{{ producto.name }}</h3>
+              <p class="producto-descripcion">{{ producto.description }}</p>
+              <div class="producto-meta">
+                <span class="producto-categoria">{{ producto.category.name }}</span>
+                <span class="producto-marca">{{ producto.brand }}</span>
+              </div>
+              <div class="producto-rating" *ngIf="producto.rating">
+                <span class="stars">
+                  <span class="material-symbols-outlined" *ngFor="let star of [1,2,3,4,5]">
+                    {{ star <= producto.rating ? 'star' : 'star_border' }}
+                  </span>
+                </span>
+                <span class="rating-text">({{ producto.reviewCount || 0 }})</span>
+              </div>
+              <div class="producto-precio">
+                <span class="precio-actual">${{ producto.price.toLocaleString('es-MX', {minimumFractionDigits: 2}) }}</span>
+                <span class="precio-original" *ngIf="producto.discount">
+                  ${{ (producto.price / (1 - producto.discount / 100)).toLocaleString('es-MX', {minimumFractionDigits: 2}) }}
+                </span>
+              </div>
+              <div class="producto-actions">
+                <button class="btn-agregar" 
+                        (click)="agregarAlCarrito(producto, $event)"
+                        [disabled]="!producto.inStock">
+                  <span class="material-symbols-outlined">shopping_cart</span>
+                  {{ producto.inStock ? 'Agregar' : 'Agotado' }}
+                </button>
+                <button class="btn-detalles" (click)="verDetalle(producto); $event.stopPropagation()">
+                  <span class="material-symbols-outlined">visibility</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sin-resultados" *ngIf="!loading && productosFiltrados.length === 0">
+          <span class="material-symbols-outlined">search_off</span>
+          <h3>No se encontraron productos</h3>
+          <p>Intenta ajustar los filtros para ver más resultados</p>
+        </div>
+
+        <div class="loading-spinner" *ngIf="loading">
+          <span class="material-symbols-outlined spinning">progress_activity</span>
+          <p>Cargando productos...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

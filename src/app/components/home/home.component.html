@@ -1,329 +1,141 @@
-<!-- Header Principal -->
-<app-home-header></app-home-header>
-
-<!-- Hero Section Casa de Música Castillo -->
-<section class="hero-section" id="inicio" style="background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-dark) 100%); position: relative; overflow: hidden;">
-  <div class="hero-content" style="max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; min-height: 90vh;">
-    
-    <div class="hero-text">
-      <!-- Logo y título principal -->
-      <div class="d-flex align-items-center gap-3 mb-4">
-        <div style="width: 60px; height: 60px; background: var(--color-resalte); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg);">
-          <span class="material-symbols-outlined" style="color: var(--color-primario); font-size: 2rem;">music_note</span>
-        </div>
-        <div>
-          <h1 style="color: var(--color-resalte); font-family: var(--font-titulos); font-weight: 700; margin: 0; font-size: 2.5rem; line-height: 1;">Casa de Música</h1>
-          <p style="color: white; margin: 0; font-family: var(--font-titulos); font-weight: 600; font-size: 1.2rem; letter-spacing: 2px;">CASTILLO</p>
-        </div>
-      </div>
-      
-      <h2 style="color: white; font-family: var(--font-titulos); font-weight: 700; font-size: 3rem; line-height: 1.2; margin-bottom: 1.5rem; text-shadow: 2px 4px 8px rgba(0,0,0,0.3);">
-        Descubre la <span style="color: var(--color-resalte); text-decoration: underline; text-decoration-color: var(--color-accion);">Música</span> 
-        que te Inspira
-      </h2>
-      
-      <p style="color: rgba(255,255,255,0.95); font-family: var(--font-cuerpo); font-size: 1.2rem; line-height: 1.6; margin-bottom: 2rem; text-shadow: 1px 2px 4px rgba(0,0,0,0.2);">
-        Los mejores instrumentos musicales, equipos de audio profesional y accesorios para músicos de todos los niveles. Calidad garantizada y precios increíbles.
-      </p>
-      
-      <div class="hero-actions" style="display: flex; gap: 1rem; margin-bottom: 3rem; flex-wrap: wrap;">
-        <button class="boton-accion" (click)="viewCatalog()" style="display: flex; align-items: center; gap: 0.5rem; padding: 1rem 2rem; font-size: 1.1rem; box-shadow: var(--shadow-lg);">
-          <span class="material-symbols-outlined">music_note</span>
-          Explorar Catálogo
-        </button>
-        <button class="boton-secundario" (click)="viewOffers()" style="display: flex; align-items: center; gap: 0.5rem; padding: 1rem 2rem; font-size: 1.1rem; background: rgba(255,255,255,0.1); color: white; border: 2px solid var(--color-resalte);">
-          <span class="material-symbols-outlined">local_offer</span>
-          Ver Ofertas
-        </button>
-      </div>
-      
-      <!-- Estadísticas Casa de Música -->
-      <div class="hero-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
-        <div class="stat" style="text-align: center;">
-          <div style="background: rgba(255,255,255,0.15); border-radius: var(--border-radius-xl); padding: 1.5rem; backdrop-filter: blur(10px); box-shadow: var(--shadow-md);">
-            <span style="display: block; font-family: var(--font-titulos); font-weight: 700; font-size: 2.5rem; color: var(--color-resalte); margin-bottom: 0.5rem;">500+</span>
-            <span style="font-family: var(--font-cuerpo); color: rgba(255,255,255,0.9); font-size: 0.9rem; font-weight: 500;">Instrumentos</span>
-          </div>
-        </div>
-        <div class="stat" style="text-align: center;">
-          <div style="background: rgba(255,255,255,0.15); border-radius: var(--border-radius-xl); padding: 1.5rem; backdrop-filter: blur(10px); box-shadow: var(--shadow-md);">
-            <span style="display: block; font-family: var(--font-titulos); font-weight: 700; font-size: 2.5rem; color: var(--color-resalte); margin-bottom: 0.5rem;">50+</span>
-            <span style="font-family: var(--font-cuerpo); color: rgba(255,255,255,0.9); font-size: 0.9rem; font-weight: 500;">Marcas</span>
-          </div>
-        </div>
-        <div class="stat" style="text-align: center;">
-          <div style="background: rgba(255,255,255,0.15); border-radius: var(--border-radius-xl); padding: 1.5rem; backdrop-filter: blur(10px); box-shadow: var(--shadow-md);">
-            <span style="display: block; font-family: var(--font-titulos); font-weight: 700; font-size: 2.5rem; color: var(--color-resalte); margin-bottom: 0.5rem;">1000+</span>
-            <span style="font-family: var(--font-cuerpo); color: rgba(255,255,255,0.9); font-size: 0.9rem; font-weight: 500;">Clientes Satisfechos</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Imagen del héroe con elementos flotantes -->
-    <div class="hero-image" style="position: relative; display: flex; justify-content: center; align-items: center;">
-      <div style="width: 400px; height: 400px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid var(--color-resalte); box-shadow: var(--shadow-xl); backdrop-filter: blur(10px);">
-        <span class="material-symbols-outlined" style="font-size: 12rem; color: var(--color-resalte); text-shadow: 2px 4px 8px rgba(0,0,0,0.2);">music_note</span>
-      </div>
-      
-      <!-- Elementos flotantes animados -->
-      <div class="floating-element note-1" style="position: absolute; top: 10%; left: 10%; animation: float 3s ease-in-out infinite;">
-        <div style="background: var(--color-accion); color: white; padding: 1rem; border-radius: 50%; box-shadow: var(--shadow-lg);">
-          <span class="material-symbols-outlined" style="font-size: 1.5rem;">piano</span>
-        </div>
-      </div>
-      <div class="floating-element note-2" style="position: absolute; top: 20%; right: 10%; animation: float 3s ease-in-out infinite 0.5s;">
-        <div style="background: var(--color-resalte); color: var(--color-primario); padding: 1rem; border-radius: 50%; box-shadow: var(--shadow-lg);">
-          <span class="material-symbols-outlined" style="font-size: 1.5rem;">music_note</span>
-        </div>
-      </div>
-      <div class="floating-element note-3" style="position: absolute; bottom: 20%; left: 20%; animation: float 3s ease-in-out infinite 1s;">
-        <div style="background: var(--color-primario-light); color: white; padding: 1rem; border-radius: 50%; box-shadow: var(--shadow-lg);">
-          <span class="material-symbols-outlined" style="font-size: 1.5rem;">guitar_pick</span>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Patrón de fondo decorativo -->
-  <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.1; pointer-events: none; background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.1) 35px, rgba(255,255,255,0.1) 70px);"></div>
-</section>
-
-<!-- Categorías Principales Casa de Música -->
-<section class="categories-section" id="productos" style="padding: 4rem 0; background-color: var(--color-fondo);">
-  <div class="contenedor">
-    <div class="section-header" style="text-align: center; margin-bottom: 3rem;">
-      <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
-        <div style="width: 50px; height: 50px; background: var(--color-primario); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);">
-          <span class="material-symbols-outlined" style="color: white; font-size: 1.5rem;">category</span>
-        </div>
-        <h2 style="color: var(--color-primario); font-family: var(--font-titulos); font-weight: 700; margin: 0; font-size: 2.5rem;">Explora por Categorías</h2>
-      </div>
-      <p style="color: var(--color-texto-principal); font-family: var(--font-cuerpo); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Encuentra exactamente lo que necesitas para tu música</p>
-    </div>
-    
-    <div class="categories-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
-      <div 
-        class="category-card card-modern transicion cursor-pointer" 
-        *ngFor="let category of categories"
-        (click)="viewCategory(category)"
-        style="padding: 2rem; text-align: center; border-radius: var(--border-radius-xl); box-shadow: var(--shadow-sm); border: 2px solid transparent; background: white;"
-        onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='var(--shadow-xl)'; this.style.borderColor='var(--color-accion)';"
-        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'; this.style.borderColor='transparent';"
-      >
-        <div class="category-icon" style="margin-bottom: 1.5rem;">
-          <div style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--color-accion), var(--color-accion-hover)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: var(--shadow-lg);">
-            <span class="material-symbols-outlined" style="color: white; font-size: 2.5rem;">{{ category.icon }}</span>
-          </div>
-        </div>
-        <h3 style="color: var(--color-primario); font-family: var(--font-titulos); font-weight: 600; margin-bottom: 1rem; font-size: 1.3rem;">{{ category.name }}</h3>
-        <p style="color: var(--color-texto-principal); font-family: var(--font-cuerpo); margin-bottom: 1.5rem; line-height: 1.5;">{{ getCategoryDescription(category.id) }}</p>
-        <div class="category-arrow" style="color: var(--color-accion); transition: var(--transition);">
-          <span class="material-symbols-outlined" style="font-size: 1.5rem;">arrow_forward</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Productos Destacados Casa de Música -->
-<section class="featured-section" style="padding: 4rem 0; background: white;">
-  <div class="contenedor">
-    <div class="section-header" style="text-align: center; margin-bottom: 3rem;">
-      <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
-        <div style="width: 50px; height: 50px; background: var(--color-accion); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);">
-          <span class="material-symbols-outlined" style="color: white; font-size: 1.5rem;">star</span>
-        </div>
-        <h2 style="color: var(--color-primario); font-family: var(--font-titulos); font-weight: 700; margin: 0; font-size: 2.5rem;">Productos Destacados</h2>
-      </div>
-      <p style="color: var(--color-texto-principal); font-family: var(--font-cuerpo); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2rem;">Los favoritos de nuestros clientes y las mejores ofertas del mes</p>
-      <button class="boton-secundario" routerLink="/catalogo" style="display: inline-flex; align-items: center; gap: 0.5rem;">
-        Ver todos los productos
-        <span class="material-symbols-outlined">arrow_forward</span>
-      </button>
-    </div>
-    
-    <div class="products-grid" *ngIf="!loadingFeatured" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-      <app-product-card
-        *ngFor="let product of featuredProducts"
-        [product]="product"
-        (productClick)="viewProduct($event)"
-        (quickViewClick)="openQuickView($event)"
-        (favoriteToggle)="onFavoriteToggle($event)"
-        class="product-card transicion"
-        style="border-radius: var(--border-radius-xl); overflow: hidden; box-shadow: var(--shadow-sm); background: white; border: 2px solid transparent;"
-        onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)'; this.style.borderColor='var(--color-resalte)';"
-        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'; this.style.borderColor='transparent';"
-      ></app-product-card>
-    </div>
-    
-    <div class="loading-products" *ngIf="loadingFeatured" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-      <div class="product-skeleton" *ngFor="let item of [1,2,3,4]" style="background: var(--gray-100); border-radius: var(--border-radius-xl); height: 400px; animation: pulse 1.5s ease-in-out infinite alternate;"></div>
-    </div>
-  </div>
-</section>
-
-<!-- Ofertas Especiales -->
-<section class="offers-section">
+<section class="hero-section">
+  <div class="hero-overlay"></div>
   <div class="container">
-    <div class="offers-banner">
-      <div class="offer-content">
-        <div class="offer-badge">
-          <span class="material-symbols-outlined">local_offer</span>
-          PRODUCTO ESPECIAL
-        </div>
-        <h2>¡Descuentos de hasta 30% en guitarras!</h2>
-        <p>Aprovecha nuestras ofertas exclusivas en guitarras, pianos y más. Oferta válida hasta fin de mes.</p>
-        <button class="btn-accent" (click)="viewOffers()">
-          <span class="material-symbols-outlined">shopping_cart</span>
-          Ver Ofertas
-        </button>
+    <div class="hero-content">
+      <h1 class="hero-title">Casa de Música Castillo</h1>
+      <p class="hero-subtitle">Descubre la magia de la música con instrumentos de calidad profesional</p>
+      
+      <!-- Global Search Component -->
+      <div class="hero-search-wrapper">
+        <app-global-search></app-global-search>
       </div>
-      <div class="offer-image">
-        <img src="/assets/image.png" alt="Ofertas especiales" />
+      
+      <div class="hero-buttons">
+        <button class="hero-btn primary" (click)="navigateToCategory('instrumentos')">
+          <span class="material-icons">music_note</span>
+          Ver Instrumentos
+        </button>
+        <button class="hero-btn secondary" (click)="navigateToOffers()">
+          <span class="material-icons">local_offer</span>
+          Ofertas Especiales
+        </button>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Marcas Destacadas -->
-<section class="brands-section">
+<section class="categories-section">
   <div class="container">
     <div class="section-header">
-      <h2>Marcas de Confianza</h2>
-      <p>Trabajamos con las mejores marcas del mercado musical</p>
+      <h2 class="section-title">Explora Nuestras Categorías</h2>
+      <p class="section-subtitle">Encuentra el instrumento perfecto para ti</p>
     </div>
     
-    <div class="brands-carousel">
-      <div class="brand-item" *ngFor="let brand of brands">
-        <img src="/assets/logoP.png" [alt]="brand.name" />
+    <div class="categories-grid">
+      <div class="category-card" 
+           *ngFor="let category of allCategories" 
+           (click)="navigateToCategory(category.id)">
+        <div class="category-icon">
+          <span class="material-icons">{{category.icon}}</span>
+        </div>
+        <h3 class="category-title">{{category.name}}</h3>
+        <p class="category-description">{{category.description}}</p>
+        <div class="category-stats">
+          <span class="product-count">{{category.productCount}} productos</span>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Testimonios -->
-<section class="testimonials-section">
+<!-- Producto Especial -->
+<section class="special-product-section">
   <div class="container">
-    <div class="section-header">
-      <h2>Lo que Dicen Nuestros Clientes</h2>
-      <p>Experiencias reales de músicos que confían en nosotros</p>
-    </div>
-    
-    <div class="testimonials-grid">
-      <div class="testimonial-card" *ngFor="let testimonial of testimonials">
-        <div class="testimonial-header">
-          <div class="customer-avatar">
-            <img [src]="testimonial.avatar" [alt]="testimonial.name" />
-          </div>
-          <div class="customer-info">
-            <h4>{{ testimonial.name }}</h4>
-            <p>{{ testimonial.role }}</p>
-          </div>
-          <div class="testimonial-rating">
-            <span 
-              class="material-symbols-outlined star" 
-              *ngFor="let star of getTestimonialStars(testimonial.rating)"
-              [class.filled]="star"
-            >
-              {{ star ? 'star' : 'star_border' }}
-            </span>
+    <div class="special-product-card">
+      <div class="product-image-section">
+        <img src="assets/image.png" alt="Producto Especial" class="special-product-image" />
+        <div class="product-badge special">Producto Especial</div>
+      </div>
+      <div class="product-details">
+        <h2 class="product-title">{{specialProduct.name}}</h2>
+        <p class="product-description">{{specialProduct.description}}</p>
+        <div class="product-features">
+          <div class="feature" *ngFor="let feature of specialProduct.features">
+            <span class="material-icons">check_circle</span>
+            <span>{{feature}}</span>
           </div>
         </div>
-        <blockquote>{{ testimonial.content }}</blockquote>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Newsletter -->
-<section class="newsletter-section" id="contacto">
-  <div class="container">
-    <div class="newsletter-content">
-      <div class="newsletter-text">
-        <h2>Mantente al Día con las Últimas Novedades</h2>
-        <p>Suscríbete a nuestro boletín y recibe ofertas exclusivas, nuevos productos y tips musicales directamente en tu email.</p>
-      </div>
-      
-      <form class="newsletter-form" (ngSubmit)="subscribeNewsletter()" #newsletterForm="ngForm">
-        <div class="form-group">
-          <input 
-            type="email" 
-            placeholder="Tu dirección de email" 
-            [(ngModel)]="newsletterEmail"
-            name="email"
-            required
-            email
-            #emailInput="ngModel"
-          />
-          <button type="submit" [disabled]="newsletterForm.invalid || subscribing">
-            <span class="material-symbols-outlined" *ngIf="!subscribing">send</span>
-            <span class="loading-spinner" *ngIf="subscribing"></span>
-            {{ subscribing ? 'Suscribiendo...' : 'Suscribirse' }}
+        <div class="product-pricing">
+          <span class="special-price">{{specialProduct.price | currency:'USD':'symbol':'1.0-0'}}</span>
+          <span class="original-price" *ngIf="specialProduct.originalPrice">{{specialProduct.originalPrice | currency:'USD':'symbol':'1.0-0'}}</span>
+          <span class="discount" *ngIf="specialProduct.discount">-{{specialProduct.discount}}%</span>
+        </div>
+        <div class="product-actions">
+          <button class="btn-primary-special" (click)="addSpecialToCart()">
+            <span class="material-icons">add_shopping_cart</span>
+            Agregar al Carrito
+          </button>
+          <button class="btn-secondary-special" (click)="viewProductDetails()">
+            <span class="material-icons">visibility</span>
+            Ver Detalles
           </button>
         </div>
-        <div class="form-validation" *ngIf="emailInput.invalid && emailInput.touched">
-          <span class="error-message">Por favor, ingresa un email válido</span>
-        </div>
-      </form>
-      
-      <div class="newsletter-benefits">
-        <div class="benefit">
-          <span class="material-symbols-outlined">local_offer</span>
-          <span>Ofertas exclusivas</span>
-        </div>
-        <div class="benefit">
-          <span class="material-symbols-outlined">new_releases</span>
-          <span>Primero en saber de nuevos productos</span>
-        </div>
-        <div class="benefit">
-          <span class="material-symbols-outlined">tips_and_updates</span>
-          <span>Tips y tutoriales musicales</span>
-        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Servicios Adicionales -->
-<section class="services-section" id="sobre-nosotros">
+<!-- Navegación Rápida -->
+<section class="quick-navigation">
   <div class="container">
     <div class="section-header">
-      <h2>Nuestros Servicios</h2>
-      <p>Más que una tienda, somos tu socio musical</p>
+      <h2 class="section-title">Acceso Rápido</h2>
+      <p class="section-subtitle">Gestiona tu cuenta y explora nuestros servicios</p>
     </div>
     
-    <div class="services-grid">
-      <div class="service-card">
-        <div class="service-icon">
-          <span class="material-symbols-outlined">local_shipping</span>
+    <div class="navigation-grid">
+      <div class="nav-card" (click)="navigateToLogin()">
+        <div class="nav-icon">
+          <span class="material-icons">login</span>
         </div>
-        <h3>Envío Gratuito</h3>
-        <p>En compras mayores a $1,000. Entrega rápida y segura a todo el país.</p>
+        <h3 class="nav-title">Iniciar Sesión</h3>
+        <p class="nav-description">Accede a tu cuenta personal</p>
+        <button class="nav-button">
+          <span class="material-icons">arrow_forward</span>
+        </button>
       </div>
       
-      <div class="service-card">
-        <div class="service-icon">
-          <span class="material-symbols-outlined">build</span>
+      <div class="nav-card" (click)="navigateToRegister()">
+        <div class="nav-icon">
+          <span class="material-icons">person_add</span>
         </div>
-        <h3>Reparación y Mantenimiento</h3>
-        <p>Servicio técnico especializado para todos los instrumentos.</p>
+        <h3 class="nav-title">Registrarse</h3>
+        <p class="nav-description">Crea una nueva cuenta</p>
+        <button class="nav-button">
+          <span class="material-icons">arrow_forward</span>
+        </button>
       </div>
       
-      <div class="service-card">
-        <div class="service-icon">
-          <span class="material-symbols-outlined">school</span>
+      <div class="nav-card" (click)="navigateToCatalog()">
+        <div class="nav-icon">
+          <span class="material-icons">inventory_2</span>
         </div>
-        <h3>Clases de Música</h3>
-        <p>Aprende con nuestros profesores certificados en nuestra academia.</p>
+        <h3 class="nav-title">Catálogo Completo</h3>
+        <p class="nav-description">Explora todos nuestros productos</p>
+        <button class="nav-button">
+          <span class="material-icons">arrow_forward</span>
+        </button>
       </div>
       
-      <div class="service-card">
-        <div class="service-icon">
-          <span class="material-symbols-outlined">autorenew</span>
+      <div class="nav-card" (click)="navigateToHelp()">
+        <div class="nav-icon">
+          <span class="material-icons">help</span>
         </div>
-        <h3>Garantía Extendida</h3>
-        <p>Protección completa para tu inversión musical.</p>
+        <h3 class="nav-title">Centro de Ayuda</h3>
+        <p class="nav-description">Preguntas frecuentes y soporte</p>
+        <button class="nav-button">
+          <span class="material-icons">arrow_forward</span>
+        </button>
       </div>
     </div>
   </div>

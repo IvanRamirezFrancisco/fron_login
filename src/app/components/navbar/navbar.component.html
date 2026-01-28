@@ -1,23 +1,310 @@
-<!-- Navbar Casa de Música Castillo -->
-<nav class="navbar-modern" style="background-color: var(--color-primario); box-shadow: var(--shadow-lg); position: fixed; top: 0; left: 0; right: 0; z-index: 1000;">
-  <div class="container-modern">
-    <div class="d-flex justify-content-between align-items-center" style="height: 80px;">
-      
-      <!-- Logo y marca Casa de Música -->
-      <div class="d-flex align-items-center gap-3">
-        <a routerLink="/" class="navbar-brand d-flex align-items-center gap-3 text-decoration-none transicion" 
-           onmouseover="this.style.transform='scale(1.05)'"
-           onmouseout="this.style.transform='scale(1)'">
-          <div class="brand-icon">
-            <div style="width: 50px; height: 50px; background: var(--color-resalte); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--color-primario); font-size: 1.5rem; font-weight: bold; box-shadow: var(--shadow-lg);">
-              <span class="material-symbols-outlined" style="font-size: 1.8rem;">music_note</span>
-            </div>
-          </div>
-          <div class="brand-text">
-            <h1 style="color: white; font-weight: 700; font-size: 1.4rem; margin: 0; font-family: var(--font-titulos); line-height: 1;">Casa de Música</h1>
-            <small style="color: var(--color-resalte); font-size: 0.8rem; font-weight: 600; font-family: var(--font-titulos); letter-spacing: 1px;">CASTILLO</small>
-          </div>
-        </a>
+<!-- Header Casa de Música Castillo - Diseño Profesional --><!-- Header Casa de Música Castillo - Diseño Profesional -->
+
+<nav class="main-header"><nav class="main-header">
+
+  <div class="header-container">  <div class="header-container">
+
+    <!-- Logo Casa de Música Castillo -->    <!-- Logo Casa de Música Castillo -->
+
+    <div class="logo-section">    <div class="logo-section">
+
+      <a routerLink="/" class="logo-link">      <a routerLink="/" class="logo-link">
+
+        <div class="logo-icon">        <div class="logo-icon">
+
+          <span class="material-symbols-outlined">music_note</span>          <span class="material-symbols-outlined">music_note</span>
+
+        </div>        </div>
+
+        <div class="logo-text">        <div class="logo-text">
+
+          <span class="brand-name">Casa de Música Castillo</span>          <span class="brand-name">Casa de Música Castillo</span>
+
+        </div>        </div>
+
+      </a>      </a>
+
+    </div>    </div>
+
+
+
+    <!-- Barra de búsqueda -->    <!-- Barra de búsqueda -->
+
+    <div class="search-section">    <div class="search-section">
+
+      <div class="search-container">      <div class="search-container">
+
+        <input         <input 
+
+          type="text"           type="text" 
+
+          class="search-input"           class="search-input" 
+
+          placeholder="Busca guitarras, pianos, y miles..."          placeholder="Busca guitarras, pianos, y miles..."
+
+          [(ngModel)]="searchQuery"          [(ngModel)]="searchQuery"
+
+          (keyup.enter)="performSearch()">          (keyup.enter)="performSearch()">
+
+        <button class="search-btn" (click)="performSearch()">        <button class="search-btn" (click)="performSearch()">
+
+          <span class="material-symbols-outlined">search</span>          <span class="material-symbols-outlined">search</span>
+
+        </button>        </button>
+
+      </div>      </div>
+
+    </div>    </div>
+
+
+
+    <!-- Navegación y acciones -->    <!-- Navegación y acciones -->
+
+    <div class="nav-actions">    <div class="nav-actions">
+
+      <!-- Navegación principal -->      <!-- Navegación principal -->
+
+      <div class="nav-links">      <div class="nav-links">
+
+        <a routerLink="/" class="nav-link" [class.active]="isActive('/')">Inicio</a>        <a routerLink="/" class="nav-link" [class.active]="isActive('/')">Inicio</a>
+
+        <a routerLink="/ofertas" class="nav-link" [class.active]="isActive('/ofertas')">Ofertas</a>        <a routerLink="/ofertas" class="nav-link" [class.active]="isActive('/ofertas')">Ofertas</a>
+
+        <a routerLink="/catalogo" class="nav-link" [class.active]="isActive('/catalogo')">Catálogo</a>        <a routerLink="/catalogo" class="nav-link" [class.active]="isActive('/catalogo')">Catálogo</a>
+
+        <a routerLink="/ayuda" class="nav-link" [class.active]="isActive('/ayuda')">Ayuda</a>        <a routerLink="/ayuda" class="nav-link" [class.active]="isActive('/ayuda')">Ayuda</a>
+
+      </div>      </div>
+
+
+
+      <!-- Iconos de usuario y carrito -->      <!-- Iconos de usuario y carrito -->
+
+      <div class="user-actions">      <div class="user-actions">
+
+        <button class="action-btn" (click)="toggleUserMenu()">        <button class="action-btn" (click)="toggleUserMenu()">
+
+          <span class="material-symbols-outlined">person</span>          <span class="material-symbols-outlined">person</span>
+
+        </button>        </button>
+
+        <button class="action-btn cart-btn" routerLink="/carrito">        <button class="action-btn cart-btn" routerLink="/carrito">
+
+          <span class="material-symbols-outlined">shopping_cart</span>          <span class="material-symbols-outlined">shopping_cart</span>
+
+          <span class="cart-count" *ngIf="cartItems > 0">{{ cartItems }}</span>          <span class="cart-count" *ngIf="cartItems > 0">{{ cartItems }}</span>
+
+        </button>        </button>
+
+      </div>      </div>
+
+
+
+      <!-- Menú hamburguesa para móvil -->      <!-- Menú hamburguesa para móvil -->
+
+      <button class="mobile-menu-btn" (click)="toggleMobileMenu()">      <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+
+        <span class="material-symbols-outlined">{{ showMobileMenu ? 'close' : 'menu' }}</span>        <span class="material-symbols-outlined">{{ showMobileMenu ? 'close' : 'menu' }}</span>
+
+      </button>      </button>
+
+    </div>    </div>
+
+
+
+    <!-- Menú desplegable de usuario -->    <!-- Menú desplegable de usuario -->
+
+    <div class="user-dropdown" *ngIf="showUserMenu" (clickOutside)="closeUserMenu()">    <div class="user-dropdown" *ngIf="showUserMenu" (clickOutside)="closeUserMenu()">
+
+      <div class="dropdown-content">      <div class="dropdown-content">
+
+        <ng-container *ngIf="!isLoggedIn; else loggedInMenu">        <ng-container *ngIf="!isLoggedIn; else loggedInMenu">
+
+          <a routerLink="/login" class="dropdown-item">          <a routerLink="/login" class="dropdown-item">
+
+            <span class="material-symbols-outlined">login</span>            <span class="material-symbols-outlined">login</span>
+
+            Iniciar Sesión            Iniciar Sesión
+
+          </a>          </a>
+
+          <a routerLink="/register" class="dropdown-item">          <a routerLink="/register" class="dropdown-item">
+
+            <span class="material-symbols-outlined">person_add</span>            <span class="material-symbols-outlined">person_add</span>
+
+            Registrarse            Registrarse
+
+          </a>          </a>
+
+        </ng-container>        </ng-container>
+
+                
+
+        <ng-template #loggedInMenu>        <ng-template #loggedInMenu>
+
+          <a routerLink="/profile" class="dropdown-item">          <a routerLink="/profile" class="dropdown-item">
+
+            <span class="material-symbols-outlined">account_circle</span>            <span class="material-symbols-outlined">account_circle</span>
+
+            Mi Perfil            Mi Perfil
+
+          </a>          </a>
+
+          <a routerLink="/orders" class="dropdown-item">          <a routerLink="/orders" class="dropdown-item">
+
+            <span class="material-symbols-outlined">shopping_bag</span>            <span class="material-symbols-outlined">shopping_bag</span>
+
+            Mis Pedidos            Mis Pedidos
+
+          </a>          </a>
+
+          <div class="dropdown-divider"></div>          <div class="dropdown-divider"></div>
+
+          <button (click)="logout()" class="dropdown-item logout-btn">          <button (click)="logout()" class="dropdown-item logout-btn">
+
+            <span class="material-symbols-outlined">logout</span>            <span class="material-symbols-outlined">logout</span>
+
+            Cerrar Sesión            Cerrar Sesión
+
+          </button>          </button>
+
+        </ng-template>        </ng-template>
+
+      </div>      </div>
+
+    </div>    </div>
+
+  </div>  </div>
+
+
+
+  <!-- Menú móvil -->  <!-- Menú móvil -->
+
+  <div class="mobile-menu" *ngIf="showMobileMenu">  <div class="mobile-menu" *ngIf="showMobileMenu">
+
+    <div class="mobile-menu-content">    <div class="mobile-menu-content">
+
+      <!-- Búsqueda móvil -->      <!-- Búsqueda móvil -->
+
+      <div class="mobile-search">      <div class="mobile-search">
+
+        <input         <input 
+
+          type="text"           type="text" 
+
+          class="mobile-search-input"           class="mobile-search-input" 
+
+          placeholder="Buscar productos..."          placeholder="Buscar productos..."
+
+          [(ngModel)]="searchQuery"          [(ngModel)]="searchQuery"
+
+          (keyup.enter)="performSearch()">          (keyup.enter)="performSearch()">
+
+        <button class="mobile-search-btn" (click)="performSearch()">        <button class="mobile-search-btn" (click)="performSearch()">
+
+          <span class="material-symbols-outlined">search</span>          <span class="material-symbols-outlined">search</span>
+
+        </button>        </button>
+
+      </div>      </div>
+
+
+
+      <!-- Links de navegación móvil -->      <!-- Links de navegación móvil -->
+
+      <div class="mobile-nav-links">      <div class="mobile-nav-links">
+
+        <a routerLink="/" class="mobile-nav-link" (click)="closeMobileMenu()">        <a routerLink="/" class="mobile-nav-link" (click)="closeMobileMenu()">
+
+          <span class="material-symbols-outlined">home</span>          <span class="material-symbols-outlined">home</span>
+
+          Inicio          Inicio
+
+        </a>        </a>
+
+        <a routerLink="/ofertas" class="mobile-nav-link" (click)="closeMobileMenu()">        <a routerLink="/ofertas" class="mobile-nav-link" (click)="closeMobileMenu()">
+
+          <span class="material-symbols-outlined">local_offer</span>          <span class="material-symbols-outlined">local_offer</span>
+
+          Ofertas          Ofertas
+
+        </a>        </a>
+
+        <a routerLink="/catalogo" class="mobile-nav-link" (click)="closeMobileMenu()">        <a routerLink="/catalogo" class="mobile-nav-link" (click)="closeMobileMenu()">
+
+          <span class="material-symbols-outlined">inventory_2</span>          <span class="material-symbols-outlined">inventory_2</span>
+
+          Catálogo          Catálogo
+
+        </a>        </a>
+
+        <a routerLink="/ayuda" class="mobile-nav-link" (click)="closeMobileMenu()">        <a routerLink="/ayuda" class="mobile-nav-link" (click)="closeMobileMenu()">
+
+          <span class="material-symbols-outlined">help</span>          <span class="material-symbols-outlined">help</span>
+
+          Ayuda          Ayuda
+
+        </a>        </a>
+
+      </div>      </div>
+
+
+
+      <!-- Acciones móvil -->      <!-- Acciones móvil -->
+
+      <div class="mobile-actions">      <div class="mobile-actions">
+
+        <ng-container *ngIf="!isLoggedIn; else mobileLoggedIn">        <ng-container *ngIf="!isLoggedIn; else mobileLoggedIn">
+
+          <a routerLink="/login" class="mobile-action-btn btn-primary" (click)="closeMobileMenu()">          <a routerLink="/login" class="mobile-action-btn btn-primary" (click)="closeMobileMenu()">
+
+            Iniciar Sesión            Iniciar Sesión
+
+          </a>          </a>
+
+          <a routerLink="/register" class="mobile-action-btn btn-secondary" (click)="closeMobileMenu()">          <a routerLink="/register" class="mobile-action-btn btn-secondary" (click)="closeMobileMenu()">
+
+            Registrarse            Registrarse
+
+          </a>          </a>
+
+        </ng-container>        </ng-container>
+
+                
+
+        <ng-template #mobileLoggedIn>        <ng-template #mobileLoggedIn>
+
+          <a routerLink="/profile" class="mobile-nav-link" (click)="closeMobileMenu()">          <a routerLink="/profile" class="mobile-nav-link" (click)="closeMobileMenu()">
+
+            <span class="material-symbols-outlined">account_circle</span>            <span class="material-symbols-outlined">account_circle</span>
+
+            Mi Perfil            Mi Perfil
+
+          </a>          </a>
+
+          <a routerLink="/orders" class="mobile-nav-link" (click)="closeMobileMenu()">          <a routerLink="/orders" class="mobile-nav-link" (click)="closeMobileMenu()">
+
+            <span class="material-symbols-outlined">shopping_bag</span>            <span class="material-symbols-outlined">shopping_bag</span>
+
+            Mis Pedidos            Mis Pedidos
+
+          </a>          </a>
+
+          <button (click)="logout(); closeMobileMenu()" class="mobile-action-btn logout-mobile">          <button (click)="logout(); closeMobileMenu()" class="mobile-action-btn logout-mobile">
+
+            Cerrar Sesión            Cerrar Sesión
+
+          </button>          </button>
+
+        </ng-template>        </ng-template>
+
+      </div>      </div>
+
+    </div>    </div>
+
+  </div>  </div>
+
+</nav></nav>
       </div>
 
       <!-- Menú de navegación Casa de Música -->

@@ -11,15 +11,25 @@ import { AuthGuard } from './auth.guard';
 import { ProfileLayoutComponent } from './components/profile-layout/profile-layout.component';
 import { ProfileSecurityComponent } from './components/profile-security/profile-security.component';
 import { UserProfileComponent } from './components/user-profile/user-profile.component';
+import { OfertasComponent } from './components/ofertas/ofertas.component';
+import { CatalogoComponent } from './components/catalogo/catalogo.component';
+import { ProductDetailComponent } from './components/product-detail/product-detail.component';
+import { SearchResultsComponent } from './components/search-results/search-results.component';
+import { HelpCenterComponent } from './components/help-center/help-center.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
+  { path: 'home', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'register-debug', component: RegisterDebugComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'verify-account', component: VerifyAccountComponent },
+  { path: 'ofertas', component: OfertasComponent },
+  { path: 'catalogo', component: CatalogoComponent },
+  { path: 'busqueda', component: SearchResultsComponent },
+  { path: 'ayuda', component: HelpCenterComponent },
   
   // Nueva arquitectura: /dashboard con rutas anidadas
   { 
@@ -37,11 +47,12 @@ export const routes: Routes = [
   //   loadComponent: () =>
   //     import('./components/product-catalog/product-catalog.component').then(m => m.ProductCatalogComponent)
   // },
-  // {
-  //   path: 'producto/:id',
-  //   loadComponent: () =>
-  //     import('./components/product-detail/product-detail.component').then(m => m.ProductDetailComponent)
-  // },
+  // Rutas de navegación temporal (placeholder)
+  { path: 'catalog', component: HomeComponent }, // Temporal redirect
+  { path: 'services', component: HomeComponent }, // Temporal redirect
+  { path: 'product-details', component: HomeComponent }, // Temporal redirect
+  // Ruta para detalle de producto
+  { path: 'producto/:id', component: ProductDetailComponent },
   {
     path: 'carrito',
     loadComponent: () =>

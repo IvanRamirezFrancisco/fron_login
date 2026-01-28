@@ -1,14 +1,12 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { SanitizationService } from '../../services/sanitization.service';
 import { CommonModule } from '@angular/common';
 import { AuthResponse, User } from '../../models/user.model';
 import { environment } from '../../../environments/environment';
-import { HomeHeaderComponent } from '../home-header/home-header.component';
-import { SecureInputDirective } from '../../directives/security.directives';
 
 // Interface para métodos 2FA disponibles
 interface TwoFactorMethod {
@@ -22,11 +20,11 @@ interface TwoFactorMethod {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, CommonModule, RouterModule, HomeHeaderComponent, SecureInputDirective],
+  imports: [FormsModule, ReactiveFormsModule, CommonModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements AfterViewInit, OnDestroy {
+export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('emailInput') emailInput!: ElementRef;
   @ViewChild('twoFactorInput') twoFactorInput!: ElementRef;
   
@@ -37,6 +35,8 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   pendingUser: any = null;
   twoFactorCode: string = '';
   showPassword = false;
+  searchQuery = ''; // Para la barra de búsqueda del header
+  rememberMe = false;
   
   // Estados para 2FA
   selectedMethod: string = '';
@@ -71,11 +71,21 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
     private authService: AuthService,
     private sanitizationService: SanitizationService,
     private router: Router,
+    private route: ActivatedRoute,
     private http: HttpClient
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
+    });
+  }
+
+  ngOnInit(): void {
+    // Leer email del query param si existe
+    this.route.queryParams.subscribe(params => {
+      if (params['email']) {
+        this.loginForm.patchValue({ email: params['email'] });
+      }
     });
   }
 
@@ -88,96 +98,105 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
     }, 100);
   }
 
-  // onSubmit(): void {
-  //   if (this.loginForm.valid) {
-  //     this.isLoading = true;
-  //     this.errorMessage = '';
-
-  //     console.log('Formulario válido, enviando datos...');
-  //     console.log('Datos del formulario:', this.loginForm.value);
-
-  //     this.authService.login(this.loginForm.value).subscribe({
-  //       next: (response) => {
-  //         console.log('Login exitoso:', response);
-  //         console.log('Redirigiendo a dashboard...');
-  //         // Esperar un poco para asegurar que la sesión se guarde
-  //         setTimeout(() => {
-  //           this.router.navigate(['/dashboard']).then(
-  //             (success) => console.log('Navegación exitosa:', success)
-  //           ).catch(
-  //             (error) => console.error('Error en navegación:', error)
-  //           );
-  //         }, 100);
-  //       },
-  //       error: (error) => {
-  //         console.error('Error en login:', error);
-  //         this.errorMessage = error.error?.message || error.message || 'Error al iniciar sesión';
-  //         this.isLoading = false;
-  //       },
-  //       complete: () => {
-  //         console.log('Login completado');
-  //         this.isLoading = false;
-  //       }
-  //     });
- onSubmit(): void {
-  if (this.loginForm.invalid) {
-    this.errorMessage = 'Completa los campos correctamente';
-    return;
-  }
-
-  // Sanitizar datos antes de enviar
-  const rawFormData = this.loginForm.value;
-  const formData = {
-    email: this.sanitizationService.sanitizeUserInput(rawFormData.email || ''),
-    password: this.sanitizationService.sanitizeUserInput(rawFormData.password || '')
-  };
-  
-  // Validación adicional de seguridad
-  if (!this.sanitizationService.isValidEmail(formData.email)) {
-    this.errorMessage = 'Email no válido';
-    return;
-  }
-
-  this.isLoading = true;
-  this.errorMessage = '';
-
-  this.authService.login(formData).subscribe({
-    next: (response) => {
-      this.isLoading = false;
-      // Si el backend indica que se requiere 2FA
-      if (response.data?.twoFactorRequired || response.twoFactorRequired) {
-        this.showTwoFactorForm = true;
-        // Busca el usuario en todas las posibles ubicaciones
-        this.pendingUser = response.data?.user ?? response.user ?? response.pendingUser ?? null;
-        this.setupTwoFactorMethods();
-        console.log('Respuesta de login:', response);
-        console.log('Usuario para 2FA:', this.pendingUser);
-        return;
-      }
-      // Login normal: guardar token y navegar
-      const token = response.data?.accessToken ?? response.accessToken ?? response.token;
-      const user = response.data?.user ?? response.user;
-      if (token && user) {
-        this.authService.completeLogin(token, user);
-        this.router.navigate(['/']);
-      } else {
-        // Solo muestra el error si NO hay 2FA y NO hay token
-        this.errorMessage = 'Respuesta de login inválida';
-      }
-    },
-    error: (error) => {
-      this.isLoading = false;
-      
-      // Verificar si es un error de rate limiting (429)
-      if (error.status === 429 && error.error?.remainingTimeSeconds) {
-        this.handleRateLimitError(error.error);
-      } else {
-        this.errorMessage = error.error?.message || error.message || 'Error al iniciar sesión';
-        this.clearCountdown(); // Limpiar cualquier countdown previo
-      }
+  onSubmit(): void {
+    if (this.loginForm.invalid) {
+      // Marcar todos los campos como touched para mostrar errores
+      Object.keys(this.loginForm.controls).forEach(key => {
+        this.loginForm.get(key)?.markAsTouched();
+      });
+      this.errorMessage = 'Por favor, completa todos los campos correctamente';
+      return;
     }
-  });
-}
+
+    // Sanitizar datos antes de enviar
+    const rawFormData = this.loginForm.value;
+    const formData = {
+      email: this.sanitizationService.sanitizeUserInput(rawFormData.email || ''),
+      password: this.sanitizationService.sanitizeUserInput(rawFormData.password || '')
+    };
+    
+    // Validación adicional de seguridad
+    if (!this.sanitizationService.isValidEmail(formData.email)) {
+      this.errorMessage = 'Por favor, ingresa un email válido';
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    console.log('🔐 Iniciando sesión con:', { email: formData.email });
+
+    this.authService.login(formData).subscribe({
+      next: (response) => {
+        console.log('✅ Respuesta del servidor:', response);
+        this.isLoading = false;
+        
+        // Si el backend indica que se requiere 2FA
+        if (response.data?.twoFactorRequired || response.twoFactorRequired) {
+          console.log('🔒 2FA requerido');
+          this.showTwoFactorForm = true;
+          this.pendingUser = response.data?.user ?? response.user ?? response.pendingUser ?? null;
+          this.setupTwoFactorMethods();
+          return;
+        }
+        
+        // Login exitoso sin 2FA
+        const token = response.data?.accessToken ?? response.accessToken ?? response.token;
+        const user = response.data?.user ?? response.user;
+        
+        if (token && user) {
+          console.log('✅ Login exitoso, guardando sesión...');
+          this.authService.completeLogin(token, user);
+          
+          // Navegar según el rol del usuario
+          const isAdmin = user.roles && user.roles.includes('ADMIN');
+          const targetRoute = isAdmin ? '/dashboard' : '/home';
+          console.log(`🚀 Redirigiendo a ${targetRoute}...`);
+          
+          this.router.navigate([targetRoute]).then(
+            success => console.log('✅ Navegación exitosa:', success),
+            error => console.error('❌ Error en navegación:', error)
+          );
+        } else {
+          console.error('❌ Respuesta inválida del servidor:', response);
+          this.errorMessage = 'Error al procesar la respuesta del servidor';
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error en login:', error);
+        this.isLoading = false;
+        
+        // Verificar si es un error de rate limiting (429)
+        if (error.status === 429 && error.error?.remainingTimeSeconds) {
+          // ✅ SOLO actualizar el bloqueo si NO estábamos previamente bloqueados
+          // Esto evita que intentos adicionales reinicien el countdown
+          if (!this.isBlocked) {
+            this.handleRateLimitError(error.error);
+          } else {
+            // Ya estábamos bloqueados, solo mostrar mensaje sin reiniciar countdown
+            console.warn('⚠️ Intento adicional durante bloqueo activo. Countdown NO reiniciado.');
+            this.errorMessage = `Ya tienes un bloqueo activo. Espera ${this.formatTimeLeft()}.`;
+          }
+        } else {
+          // Mensajes de error más específicos para otros tipos de error
+          if (error.status === 401) {
+            this.errorMessage = 'Email o contraseña incorrectos';
+          } else if (error.status === 403) {
+            this.errorMessage = 'Cuenta bloqueada. Contacta al administrador';
+          } else if (error.status === 0) {
+            // ✅ Error de conexión - NO debe contar como intento de fuerza bruta
+            this.errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión a internet';
+          } else {
+            this.errorMessage = error.error?.message || 'Error al iniciar sesión. Intenta nuevamente';
+          }
+          // Limpiar countdown solo para errores que NO son rate limit
+          if (error.status !== 429) {
+            this.clearCountdown();
+          }
+        }
+      }
+    });
+  }
 
   /**
    * Configurar métodos de 2FA disponibles basado en los métodos ACTIVOS del usuario
@@ -418,6 +437,33 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   }
 
   /**
+   * Enviar código por email (wrapper para compatibilidad con HTML)
+   */
+  sendEmailCode(): void {
+    this.sendVerificationCode();
+  }
+
+  /**
+   * Verificar código 2FA (wrapper para formularios con event)
+   */
+  verifyTwoFactorCode(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+    }
+    this.verifyTwoFactor();
+  }
+
+  /**
+   * Verificar código de respaldo (wrapper para formularios con event)
+   */
+  verifyBackupCodeSubmit(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+    }
+    this.verifyBackupCode();
+  }
+
+  /**
    * Formatear número de teléfono para mostrar
    */
   public formatPhone(phone: string): string {
@@ -616,6 +662,38 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
     this.clearCountdown();
   }
 
+  // Métodos de navegación para el header
+  navigateToHome(): void {
+    this.router.navigate(['/']);
+  }
+
+  navigateToRegister(): void {
+    this.router.navigate(['/register']);
+  }
+
+  performSearch(): void {
+    if (this.searchQuery.trim()) {
+      this.router.navigate(['/search'], { queryParams: { q: this.searchQuery } });
+    }
+  }
+
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  backToLogin(): void {
+    this.showTwoFactorForm = false;
+    this.twoFactorCode = '';
+    this.errorMessage = '';
+  }
+
+  loginWithGoogle(): void {
+    // TODO: Implementar login con Google OAuth
+    console.log('Login con Google iniciado');
+    // this.router.navigate(['/google-auth']);
+  }
+
   get email() { return this.loginForm.get('email'); }
   get password() { return this.loginForm.get('password'); }
 }
+ 

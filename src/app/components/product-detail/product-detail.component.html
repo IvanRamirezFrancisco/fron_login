@@ -1,0 +1,324 @@
+<!-- Loading State -->
+<div *ngIf="loading" class="loading-container">
+  <div class="spinner"></div>
+  <p>Cargando producto...</p>
+</div>
+
+<!-- Error State -->
+<div *ngIf="error && !loading" class="error-container">
+  <span class="material-symbols-outlined">error</span>
+  <h2>{{ error }}</h2>
+  <button class="btn-primary" (click)="goBack()">Volver al Catálogo</button>
+</div>
+
+<!-- Product Detail -->
+<div *ngIf="product && !loading" class="product-detail-container">
+  
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumbs">
+    <a [routerLink]="['/']">Inicio</a>
+    <span class="separator">/</span>
+    <a [routerLink]="['/catalogo']">Catálogo</a>
+    <span class="separator">/</span>
+    <span class="current">{{ product.category.name }}</span>
+    <span class="separator">/</span>
+    <span class="current">{{ product.name }}</span>
+  </nav>
+
+  <!-- Main Product Section -->
+  <div class="product-main-section">
+    
+    <!-- Left Column: Image Gallery -->
+    <div class="product-gallery">
+      <!-- Thumbnail Column -->
+      <div class="thumbnail-column">
+        <div 
+          *ngFor="let image of product.images; let i = index"
+          class="thumbnail"
+          [class.active]="i === selectedImageIndex"
+          (click)="selectImage(i)"
+        >
+          <img [src]="image" [alt]="product.name + ' - Vista ' + (i + 1)">
+        </div>
+      </div>
+      
+      <!-- Main Image -->
+      <div class="main-image">
+        <img [src]="product.images[selectedImageIndex]" [alt]="product.name">
+        <div *ngIf="product.discount" class="discount-badge">
+          -{{ product.discount }}%
+        </div>
+        <div *ngIf="product.isNew" class="new-badge">
+          Nuevo
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Product Info -->
+    <div class="product-info">
+      <!-- Product Title -->
+      <h1 class="product-title">{{ product.name }}</h1>
+      
+      <!-- SKU and Code -->
+      <div class="product-meta">
+        <span class="sku">CÓDIGO: {{ product.sku }}</span>
+        <span class="brand">{{ product.brand }}</span>
+      </div>
+
+      <!-- Rating -->
+      <div class="rating-section">
+        <div class="stars">
+          <span 
+            *ngFor="let star of getStars(product.rating)" 
+            class="star"
+            [class.filled]="star"
+          >
+            ★
+          </span>
+          <span class="rating-number">({{ product.rating }})</span>
+        </div>
+        <span class="review-count">{{ product.reviewCount }} Reseñas</span>
+      </div>
+
+      <!-- Stock Status -->
+      <div class="stock-status" [class.in-stock]="product.inStock" [class.out-of-stock]="!product.inStock">
+        <span class="material-symbols-outlined">
+          {{ product.inStock ? 'check_circle' : 'cancel' }}
+        </span>
+        <span>{{ product.inStock ? 'En existencia' : 'Agotado' }}</span>
+        <span *ngIf="product.inStock" class="stock-quantity">({{ product.stockQuantity }} disponibles)</span>
+      </div>
+
+      <!-- Price Section -->
+      <div class="price-section">
+        <div class="price-main">
+          <span class="current-price">\${{ product.price | number:'1.2-2' }}</span>
+          <span *ngIf="product.originalPrice" class="original-price">\${{ product.originalPrice | number:'1.2-2' }}</span>
+        </div>
+        <div *ngIf="product.installmentInfo" class="installment-info">
+          <span class="material-symbols-outlined">credit_card</span>
+          <span>{{ product.installmentInfo.months }} x \${{ product.installmentInfo.monthlyPayment | number:'1.2-2' }} sin interés</span>
+        </div>
+      </div>
+
+      <!-- Short Description -->
+      <p class="short-description">{{ product.shortDescription }}</p>
+
+      <!-- Warranty -->
+      <div *ngIf="product.warranty" class="warranty-badge">
+        <span class="material-symbols-outlined">verified</span>
+        <span>Garantía: {{ product.warranty }}</span>
+      </div>
+
+      <!-- Quantity Selector -->
+      <div class="quantity-section">
+        <label>Cantidad:</label>
+        <div class="quantity-selector">
+          <button 
+            class="qty-btn" 
+            (click)="decrementQuantity()" 
+            [disabled]="quantity <= 1"
+          >
+            -
+          </button>
+          <input 
+            type="number" 
+            [(ngModel)]="quantity" 
+            [max]="product.stockQuantity" 
+            min="1"
+            readonly
+          />
+          <button 
+            class="qty-btn" 
+            (click)="incrementQuantity()" 
+            [disabled]="quantity >= product.stockQuantity"
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button 
+          class="btn-add-cart" 
+          (click)="addToCart($event)" 
+          [disabled]="!product.inStock || addingToCart"
+        >
+          <span class="material-symbols-outlined">shopping_cart</span>
+          <span *ngIf="!addingToCart">Añadir al Carrito</span>
+          <span *ngIf="addingToCart">Agregando...</span>
+        </button>
+        
+        <button 
+          class="btn-reserve" 
+          (click)="reserveProduct()"
+          [disabled]="!product.inStock"
+        >
+          <span class="material-symbols-outlined">bookmark</span>
+          Apartar con \${{ (product.price * 0.1) | number:'1.2-2' }}
+        </button>
+      </div>
+
+      <!-- Additional Info -->
+      <div class="additional-info">
+        <div class="info-item">
+          <span class="material-symbols-outlined">local_shipping</span>
+          <span>Envío gratis en compras mayores a \$1,000</span>
+        </div>
+        <div class="info-item">
+          <span class="material-symbols-outlined">autorenew</span>
+          <span>Devoluciones dentro de 30 días</span>
+        </div>
+        <div class="info-item">
+          <span class="material-symbols-outlined">support_agent</span>
+          <span>Soporte técnico especializado</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs Section -->
+  <div class="product-tabs-section">
+    <!-- Tab Headers -->
+    <div class="tab-headers">
+      <button 
+        class="tab-header" 
+        [class.active]="activeTab === 'description'"
+        (click)="setActiveTab('description')"
+      >
+        Descripción
+      </button>
+      <button 
+        class="tab-header" 
+        [class.active]="activeTab === 'specifications'"
+        (click)="setActiveTab('specifications')"
+      >
+        Especificaciones
+      </button>
+      <button 
+        class="tab-header" 
+        [class.active]="activeTab === 'questions'"
+        (click)="setActiveTab('questions')"
+      >
+        Preguntas
+        <span *ngIf="questions.length > 0" class="badge">{{ questions.length }}</span>
+      </button>
+      <button 
+        class="tab-header" 
+        [class.active]="activeTab === 'reviews'"
+        (click)="setActiveTab('reviews')"
+      >
+        Reseñas
+        <span *ngIf="reviews.length > 0" class="badge">{{ reviews.length }}</span>
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      <!-- Description Tab -->
+      <div *ngIf="activeTab === 'description'" class="tab-pane description-pane">
+        <h3>Descripción del Producto</h3>
+        <p>{{ product.description }}</p>
+        
+        <h4>Características Destacadas:</h4>
+        <ul class="feature-list">
+          <li *ngFor="let tag of product.tags">{{ tag }}</li>
+        </ul>
+      </div>
+
+      <!-- Specifications Tab -->
+      <div *ngIf="activeTab === 'specifications'" class="tab-pane specifications-pane">
+        <h3>Especificaciones Técnicas</h3>
+        <table class="specifications-table">
+          <tbody>
+            <tr *ngFor="let spec of product.specifications; let i = index" [class.even]="i % 2 === 0">
+              <td class="spec-name">{{ spec.name }}</td>
+              <td class="spec-value">{{ spec.value }} <span *ngIf="spec.unit">{{ spec.unit }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Questions Tab -->
+      <div *ngIf="activeTab === 'questions'" class="tab-pane questions-pane">
+        <h3>Preguntas Frecuentes</h3>
+        
+        <div *ngIf="questions.length === 0" class="empty-state">
+          <span class="material-symbols-outlined">help</span>
+          <p>No hay preguntas aún. ¡Sé el primero en preguntar!</p>
+          <button class="btn-secondary">Hacer una pregunta</button>
+        </div>
+
+        <div *ngIf="questions.length > 0" class="questions-list">
+          <div *ngFor="let question of questions" class="question-item">
+            <div class="question-header">
+              <span class="material-symbols-outlined">help</span>
+              <span class="question-user">{{ question.userName }}</span>
+              <span class="question-date">{{ question.createdAt | date:'short' }}</span>
+            </div>
+            <div class="question-text">{{ question.question }}</div>
+            <div *ngIf="question.answer" class="answer-section">
+              <div class="answer-header">
+                <span class="material-symbols-outlined">reply</span>
+                <span class="answer-by">{{ question.answeredBy }}</span>
+              </div>
+              <div class="answer-text">{{ question.answer }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Tab -->
+      <div *ngIf="activeTab === 'reviews'" class="tab-pane reviews-pane">
+        <h3>Opiniones de Clientes</h3>
+        
+        <div *ngIf="reviews.length === 0" class="empty-state">
+          <span class="material-symbols-outlined">rate_review</span>
+          <p>No hay reseñas aún. ¡Comparte tu experiencia!</p>
+          <button class="btn-secondary">Escribir reseña</button>
+        </div>
+
+        <div *ngIf="reviews.length > 0" class="reviews-list">
+          <div *ngFor="let review of reviews" class="review-item">
+            <div class="review-header">
+              <div class="reviewer-info">
+                <span class="reviewer-name">{{ review.userName }}</span>
+                <span *ngIf="review.verified" class="verified-badge">
+                  <span class="material-symbols-outlined">verified</span>
+                  Compra verificada
+                </span>
+              </div>
+              <div class="review-rating">
+                <span *ngFor="let star of getStars(review.rating)" class="star filled">★</span>
+              </div>
+            </div>
+            <h4 class="review-title">{{ review.title }}</h4>
+            <p class="review-comment">{{ review.comment }}</p>
+            <div class="review-footer">
+              <span class="review-date">{{ review.createdAt | date:'short' }}</span>
+              <div class="review-helpful">
+                <button class="helpful-btn">
+                  <span class="material-symbols-outlined">thumb_up</span>
+                  Útil ({{ review.helpful }})
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Related Products Section -->
+  <div *ngIf="relatedProducts.length > 0" class="related-products-section">
+    <h2>Productos Relacionados</h2>
+    <div class="related-products-grid">
+      <app-product-card
+        *ngFor="let relatedProduct of relatedProducts"
+        [product]="relatedProduct"
+        (productClick)="viewRelatedProduct($event)"
+      ></app-product-card>
+    </div>
+  </div>
+</div>

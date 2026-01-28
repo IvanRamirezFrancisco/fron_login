@@ -1,181 +1,313 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ProductService } from '../../services/product.service';
-import { Product, ProductCategory } from '../../models/product.model';
-import { ProductCardComponent } from '../product-card/product-card.component';
-import { HomeHeaderComponent } from '../home-header/home-header.component';
-
-interface Brand {
-  name: string;
-  logo: string;
-}
-
-interface Testimonial {
-  name: string;
-  role: string;
-  content: string;
-  rating: number;
-  avatar: string;
-}
+import { AuthService } from '../../services/auth.service';
+import { User } from '../../models/user.model';
+import { GlobalSearchComponent } from '../global-search/global-search.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ProductCardComponent, HomeHeaderComponent],
+  imports: [CommonModule, RouterModule, FormsModule, GlobalSearchComponent],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  styleUrls: ['./home.component.css'],
+  host: {
+    '(document:click)': 'onDocumentClick($event)'
+  }
 })
 export class HomeComponent implements OnInit {
-  categories: ProductCategory[] = [];
-  featuredProducts: Product[] = [];
-  loadingFeatured = true;
-  newsletterEmail = '';
-  subscribing = false;
-
-  brands: Brand[] = [
-    { name: 'Fender', logo: 'fender-logo.png' },
-    { name: 'Gibson', logo: 'gibson-logo.png' },
-    { name: 'Yamaha', logo: 'yamaha-logo.png' },
-    { name: 'Taylor', logo: 'taylor-logo.png' },
-    { name: 'Pearl', logo: 'pearl-logo.png' },
-    { name: 'Roland', logo: 'roland-logo.png' }
-  ];
-
-  testimonials: Testimonial[] = [
-    {
-      name: 'Carlos Mendoza',
-      role: 'Músico Profesional',
-      content: 'Excelente servicio y productos de alta calidad. Encontré exactamente lo que buscaba para mi estudio de grabación.',
-      rating: 5,
-      avatar: '/assets/logoP.png'
-    },
-    {
-      name: 'Ana García',
-      role: 'Profesora de Piano',
-      content: 'El piano que compré aquí superó mis expectativas. La atención al cliente es excepcional y los precios son muy competitivos.',
-      rating: 5,
-      avatar: '/assets/logoP.png'
-    },
-    {
-      name: 'Miguel Rodríguez',
-      role: 'Guitarrista de Banda',
-      content: 'Llevo años comprando mis instrumentos aquí. Siempre tienen las últimas novedades y el personal es muy conocedor.',
-      rating: 4,
-      avatar: '/assets/logoP.png'
-    }
-  ];
+  searchQuery = '';
+  cartItemCount = 3;
+  wishlistCount = 5;
+  emailSubscription = '';
+  
+  // Usuario logueado
+  isLoggedIn = false;
+  currentUser: User | null = null;
+  showUserMenu = false;
 
   constructor(
-    private productService: ProductService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.loadCategories();
-    this.loadFeaturedProducts();
-  }
-
-  // Cargar categorías
-  loadCategories(): void {
-    this.productService.getCategories().subscribe({
-      next: (categories) => {
-        this.categories = categories;
-      },
-      error: (error) => {
-        console.error('Error loading categories:', error);
-      }
+    // Verificar si el usuario está logueado
+    this.authService.getCurrentUser().subscribe((user: User | null) => {
+      this.currentUser = user;
+      this.isLoggedIn = !!user;
     });
   }
 
-  // Cargar productos destacados
-  loadFeaturedProducts(): void {
-    this.loadingFeatured = true;
-    this.productService.getFeaturedProducts().subscribe({
-      next: (products) => {
-        this.featuredProducts = products;
-        this.loadingFeatured = false;
-      },
-      error: (error) => {
-        console.error('Error loading featured products:', error);
-        this.loadingFeatured = false;
-      }
-    });
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const userMenuContainer = target.closest('.user-menu-container');
+    
+    if (!userMenuContainer && this.showUserMenu) {
+      this.showUserMenu = false;
+    }
   }
 
-  // Obtener descripción de categoría
-  getCategoryDescription(categoryId: string): string {
-    const descriptions: { [key: string]: string } = {
-      'guitars': 'Guitarras eléctricas y acústicas de las mejores marcas',
-      'pianos': 'Pianos digitales y acústicos para todos los niveles',
-      'drums': 'Baterías completas y percusión profesional',
-      'bass': 'Bajos eléctricos y acústicos de alta calidad',
-      'wind': 'Instrumentos de viento para orquesta y banda',
-      'accessories': 'Accesorios y equipos para músicos'
-    };
-    return descriptions[categoryId] || 'Instrumentos musicales de calidad';
+  toggleUserMenu(): void {
+    this.showUserMenu = !this.showUserMenu;
   }
 
-  // Ver catálogo completo
-  viewCatalog(): void {
+  closeUserMenu(): void {
+    this.showUserMenu = false;
+  }
+
+  navigateToProfile(): void {
+    this.closeUserMenu();
+    this.router.navigate(['/dashboard/seguridad']);
+  }
+
+  logout(): void {
+    this.closeUserMenu();
+    this.authService.logout();
+    this.isLoggedIn = false;
+    this.currentUser = null;
+    this.router.navigate(['/home']);
+  }
+
+  allCategories = [
+    { 
+      id: 'guitarras', 
+      name: 'Guitarras', 
+      description: 'Acústicas, eléctricas y clásicas', 
+      icon: 'music_note',
+      productCount: 145
+    },
+    { 
+      id: 'pianos', 
+      name: 'Pianos y Teclados', 
+      description: 'Pianos acústicos y digitales', 
+      icon: 'piano',
+      productCount: 89
+    },
+    { 
+      id: 'baterias', 
+      name: 'Baterías', 
+      description: 'Acústicas y electrónicas', 
+      icon: 'music_note',
+      productCount: 67
+    },
+    { 
+      id: 'vientos', 
+      name: 'Vientos', 
+      description: 'Saxofones, trompetas, flautas', 
+      icon: 'music_note',
+      productCount: 134
+    },
+    { 
+      id: 'cuerdas', 
+      name: 'Cuerdas', 
+      description: 'Violines, violas, cellos', 
+      icon: 'music_note',
+      productCount: 98
+    },
+    { 
+      id: 'percusion', 
+      name: 'Percusi�n', 
+      description: 'Tambores, maracas, cajones', 
+      icon: 'music_note',
+      productCount: 156
+    },
+    { 
+      id: 'amplificadores', 
+      name: 'Amplificadores', 
+      description: 'Para guitarra y bajo', 
+      icon: 'speaker',
+      productCount: 78
+    },
+    { 
+      id: 'accesorios', 
+      name: 'Accesorios', 
+      description: 'Cables, p�as, fundas', 
+      icon: 'settings',
+      productCount: 267
+    },
+    { 
+      id: 'audio', 
+      name: 'Audio Pro', 
+      description: 'Micrófonos y equipos', 
+      icon: 'mic',
+      productCount: 89
+    },
+    { 
+      id: 'vintage', 
+      name: 'Vintage', 
+      description: 'Instrumentos de colección', 
+      icon: 'star',
+      productCount: 45
+    }
+  ];
+
+  // Producto especial destacado
+  specialProduct = {
+    name: 'Guitarra Premium Edición Limitada',
+    description: 'Una guitarra excepcional con acabados únicos, perfecta para músicos profesionales que buscan calidad y distinción.',
+    price: 1299,
+    originalPrice: 1599,
+    discount: 19,
+    features: [
+      'Madera de caoba premium',
+      'Pastillas profesionales',
+      'Acabado artesanal único',
+      'Incluye estuche premium',
+      'Garantía extendida de 3 años'
+    ]
+  };
+
+  featuredProducts = [
+    {
+      id: 1,
+      name: 'Guitarra Ac�stica Yamaha FG830',
+      brand: 'Yamaha',
+      price: 299,
+      originalPrice: 349,
+      rating: 4.8,
+      reviews: 156,
+      image: '/assets/products/guitarra-yamaha.jpg',
+      badge: 'Oferta',
+      isFavorite: false
+    },
+    {
+      id: 2,
+      name: 'Piano Digital Casio Privia PX-160',
+      brand: 'Casio',
+      price: 599,
+      originalPrice: null,
+      rating: 4.6,
+      reviews: 89,
+      image: '/assets/products/piano-casio.jpg',
+      badge: 'Nuevo',
+      isFavorite: true
+    },
+    {
+      id: 3,
+      name: 'Bater�a Pearl Roadshow',
+      brand: 'Pearl',
+      price: 449,
+      originalPrice: 499,
+      rating: 4.7,
+      reviews: 67,
+      image: '/assets/products/bateria-pearl.jpg',
+      badge: 'Popular',
+      isFavorite: false
+    },
+    {
+      id: 4,
+      name: 'Viol�n Stradivarius Copy 4/4',
+      brand: 'Stradivarius',
+      price: 189,
+      originalPrice: null,
+      rating: 4.5,
+      reviews: 34,
+      image: '/assets/products/violin-stradivarius.jpg',
+      badge: null,
+      isFavorite: false
+    }
+  ];
+
+  services = [
+    {
+      id: 'reparacion',
+      name: 'Reparaci�n de Instrumentos',
+      description: 'Servicio t�cnico especializado con garant�a',
+      icon: 'build'
+    },
+    {
+      id: 'clases',
+      name: 'Clases de M�sica',
+      description: 'Aprende con maestros profesionales',
+      icon: 'school'
+    },
+    {
+      id: 'alquiler',
+      name: 'Alquiler de Equipos',
+      description: 'Renta instrumentos para eventos',
+      icon: 'event'
+    },
+    {
+      id: 'afinacion',
+      name: 'Afinaci�n de Pianos',
+      description: 'Servicio a domicilio disponible',
+      icon: 'tune'
+    }
+  ];
+
+  performSearch() {
+    if (this.searchQuery.trim()) {
+      this.router.navigate(['/search'], { queryParams: { q: this.searchQuery } });
+    }
+  }
+
+  navigateToCategory(categoryId: string) {
+    this.router.navigate(['/catalogo'], { queryParams: { categoria: categoryId } });
+  }
+
+  navigateToOffers() {
+    this.router.navigate(['/ofertas']);
+  }
+
+  navigateToCart() {
+    this.router.navigate(['/cart']);
+  }
+
+  navigateToService(serviceId: string) {
+    this.router.navigate(['/servicios'], { queryParams: { servicio: serviceId } });
+  }
+
+  toggleWishlist() {
+    console.log('Toggle wishlist');
+  }
+
+  toggleFavorite(productId: number) {
+    const product = this.featuredProducts.find(p => p.id === productId);
+    if (product) {
+      product.isFavorite = !product.isFavorite;
+    }
+  }
+
+  addToCart(product: any) {
+    this.cartItemCount++;
+    console.log('Producto agregado al carrito:', product.name);
+  }
+
+  subscribeNewsletter() {
+    if (this.emailSubscription.trim()) {
+      console.log('Suscripción newsletter:', this.emailSubscription);
+      this.emailSubscription = '';
+      alert('¡Gracias por suscribirte a nuestro newsletter!');
+    }
+  }
+
+  // Métodos para el producto especial
+  addSpecialToCart() {
+    this.cartItemCount++;
+    console.log('Producto especial agregado al carrito');
+    alert('¡Producto especial agregado al carrito!');
+  }
+
+  viewProductDetails() {
+    this.router.navigate(['/product-details'], { queryParams: { id: 'special' } });
+  }
+
+  // Métodos de navegación para las tarjetas de acceso rápido
+  navigateToLogin() {
+    this.router.navigate(['/login']);
+  }
+
+  navigateToRegister() {
+    this.router.navigate(['/register']);
+  }
+
+  navigateToCatalog() {
     this.router.navigate(['/catalogo']);
   }
 
-  // Ver ofertas
-  viewOffers(): void {
-    this.router.navigate(['/catalogo'], { queryParams: { filter: 'ofertas' } });
-  }
-
-  // Ver categoría específica
-  viewCategory(category: ProductCategory): void {
-    this.router.navigate(['/catalogo'], { 
-      queryParams: { category: category.id } 
-    });
-  }
-
-  // Ver producto individual
-  viewProduct(product: Product): void {
-    this.router.navigate(['/producto', product.id]);
-  }
-
-  // Abrir vista rápida del producto
-  openQuickView(product: Product): void {
-    // Implementar modal de vista rápida
-    console.log('Quick view for product:', product.name);
-    // Por ahora, redirigir al producto
-    this.viewProduct(product);
-  }
-
-  // Manejar toggle de favorito
-  onFavoriteToggle(event: { product: Product, isFavorite: boolean }): void {
-    console.log(
-      `Product ${event.product.name} ${event.isFavorite ? 'added to' : 'removed from'} favorites`
-    );
-    // Aquí podrías integrar con un servicio de favoritos
-  }
-
-  // Suscribirse al newsletter
-  subscribeNewsletter(): void {
-    if (!this.newsletterEmail) return;
-
-    this.subscribing = true;
-    
-    // Simular llamada a API
-    setTimeout(() => {
-      console.log('Newsletter subscription for:', this.newsletterEmail);
-      alert('¡Gracias por suscribirte! Recibirás nuestras últimas novedades.');
-      this.newsletterEmail = '';
-      this.subscribing = false;
-    }, 1000);
-  }
-
-  // Obtener estrellas para testimonios
-  getTestimonialStars(rating: number): boolean[] {
-    const stars: boolean[] = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(i <= rating);
-    }
-    return stars;
+  navigateToHelp() {
+    this.router.navigate(['/ayuda']);
   }
 }

@@ -3,12 +3,11 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/user.model';
-import { HomeHeaderComponent } from '../home-header/home-header.component';
 
 @Component({
   selector: 'app-profile-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, HomeHeaderComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './profile-layout.component.html',
   styleUrls: ['./profile-layout.component.css']
 })

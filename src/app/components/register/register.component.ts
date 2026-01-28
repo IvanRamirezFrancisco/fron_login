@@ -1,16 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { SanitizationService } from '../../services/sanitization.service';
 import { CommonModule } from '@angular/common';
-import { HomeHeaderComponent } from '../home-header/home-header.component';
-import { SecureInputDirective } from '../../directives/security.directives';
+import zxcvbn from 'zxcvbn';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule, HomeHeaderComponent, SecureInputDirective],
+  imports: [ReactiveFormsModule, CommonModule, RouterModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
@@ -21,8 +20,24 @@ export class RegisterComponent implements OnInit {
   successMessage = '';
   showEmailVerification = false;
   showPassword = false; // Para toggle de visibilidad de contraseña
+  showConfirmPassword = false; // Para toggle de confirmación de contraseña
   emailValidationMessage = ''; // Para mensajes específicos de email
   passwordStrengthMessage = ''; // Para mensaje de fortaleza de contraseña
+  passwordStrength: 'weak' | 'medium' | 'strong' = 'weak';
+  
+  // ✅ ZXCVBN: Solo usamos el score internamente (sin mostrar mensajes al usuario)
+  private zxcvbnScore = 0; // Score de 0-4 (privado, solo para lógica interna)
+  
+  // ✅ Checklist de requisitos de contraseña en tiempo real
+  passwordRequirements = {
+    minLength: false,
+    hasUpperCase: false,
+    hasLowerCase: false,
+    hasNumber: false,
+    hasSpecialChar: false,
+    isNotCommon: true, // Por defecto true, se marca false si es una contraseña común
+    zxcvbnStrong: false // Nuevo: debe tener score >= 3 en zxcvbn
+  };
 
   constructor(
     private fb: FormBuilder,
@@ -41,11 +56,14 @@ export class RegisterComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [
         Validators.required, 
-        Validators.minLength(8),
-        Validators.maxLength(255)
+        Validators.minLength(10), // Aumentado a 10
+        Validators.maxLength(255),
+        this.zxcvbnPasswordValidator.bind(this) // ✅ Validador con zxcvbn
       ]],
-      confirmPassword: ['', [Validators.required]]
-    });
+      confirmPassword: ['', [Validators.required]],
+      phone: [''], // Opcional
+      acceptTerms: [false, [Validators.requiredTrue]]
+    }, { validators: this.passwordMatchValidator });
 
     // Suscripciones para validación en tiempo real
     this.setupRealTimeValidation();
@@ -373,44 +391,63 @@ export class RegisterComponent implements OnInit {
   }
 
   /**
-   * Actualizar mensaje de fortaleza de contraseña
+   * Actualizar mensaje de fortaleza de contraseña + Checklist en tiempo real + ZXCVBN
    */
   private updatePasswordStrength(password: string): void {
     if (!password) {
       this.passwordStrengthMessage = '';
+      this.passwordStrength = 'weak';
+      this.zxcvbnScore = 0;
+      // Resetear checklist
+      this.passwordRequirements = {
+        minLength: false,
+        hasUpperCase: false,
+        hasLowerCase: false,
+        hasNumber: false,
+        hasSpecialChar: false,
+        isNotCommon: true,
+        zxcvbnStrong: false
+      };
       return;
     }
 
-    // Verificar patrones simples prohibidos
-    const forbiddenPatterns = [
-      '123456', '1234567', '12345678', 'password', 'qwerty', 'abc123',
-      'admin123', '111111', '000000', 'asdf', 'zxcv'
-    ];
-
-    if (forbiddenPatterns.some(pattern => password.toLowerCase().includes(pattern))) {
-      this.passwordStrengthMessage = '❌ Contraseña muy simple. Evite patrones como 123456, qwerty, password.';
-      this.setPasswordError('simplePattern');
-      return;
-    }
-
-    // Verificar secuencias
-    if (this.hasSequentialChars(password)) {
-      this.passwordStrengthMessage = '❌ Evite secuencias como 123, abc, qwerty en la contraseña.';
-      this.setPasswordError('sequentialChars');
-      return;
-    }
-
-    // Verificar complejidad
-    const complexity = this.calculatePasswordComplexity(password);
+    // ✅ EVALUAR CON ZXCVBN PRIMERO (más inteligente)
+    const result = zxcvbn(password);
+    this.zxcvbnScore = result.score; // 0-4 (almacenado internamente)
     
-    if (complexity.score < 3) {
-      this.passwordStrengthMessage = `⚠️ Contraseña débil. Faltan: ${complexity.missing.join(', ')}`;
-      this.setPasswordError('weakComplexity');
-    } else if (complexity.score === 3) {
+    // ✅ Score de zxcvbn: 0 (muy débil) a 4 (muy fuerte)
+    // Requerimos mínimo score 3 para aprobar
+    // Este valor controla directamente el ítem visual "Validación avanzada"
+    this.passwordRequirements.zxcvbnStrong = result.score >= 3;
+
+    // ✅ ACTUALIZAR CHECKLIST EN TIEMPO REAL
+    this.passwordRequirements.minLength = password.length >= 10;
+    this.passwordRequirements.hasUpperCase = /[A-Z]/.test(password);
+    this.passwordRequirements.hasLowerCase = /[a-z]/.test(password);
+    this.passwordRequirements.hasNumber = /\d/.test(password);
+    this.passwordRequirements.hasSpecialChar = /[@$!%*?&._\-#]/.test(password);
+    
+    // ✅ SEGURIDAD REFORZADA: "No usar contraseñas simples" requiere score >= 3
+    // zxcvbn detecta: patrones comunes, secuencias, repeticiones, palabras del diccionario, l33t speak, etc.
+    // Score 0-2: RECHAZADO (contraseñas predecibles como 'MyP@ssw0rd2024', 'asdfghjklñÑ@!')
+    // Score 3-4: ACEPTADO (contraseñas realmente seguras)
+    this.passwordRequirements.isNotCommon = result.score >= 3;
+
+    // ✅ MENSAJE DE FORTALEZA basado en zxcvbn score (cumpliendo rúbrica de seguridad)
+    // Score 0-2: Rechazado (Muy débil / Débil / Predecible)
+    // Score 3: Aceptable (Fuerte)
+    // Score 4: Excelente (Muy fuerte)
+    if (result.score < 3) {
+      this.passwordStrengthMessage = '❌ Contraseña predecible o débil. Use una combinación más compleja y única.';
+      this.passwordStrength = 'weak';
+      this.setPasswordError('simplePattern');
+    } else if (result.score === 3) {
       this.passwordStrengthMessage = '✅ Contraseña aceptable.';
+      this.passwordStrength = 'medium';
       this.clearPasswordError();
     } else {
-      this.passwordStrengthMessage = '✅ Contraseña fuerte.';
+      this.passwordStrengthMessage = '✅ Contraseña muy fuerte.';
+      this.passwordStrength = 'strong';
       this.clearPasswordError();
     }
   }
@@ -464,6 +501,41 @@ export class RegisterComponent implements OnInit {
   }
 
   /**
+   * ✅ VALIDADOR PERSONALIZADO CON ZXCVBN
+   * Evalúa la fortaleza de la contraseña usando zxcvbn
+   * Rechaza contraseñas con score < 3 (bloquea patrones, secuencias, repeticiones)
+   */
+  private zxcvbnPasswordValidator(control: AbstractControl): ValidationErrors | null {
+    const password = control.value;
+    
+    if (!password) {
+      return null; // Si está vacío, lo maneja el Validators.required
+    }
+
+    // Evaluar con zxcvbn
+    const result = zxcvbn(password);
+    
+    // Score: 0 (muy débil) a 4 (muy fuerte)
+    // Requerimos mínimo 3 para aprobar
+    if (result.score < 3) {
+      return {
+        zxcvbnWeak: {
+          score: result.score,
+          warning: result.feedback.warning || 'Contraseña muy débil',
+          suggestions: result.feedback.suggestions || [],
+          // Información adicional para debugging
+          patterns: result.sequence?.map(s => ({
+            pattern: s.pattern,
+            token: s.token
+          }))
+        }
+      };
+    }
+
+    return null; // Válido
+  }
+
+  /**
    * Limpiar errores del campo contraseña
    */
   private clearPasswordError(): void {
@@ -474,6 +546,7 @@ export class RegisterComponent implements OnInit {
       delete currentErrors['sequentialChars'];
       delete currentErrors['weakComplexity'];
       delete currentErrors['commonPassword'];
+      delete currentErrors['zxcvbnWeak']; // ✅ Limpiar error de zxcvbn también
       
       // Si no hay otros errores, limpiar completamente
       const hasOtherErrors = Object.keys(currentErrors).length > 0;
@@ -486,6 +559,71 @@ export class RegisterComponent implements OnInit {
    */
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
+  }
+
+  /**
+   * Toggle visibilidad de confirmar contraseña
+   */
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
+
+  /**
+   * Validador de contraseñas coincidentes
+   */
+  passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
+    const password = group.get('password')?.value;
+    const confirmPassword = group.get('confirmPassword')?.value;
+    
+    if (!password || !confirmPassword) {
+      return null;
+    }
+    
+    return password === confirmPassword ? null : { passwordMismatch: true };
+  }
+
+  /**
+   * Calcula la fortaleza de la contraseña
+   */
+  calculatePasswordStrength(password: string): 'weak' | 'medium' | 'strong' {
+    if (!password) {
+      return 'weak';
+    }
+
+    let strength = 0;
+    
+    // Longitud
+    if (password.length >= 8) strength++;
+    if (password.length >= 12) strength++;
+    
+    // Complejidad
+    if (/[a-z]/.test(password)) strength++; // Minúsculas
+    if (/[A-Z]/.test(password)) strength++; // Mayúsculas
+    if (/[0-9]/.test(password)) strength++; // Números
+    if (/[^a-zA-Z0-9]/.test(password)) strength++; // Símbolos
+    
+    if (strength <= 2) return 'weak';
+    if (strength <= 4) return 'medium';
+    return 'strong';
+  }
+
+  /**
+   * Obtiene el porcentaje de fortaleza de contraseña
+   */
+  getPasswordStrengthPercentage(): number {
+    switch (this.passwordStrength) {
+      case 'weak': return 33;
+      case 'medium': return 66;
+      case 'strong': return 100;
+      default: return 0;
+    }
+  }
+
+  /**
+   * Navega a la página de inicio
+   */
+  navigateToHome(): void {
+    this.router.navigate(['/home']);
   }
 
   /**
@@ -637,6 +775,22 @@ export class RegisterComponent implements OnInit {
   onSubmit(): void {
     console.log('🚀 Enviando formulario de registro...');
     
+    // ✅ FIX CRÍTICO: Resetear estado antes de intentar registro
+    // Esto permite re-intentos sin recargar la página
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.showEmailVerification = false;
+    
+    // Marcar todos los campos como tocados para mostrar errores
+    this.markFormGroupTouched();
+    
+    // Validar formulario antes de continuar
+    if (!this.registerForm.valid) {
+      console.log('❌ Formulario inválido');
+      this.errorMessage = 'Por favor completa todos los campos correctamente para continuar';
+      return;
+    }
+    
     // Sanitizar datos antes de validar
     const rawData = this.registerForm.value;
     const sanitizedData = {
@@ -660,52 +814,95 @@ export class RegisterComponent implements OnInit {
       return;
     }
     
-    if (this.registerForm.valid) {
-      this.isLoading = true;
-      this.errorMessage = '';
+    // ✅ Iniciar loading DESPUÉS de todas las validaciones
+    this.isLoading = true;
 
-      console.log('📋 Datos del formulario sanitizados:', sanitizedData);
+    console.log('📋 Datos del formulario sanitizados:', sanitizedData);
 
-      // Preparar datos en el formato exacto que espera el backend
-      const registerData = {
-        username: sanitizedData.username,
-        email: sanitizedData.email,
-        password: sanitizedData.password,
-        firstName: sanitizedData.firstName,
-        lastName: sanitizedData.lastName
-      };
+    // Preparar datos en el formato exacto que espera el backend
+    const registerData = {
+      username: sanitizedData.username,
+      email: sanitizedData.email,
+      password: sanitizedData.password,
+      firstName: sanitizedData.firstName,
+      lastName: sanitizedData.lastName
+    };
 
-      console.log('🌐 Enviando datos al backend:', registerData);
-      
-      this.authService.register(registerData).subscribe({
-        next: (response) => {
-          console.log('✅ Registro exitoso:', response);
-          this.isLoading = false;
-          this.errorMessage = '';
-          this.showEmailVerification = true;
-          this.successMessage = '¡Cuenta creada exitosamente! Revisa tu correo electrónico para verificar tu cuenta antes de iniciar sesión.';
-        },
-        error: (error) => {
-          console.error('❌ Error en registro:', error);
-          this.errorMessage = error.error?.message || error.message || 'Ocurrió un error al crear tu cuenta. Por favor intenta nuevamente.';
+    console.log('🌐 Enviando datos al backend:', registerData);
+    
+    this.authService.register(registerData).subscribe({
+      next: (response) => {
+        console.log('✅ Registro exitoso:', response);
+        this.isLoading = false;
+        this.errorMessage = '';
+        this.showEmailVerification = true;
+        this.successMessage = '¡Cuenta creada exitosamente! Revisa tu correo electrónico para verificar tu cuenta antes de iniciar sesión.';
+      },
+      error: (error) => {
+        console.error('❌ Error en registro:', error);
+        
+        // ✅ FIX: Asegurar que isLoading se desactive SIEMPRE en error
+        this.isLoading = false;
+        
+        // ✅ MEJORADO: Parsear correctamente el objeto de errores del backend
+        if (error.status === 409 || error.error?.message?.includes('ya existe')) {
+          // Error de duplicado (email o username ya existe)
+          this.errorMessage = '❌ ' + (error.error?.message || 'Este correo o nombre de usuario ya está registrado.');
+        } else if (error.error?.errors) {
+          // Errores de validación del backend - Parsear el objeto correctamente
+          console.log('🔍 Errores de validación del servidor:', error.error.errors);
           
-          if (error.error?.errors) {
-            console.log('🔍 Errores de validación del servidor:', error.error.errors);
-            this.errorMessage = 'Se encontraron los siguientes errores: ' + Object.values(error.error.errors).join(', ');
+          const errorsArray: string[] = [];
+          const errorsObj = error.error.errors;
+          
+          // Recorrer el objeto de errores y extraer los mensajes
+          if (typeof errorsObj === 'object' && errorsObj !== null) {
+            Object.keys(errorsObj).forEach(key => {
+              const errorValue = errorsObj[key];
+              
+              // Si el error es un string, agregarlo directamente
+              if (typeof errorValue === 'string') {
+                errorsArray.push(errorValue);
+              } 
+              // Si es un array, agregar cada elemento
+              else if (Array.isArray(errorValue)) {
+                errorsArray.push(...errorValue);
+              }
+              // Si es un objeto con mensaje, extraer el mensaje
+              else if (typeof errorValue === 'object' && errorValue.message) {
+                errorsArray.push(errorValue.message);
+              }
+              // Fallback: convertir a string
+              else {
+                errorsArray.push(String(errorValue));
+              }
+            });
           }
           
-          this.isLoading = false;
-        },
-        complete: () => {
-          console.log('🏁 Proceso de registro completado');
-          this.isLoading = false;
+          // Construir mensaje legible
+          if (errorsArray.length > 0) {
+            this.errorMessage = '❌ Se encontraron los siguientes errores:\n' + 
+              errorsArray.map((err, index) => `${index + 1}. ${err}`).join('\n');
+          } else {
+            this.errorMessage = '❌ Error de validación. Por favor revisa los campos del formulario.';
+          }
+        } else if (error.error?.message) {
+          // Mensaje de error simple del backend
+          this.errorMessage = '❌ ' + error.error.message;
+        } else {
+          // Error genérico
+          this.errorMessage = '❌ ' + (error.message || 'Ocurrió un error al crear tu cuenta. Por favor intenta nuevamente.');
         }
-      });
-    } else {
-      console.log('❌ Formulario inválido');
-      this.errorMessage = 'Por favor completa todos los campos correctamente para continuar';
-      this.markFormGroupTouched();
-    }
+        
+        // ✅ FIX: NO resetear el formulario en error para permitir correcciones
+        // El usuario puede corregir los datos y re-intentar
+      },
+      complete: () => {
+        console.log('🏁 Proceso de registro completado');
+        // ✅ Asegurar que loading se desactive en complete también
+        this.isLoading = false;
+      }
+    });
   }
 
   private markFormGroupTouched(): void {
@@ -713,5 +910,17 @@ export class RegisterComponent implements OnInit {
       const control = this.registerForm.get(key);
       control?.markAsTouched();
     });
+  }
+
+  /**
+   * Navegar a login con el email actual del formulario
+   */
+  navigateToLogin(): void {
+    const currentEmail = this.registerForm.get('email')?.value || '';
+    if (currentEmail && currentEmail.trim()) {
+      this.router.navigate(['/login'], { queryParams: { email: currentEmail.trim() } });
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 }

@@ -1,6 +1,14 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { CartItem, Product } from '../models/product.model';
+
+export interface CartAnimation {
+  productId: string;
+  productName: string;
+  productImage: string;
+  startX: number;
+  startY: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +18,10 @@ export class CartService {
   private cartItemsSubject = new BehaviorSubject<CartItem[]>([]);
   private cartTotalSubject = new BehaviorSubject<number>(0);
   private cartCountSubject = new BehaviorSubject<number>(0);
+  
+  // Subject para animaciones de productos agregados
+  private addToCartAnimationSubject = new Subject<CartAnimation>();
+  public addToCartAnimation$ = this.addToCartAnimationSubject.asObservable();
 
   public cartItems$ = this.cartItemsSubject.asObservable();
   public cartTotal$ = this.cartTotalSubject.asObservable();
@@ -20,8 +32,8 @@ export class CartService {
     this.updateCartTotals();
   }
 
-  // Agregar producto al carrito
-  addToCart(product: Product, quantity: number = 1, options?: { [key: string]: string }): void {
+  // Agregar producto al carrito con animación
+  addToCart(product: Product, quantity: number = 1, options?: { [key: string]: string }, animationData?: { x: number, y: number }): void {
     const existingItemIndex = this.cartItems.findIndex(
       item => item.product.id === product.id && 
       JSON.stringify(item.selectedOptions) === JSON.stringify(options)
@@ -38,6 +50,18 @@ export class CartService {
     }
 
     this.updateCart();
+    
+    // Emitir animación si se proporcionaron coordenadas
+    if (animationData) {
+      this.addToCartAnimationSubject.next({
+        productId: product.id,
+        productName: product.name,
+        productImage: product.images && product.images.length > 0 ? product.images[0] : '',
+        startX: animationData.x,
+        startY: animationData.y
+      });
+    }
+    
     this.showNotification(`${product.name} agregado al carrito`);
   }
 

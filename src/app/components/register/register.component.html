@@ -1,307 +1,530 @@
-<!-- Header de navegación -->
-<app-home-header></app-home-header>
-
-<!-- Contenedor principal Casa de Música -->
-<div class="registro-container">
-  <div class="registro-contenido">
-    
-    <!-- Card principal de registro Casa de Música -->
-    <div class="card-registro">
+﻿<!-- Header -->
+<header class="header-main">
+  <div class="container">
+    <div class="header-content">
+      <div class="logo-section" (click)="navigateToHome()" style="cursor: pointer;">
+        <img src="assets/logoP.png" alt="Casa de Música Castillo" class="logo-image">
+        <span class="logo-text">CASTILLO</span>
+      </div>
       
-      <!-- Header del card Casa de Música -->
-      <div class="card-header">
-        <!-- Logo Casa de Música -->
-        <div class="logo-container">
-          <div class="logo-icon">
-            <span class="material-symbols-outlined">music_note</span>
-          </div>
-          <div class="logo-text">
-            <h1 class="marca-titulo">Casa de Música</h1>
-            <span class="marca-subtitulo">CASTILLO</span>
-          </div>
+      <div class="search-section">
+        <div class="search-bar">
+          <span class="material-icons search-icon">search</span>
+          <input type="text" placeholder="Busca guitarras, pianos, y más..." class="search-input">
+          <button class="search-btn" type="button">
+            <span class="material-icons">arrow_forward</span>
+          </button>
         </div>
-        <h2 class="titulo-principal">Crear Cuenta</h2>
-        <p class="subtitulo">Únete a la comunidad musical</p>
+      </div>
+      
+      <div class="user-actions">
+        <button class="action-btn" title="Lista de deseos">
+          <span class="material-icons">favorite_border</span>
+        </button>
+        <button class="action-btn" (click)="navigateToLogin()" title="Iniciar sesión" style="cursor: pointer;">
+          <span class="material-icons">person</span>
+        </button>
+        <button class="action-btn cart-btn" title="Carrito de compras">
+          <span class="material-icons">shopping_cart</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Navegación -->
+<nav class="secondary-nav">
+  <div class="container">
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a routerLink="/home" class="nav-link">
+          <span class="material-icons">home</span>
+          Inicio
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/ofertas" class="nav-link">
+          <span class="material-icons">local_offer</span>
+          Ofertas
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/catalogo" class="nav-link">
+          <span class="material-icons">inventory_2</span>
+          Catálogo
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/servicios" class="nav-link">
+          <span class="material-icons">build</span>
+          Servicios
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/ayuda" class="nav-link">
+          <span class="material-icons">help</span>
+          Ayuda
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Contenido Principal -->
+<div class="register-content">
+  <div class="container">
+    
+    <!-- Mensaje de Éxito -->
+    <div *ngIf="showEmailVerification" class="verification-success">
+      <div class="success-icon">
+        <span class="material-icons">check_circle</span>
+      </div>
+      <h2>¡Registro Exitoso!</h2>
+      <p>{{ successMessage }}</p>
+      <p>Hemos enviado un correo de verificación</p>
+      <button type="button" class="home-btn" (click)="navigateToHome()">
+        <span class="material-icons">home</span>
+        Ir al Inicio
+      </button>
+    </div>
+
+    <!-- Formulario de Registro -->
+    <div *ngIf="!showEmailVerification" class="register-card">
+      <div class="register-header">
+        <div class="register-icon">
+          <span class="material-icons">person_add</span>
+        </div>
+        <h1 class="register-title">Crear Cuenta</h1>
+        <p class="register-subtitle">Únete a Casa de Música Castillo</p>
       </div>
 
-      <!-- Body del card Casa de Música -->
-      <div class="card-body">
-        
-        <!-- Mensaje de error global -->
-        <div *ngIf="errorMessage" class="mensaje-error">
-          <span class="material-symbols-outlined">warning</span>
-          <span>{{ errorMessage }}</span>
-        </div>
-
-        <!-- Mensaje de éxito - Verificación de email -->
-        <div *ngIf="showEmailVerification" class="mensaje-exito">
-          <span class="material-symbols-outlined">check_circle</span>
-          <div class="mensaje-contenido">
-            <h3>¡Registro Exitoso!</h3>
-            <p>{{ successMessage }}</p>
-            <p class="mensaje-adicional">Revisa tu bandeja de entrada y carpeta de spam.</p>
-            <a routerLink="/login" class="enlace-login-verificacion">
-              <span class="material-symbols-outlined">login</span>
-              Ir a Iniciar Sesión
-            </a>
-          </div>
-        </div>
-
-        <!-- Formulario Casa de Música -->
-        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="formulario-registro">
+      <div class="register-body">
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
           
-          <!-- Campo Nombre de Usuario -->
-          <div class="campo-completo">
-            <label for="username" class="etiqueta">
-              <span class="material-symbols-outlined">person</span>
-              Nombre de usuario
+          <!-- Error Global -->
+          <div class="error-message" *ngIf="errorMessage">
+            <span class="material-icons">error</span>
+            {{ errorMessage }}
+          </div>
+
+          <!-- Username -->
+          <div class="form-group">
+            <label for="username" class="form-label">
+              <span class="material-icons">person</span>
+              Nombre de Usuario
             </label>
-            <input 
-              type="text" 
-              id="username" 
-              formControlName="username"
-              class="input-campo"
-              [class.input-error]="username?.invalid && username?.touched"
-              [class.input-valid]="username?.valid && username?.touched"
-              placeholder="Nombre de usuario único"
-              autocomplete="username"
-            >
-            <div *ngIf="getFieldError('username')" class="mensaje-validacion error">
-              <span class="material-symbols-outlined">error</span>
-              <span>{{ getFieldError('username') }}</span>
+            <div class="input-wrapper" 
+                 [class.valid]="registerForm.get('username')?.valid && registerForm.get('username')?.touched"
+                 [class.invalid]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
+              <input
+                type="text"
+                id="username"
+                formControlName="username"
+                class="form-input"
+                placeholder="Tu nombre de usuario"
+                [class.error]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched"
+                [class.success]="registerForm.get('username')?.valid && registerForm.get('username')?.touched"
+              >
             </div>
-            <div *ngIf="isFieldValid('username')" class="mensaje-validacion success">
-              <span class="material-symbols-outlined">check_circle</span>
-              <span>Nombre de usuario disponible</span>
+            <div class="error-message" *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
+              <span class="material-icons">error</span>
+              <span *ngIf="registerForm.get('username')?.errors?.['required']">El nombre de usuario es requerido</span>
+              <span *ngIf="registerForm.get('username')?.errors?.['minlength']">Mínimo 3 caracteres</span>
+            </div>
+            <div class="success-message" *ngIf="registerForm.get('username')?.valid && registerForm.get('username')?.touched">
+              <span class="material-icons">check_circle</span>
+              Nombre de usuario válido
             </div>
           </div>
 
-          <!-- Campos Nombre y Apellido -->
-          <div class="fila-campos">
-            <div class="campo-mitad">
-              <label for="firstName" class="etiqueta">
-                <span class="material-symbols-outlined">badge</span>
-                Nombre
-              </label>
-              <input 
-                type="text" 
-                id="firstName" 
+          <!-- First Name -->
+          <div class="form-group">
+            <label for="firstName" class="form-label">
+              <span class="material-icons">badge</span>
+              Nombre
+            </label>
+            <div class="input-wrapper" 
+                 [class.valid]="registerForm.get('firstName')?.valid && registerForm.get('firstName')?.touched"
+                 [class.invalid]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched">
+              <input
+                type="text"
+                id="firstName"
                 formControlName="firstName"
-                class="input-campo"
-                [class.input-error]="firstName?.invalid && firstName?.touched"
-                [class.input-valid]="firstName?.valid && firstName?.touched"
+                class="form-input"
                 placeholder="Tu nombre"
-                autocomplete="given-name"
+                [class.error]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched"
+                [class.success]="registerForm.get('firstName')?.valid && registerForm.get('firstName')?.touched"
               >
-              <div *ngIf="getFieldError('firstName')" class="mensaje-validacion error">
-                <span class="material-symbols-outlined">error</span>
-                <span>{{ getFieldError('firstName') }}</span>
-              </div>
             </div>
-
-            <div class="campo-mitad">
-              <label for="lastName" class="etiqueta">
-                <span class="material-symbols-outlined">badge</span>
-                Apellido
-              </label>
-              <input 
-                type="text" 
-                id="lastName" 
-                formControlName="lastName"
-                class="input-campo"
-                [class.input-error]="lastName?.invalid && lastName?.touched"
-                [class.input-valid]="lastName?.valid && lastName?.touched"
-                placeholder="Tu apellido"
-                autocomplete="family-name"
-              >
-              <div *ngIf="getFieldError('lastName')" class="mensaje-validacion error">
-                <span class="material-symbols-outlined">error</span>
-                <span>{{ getFieldError('lastName') }}</span>
-              </div>
+            <div class="error-message" *ngIf="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched">
+              <span class="material-icons">error</span>
+              <span *ngIf="registerForm.get('firstName')?.errors?.['required']">El nombre es requerido</span>
             </div>
           </div>
 
-          <!-- Campo Email con validación mejorada -->
-          <div class="campo-completo">
-            <label for="email" class="etiqueta">
-              <span class="material-symbols-outlined">email</span>
-              Email
+          <!-- Last Name -->
+          <div class="form-group">
+            <label for="lastName" class="form-label">
+              <span class="material-icons">badge</span>
+              Apellido
             </label>
-            <input 
-              type="email" 
-              id="email" 
-              formControlName="email"
-              class="input-campo"
-              [class.input-error]="email?.invalid && email?.touched"
-              [class.input-valid]="email?.valid && email?.touched && !getFieldError('email')"
-              [class.input-warning]="emailValidationMessage.includes('⚠️')"
-              placeholder="ejemplo&#64;gmail.com"
-              autocomplete="email"
-            >
-            <!-- Error de email -->
-            <div *ngIf="getFieldError('email')" class="mensaje-validacion error">
-              <span class="material-symbols-outlined">error</span>
-              <span>{{ getFieldError('email') }}</span>
+            <div class="input-wrapper" 
+                 [class.valid]="registerForm.get('lastName')?.valid && registerForm.get('lastName')?.touched"
+                 [class.invalid]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched">
+              <input
+                type="text"
+                id="lastName"
+                formControlName="lastName"
+                class="form-input"
+                placeholder="Tu apellido"
+                [class.error]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"
+                [class.success]="registerForm.get('lastName')?.valid && registerForm.get('lastName')?.touched"
+              >
             </div>
-            <!-- Mensaje de validación en tiempo real del dominio -->
-            <div *ngIf="emailValidationMessage && !getFieldError('email')" 
-                 class="mensaje-validacion"
-                 [class.success]="emailValidationMessage.includes('✅')"
-                 [class.warning]="emailValidationMessage.includes('⚠️')"
-                 [class.error]="emailValidationMessage.includes('❌')">
-              <span class="material-symbols-outlined">
-                {{ emailValidationMessage.includes('✅') ? 'verified' : 
-                   emailValidationMessage.includes('⚠️') ? 'warning' : 'error' }}
-              </span>
-              <span [innerHTML]="emailValidationMessage"></span>
-            </div>
-            <!-- Éxito para email válido -->
-            <div *ngIf="email?.valid && email?.touched && emailValidationMessage.includes('✅')" 
-                 class="mensaje-validacion success">
-              <span class="material-symbols-outlined">verified</span>
-              <span>Correo electrónico válido y dominio oficial</span>
+            <div class="error-message" *ngIf="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched">
+              <span class="material-icons">error</span>
+              <span *ngIf="registerForm.get('lastName')?.errors?.['required']">El apellido es requerido</span>
             </div>
           </div>
 
-          <!-- Campo Contraseña con toggle de visibilidad -->
-          <div class="campo-completo">
-            <label for="password" class="etiqueta">
-              <span class="material-symbols-outlined">lock</span>
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email" class="form-label">
+              <span class="material-icons">email</span>
+              Correo Electrónico
+            </label>
+            <div class="input-wrapper" 
+                 [class.valid]="registerForm.get('email')?.valid && registerForm.get('email')?.touched"
+                 [class.invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+              <input
+                type="email"
+                id="email"
+                formControlName="email"
+                class="form-input"
+                placeholder="correo&#64;ejemplo.com"
+                [class.error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+                [class.success]="registerForm.get('email')?.valid && registerForm.get('email')?.touched"
+              >
+            </div>
+            <div class="error-message" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+              <span class="material-icons">error</span>
+              <span *ngIf="registerForm.get('email')?.errors?.['required']">El email es requerido</span>
+              <span *ngIf="registerForm.get('email')?.errors?.['email']">Email inválido</span>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label for="password" class="form-label">
+              <span class="material-icons">lock</span>
               Contraseña
             </label>
-            <div class="input-password-container">
-              <input 
-                [type]="showPassword ? 'text' : 'password'" 
-                id="password" 
+            <div class="input-wrapper">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                id="password"
                 formControlName="password"
-                class="input-campo input-password"
-                [class.input-error]="password?.invalid && password?.touched"
-                [class.input-valid]="password?.valid && password?.touched && passwordStrengthMessage.includes('✅')"
-                [class.input-warning]="passwordStrengthMessage.includes('⚠️')"
+                class="form-input"
                 placeholder="Mínimo 8 caracteres"
-                autocomplete="new-password"
+                [class.error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+                [class.success]="registerForm.get('password')?.valid && registerForm.get('password')?.touched"
               >
-              <button 
-                type="button" 
-                class="toggle-password-btn"
-                (click)="togglePasswordVisibility()"
-                [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
-              >
-                <span class="material-symbols-outlined">
-                  {{ showPassword ? 'visibility_off' : 'visibility' }}
-                </span>
+              <button type="button" class="password-toggle" (click)="togglePasswordVisibility()">
+                <span class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
               </button>
             </div>
             
-            <!-- Error de contraseña -->
-            <div *ngIf="getFieldError('password')" class="mensaje-validacion error">
-              <span class="material-symbols-outlined">error</span>
-              <span>{{ getFieldError('password') }}</span>
+            <!-- ✅ NUEVO: Checklist de Requisitos de Contraseña en Tiempo Real -->
+            <div class="password-requirements" *ngIf="registerForm.get('password')?.value">
+              <div class="requirements-title">
+                <span class="material-icons">checklist</span>
+                <span>Requisitos de contraseña:</span>
+              </div>
+              <ul class="requirements-list">
+                <li [class.valid]="passwordRequirements.minLength" [class.invalid]="!passwordRequirements.minLength">
+                  <span class="material-icons">{{ passwordRequirements.minLength ? 'check_circle' : 'cancel' }}</span>
+                  <span>Mínimo 10 caracteres</span>
+                </li>
+                <li [class.valid]="passwordRequirements.hasUpperCase" [class.invalid]="!passwordRequirements.hasUpperCase">
+                  <span class="material-icons">{{ passwordRequirements.hasUpperCase ? 'check_circle' : 'cancel' }}</span>
+                  <span>Al menos una Mayúscula (A-Z)</span>
+                </li>
+                <li [class.valid]="passwordRequirements.hasLowerCase" [class.invalid]="!passwordRequirements.hasLowerCase">
+                  <span class="material-icons">{{ passwordRequirements.hasLowerCase ? 'check_circle' : 'cancel' }}</span>
+                  <span>Al menos una Minúscula (a-z)</span>
+                </li>
+                <li [class.valid]="passwordRequirements.hasNumber" [class.invalid]="!passwordRequirements.hasNumber">
+                  <span class="material-icons">{{ passwordRequirements.hasNumber ? 'check_circle' : 'cancel' }}</span>
+                  <span>Al menos un Número (0-9)</span>
+                </li>
+                <li [class.valid]="passwordRequirements.hasSpecialChar" [class.invalid]="!passwordRequirements.hasSpecialChar">
+                  <span class="material-icons">{{ passwordRequirements.hasSpecialChar ? 'check_circle' : 'cancel' }}</span>
+                  <span>Al menos un Símbolo (&#64;$!%*?&._-#)</span>
+                </li>
+                <!-- <li [class.valid]="passwordRequirements.isNotCommon" [class.invalid]="!passwordRequirements.isNotCommon">
+                  <span class="material-icons">{{ passwordRequirements.isNotCommon ? 'check_circle' : 'cancel' }}</span>
+                  <span></span>
+                </li> -->
+                <li [class.valid]="passwordRequirements.zxcvbnStrong" [class.invalid]="!passwordRequirements.zxcvbnStrong" class="zxcvbn-requirement">
+                  <span class="material-icons">{{ passwordRequirements.zxcvbnStrong ? 'check_circle' : 'cancel' }}</span>
+                  <span>No usar contraseñas simples (123456, password, etc.)</span>
+                </li>
+              </ul>
             </div>
             
-            <!-- Mensaje de fortaleza en tiempo real -->
-            <div *ngIf="passwordStrengthMessage && !getFieldError('password')" 
-                 class="mensaje-validacion"
-                 [class.success]="passwordStrengthMessage.includes('✅')"
-                 [class.warning]="passwordStrengthMessage.includes('⚠️')"
-                 [class.error]="passwordStrengthMessage.includes('❌')">
-              <span class="material-symbols-outlined">
-                {{ passwordStrengthMessage.includes('✅') ? 'verified_user' : 
-                   passwordStrengthMessage.includes('⚠️') ? 'warning' : 'error' }}
-              </span>
-              <span [innerHTML]="passwordStrengthMessage"></span>
-            </div>
-            
-            <!-- Requisitos de contraseña (cuando está escribiendo) -->
-            <div *ngIf="password?.value && password?.touched" class="password-requirements">
-              <small class="requirements-title">Requisitos de contraseña:</small>
-              <div class="requirements-grid">
-                <div class="requirement-item" [class.valid]="hasMinLength(password?.value || '')">
-                  <span class="material-symbols-outlined">
-                    {{ hasMinLength(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}
-                  </span>
-                  <span>8+ caracteres</span>
-                </div>
-                <div class="requirement-item" [class.valid]="hasUpperCase(password?.value || '')">
-                  <span class="material-symbols-outlined">
-                    {{ hasUpperCase(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}
-                  </span>
-                  <span>Mayúscula</span>
-                </div>
-                <div class="requirement-item" [class.valid]="hasLowerCase(password?.value || '')">
-                  <span class="material-symbols-outlined">
-                    {{ hasLowerCase(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}
-                  </span>
-                  <span>Minúscula</span>
-                </div>
-                <div class="requirement-item" [class.valid]="hasNumbers(password?.value || '')">
-                  <span class="material-symbols-outlined">
-                    {{ hasNumbers(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}
-                  </span>
-                  <span>Número</span>
-                </div>
-                <div class="requirement-item" [class.valid]="hasSpecialChars(password?.value || '')">
-                  <span class="material-symbols-outlined">
-                    {{ hasSpecialChars(password?.value || '') ? 'check_circle' : 'radio_button_unchecked' }}
-                  </span>
-                  <span>Símbolo (&#64;$!%*?&)</span>
-                </div>
+            <!-- Password Strength -->
+            <div class="password-strength" *ngIf="registerForm.get('password')?.value">
+              <div class="strength-label">
+                <span class="strength-text" [class.weak]="passwordStrength === 'weak'" [class.medium]="passwordStrength === 'medium'" [class.strong]="passwordStrength === 'strong'">
+                  {{ passwordStrength === 'weak' ? 'Débil' : passwordStrength === 'medium' ? 'Media' : 'Fuerte' }}
+                </span>
+                <span class="strength-percentage">{{ getPasswordStrengthPercentage() }}%</span>
+              </div>
+              <div class="strength-bar">
+                <div class="strength-fill" [class.weak]="passwordStrength === 'weak'" [class.medium]="passwordStrength === 'medium'" [class.strong]="passwordStrength === 'strong'"></div>
               </div>
             </div>
+
+            <div class="error-message" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+              <span class="material-icons">error</span>
+              <span *ngIf="registerForm.get('password')?.errors?.['required']">La contraseña es requerida</span>
+              <span *ngIf="registerForm.get('password')?.errors?.['minlength']">Mínimo 10 caracteres requeridos</span>
+              <span *ngIf="registerForm.get('password')?.errors?.['zxcvbnWeak']">
+                La contraseña no cumple con los requisitos de seguridad. Verifica la lista de validación.
+              </span>
+            </div>
           </div>
 
-          <!-- Campo Confirmar Contraseña -->
-          <div class="campo-completo">
-            <label for="confirmPassword" class="etiqueta">
-              <span class="material-symbols-outlined">lock_reset</span>
-              Confirmar contraseña
+          <!-- Confirm Password -->
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label">
+              <span class="material-icons">lock_check</span>
+              Confirmar Contraseña
             </label>
-            <input 
-              type="password" 
-              id="confirmPassword" 
-              formControlName="confirmPassword"
-              class="input-campo"
-              [class.input-error]="confirmPassword?.invalid && confirmPassword?.touched || (registerForm.errors?.['passwordMismatch'] && confirmPassword?.touched)"
-              [class.input-valid]="confirmPassword?.valid && confirmPassword?.touched && !registerForm.errors?.['passwordMismatch']"
-              placeholder="Repite tu contraseña"
-              autocomplete="new-password"
+            <div class="input-wrapper">
+              <input
+                [type]="showConfirmPassword ? 'text' : 'password'"
+                id="confirmPassword"
+                formControlName="confirmPassword"
+                class="form-input"
+                placeholder="Repite tu contraseña"
+                [class.error]="(registerForm.get('confirmPassword')?.invalid || registerForm.errors?.['passwordMismatch']) && registerForm.get('confirmPassword')?.touched"
+                [class.success]="registerForm.get('confirmPassword')?.valid && !registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched"
+              >
+              <button type="button" class="password-toggle" (click)="toggleConfirmPasswordVisibility()">
+                <span class="material-icons">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</span>
+              </button>
+            </div>
+            <div class="error-message" *ngIf="registerForm.get('confirmPassword')?.touched">
+              <span *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">
+                <span class="material-icons">error</span>
+                Confirma tu contraseña
+              </span>
+              <span *ngIf="registerForm.errors?.['passwordMismatch'] && !registerForm.get('confirmPassword')?.errors?.['required']">
+                <span class="material-icons">error</span>
+                Las contraseñas no coinciden
+              </span>
+            </div>
+            <div class="success-message" *ngIf="registerForm.get('confirmPassword')?.valid && !registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched">
+              <span class="material-icons">check_circle</span>
+              Las contraseñas coinciden
+            </div>
+          </div>
+
+          <!-- Terms -->
+          <div class="checkbox-group">
+            <input
+              type="checkbox"
+              id="acceptTerms"
+              formControlName="acceptTerms"
+              class="checkbox-input"
             >
-            <div *ngIf="getConfirmPasswordError()" class="mensaje-validacion error">
-              <span class="material-symbols-outlined">error</span>
-              <span>{{ getConfirmPasswordError() }}</span>
-            </div>
-            <div *ngIf="isFieldValid('confirmPassword') && passwordsMatch()" class="mensaje-validacion success">
-              <span class="material-symbols-outlined">check_circle</span>
-              <span>Las contraseñas coinciden</span>
+            <label for="acceptTerms" class="checkbox-label">
+              Acepto los <a href="#">Términos y Condiciones</a> y la <a href="#">Política de Privacidad</a>
+            </label>
+          </div>
+          <div class="error-message" *ngIf="registerForm.get('acceptTerms')?.invalid && registerForm.get('acceptTerms')?.touched">
+            <span class="material-icons">error</span>
+            Debes aceptar los términos y condiciones
+          </div>
+
+          <!-- Submit Button - Mejorado con loading spinner y validación completa -->
+          <div class="register-actions">
+            <button 
+              type="submit" 
+              class="register-btn" 
+              [disabled]="isLoading || registerForm.invalid || !registerForm.get('acceptTerms')?.value" 
+              [class.loading]="isLoading"
+              [class.disabled]="registerForm.invalid"
+            >
+              <!-- Spinner animado cuando está cargando -->
+              <span class="btn-spinner" *ngIf="isLoading">
+                <span class="spinner"></span>
+              </span>
+              
+              <!-- Icono normal cuando no está cargando -->
+              <span class="material-icons btn-icon" *ngIf="!isLoading">person_add</span>
+              
+              <!-- Texto dinámico -->
+              <span class="btn-text">
+                {{ isLoading ? 'Procesando...' : 'Crear Cuenta' }}
+              </span>
+            </button>
+            
+            <!-- Mensaje de ayuda cuando el botón está deshabilitado -->
+            <div class="btn-help-text" *ngIf="!isLoading && registerForm.invalid">
+              <span class="material-icons">info</span>
+              <span>Completa todos los campos correctamente para continuar</span>
             </div>
           </div>
 
-          <!-- Botón de registro -->
-          <button 
-            type="submit" 
-            [disabled]="registerForm.invalid || isLoading"
-            class="boton-registro"
-          >
-            <span *ngIf="isLoading" class="material-symbols-outlined loading">sync</span>
-            <span *ngIf="!isLoading" class="material-symbols-outlined">person_add</span>
-            <span *ngIf="isLoading">Creando cuenta...</span>
-            <span *ngIf="!isLoading">Crear Cuenta</span>
-          </button>
+          <!-- Divider -->
+          <div class="divider">
+            <div class="divider-line"></div>
+            <span class="divider-text">o</span>
+            <div class="divider-line"></div>
+          </div>
+
+          <!-- Login Link -->
+          <div class="login-link">
+            <p>
+              ¿Ya tienes una cuenta?
+              <a (click)="navigateToLogin()" style="cursor: pointer;">Inicia sesión aquí</a>
+            </p>
+          </div>
         </form>
-
-        <!-- Enlaces adicionales -->
-        <div class="enlaces-adicionales">
-          <div class="separador"></div>
-          <div class="enlace-login">
-            <span class="texto-enlace">¿Ya tienes cuenta?</span>
-            <a routerLink="/login" class="enlace-accion">
-              <span class="material-symbols-outlined">login</span>
-              Inicia sesión
-            </a>
-          </div>
-        </div>
-
       </div>
     </div>
   </div>
 </div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-content">
+      <!-- Sección 1: Acerca de -->
+      <div class="footer-section">
+        <div class="footer-logo">
+          <img src="assets/logoP.png" alt="Casa de Música Castillo">
+          <span class="footer-logo-text">CASTILLO</span>
+        </div>
+        <p class="footer-description">
+          Tu destino para los mejores instrumentos musicales. Calidad, pasión y excelencia desde 1995.
+        </p>
+        <div class="social-links">
+          <a href="#" class="social-link" title="Facebook">
+            <span class="material-icons">facebook</span>
+          </a>
+          <a href="#" class="social-link" title="Instagram">
+            <span class="material-icons">photo_camera</span>
+          </a>
+          <a href="#" class="social-link" title="Twitter">
+            <span class="material-icons">tag</span>
+          </a>
+          <a href="#" class="social-link" title="YouTube">
+            <span class="material-icons">play_circle</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Sección 2: Enlaces Rápidos -->
+      <div class="footer-section">
+        <h3>
+          <span class="material-icons">menu</span>
+          Enlaces Rápidos
+        </h3>
+        <ul class="footer-links">
+          <li>
+            <a routerLink="/home">
+              <span class="material-icons">home</span>
+              Inicio
+            </a>
+          </li>
+          <li>
+            <a routerLink="/ofertas">
+              <span class="material-icons">local_offer</span>
+              Ofertas
+            </a>
+          </li>
+          <li>
+            <a routerLink="/catalogo">
+              <span class="material-icons">inventory_2</span>
+              Catálogo
+            </a>
+          </li>
+          <li>
+            <a routerLink="/servicios">
+              <span class="material-icons">build</span>
+              Servicios
+            </a>
+          </li>
+          <li>
+            <a routerLink="/ayuda">
+              <span class="material-icons">help</span>
+              Ayuda
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Sección 3: Contacto -->
+      <div class="footer-section">
+        <h3>
+          <span class="material-icons">contact_mail</span>
+          Contacto
+        </h3>
+        <ul class="contact-info">
+          <li>
+            <span class="material-icons">location_on</span>
+            <span>Av. Principal #123, Ciudad de México</span>
+          </li>
+          <li>
+            <span class="material-icons">phone</span>
+            <span>+52 55 1234 5678</span>
+          </li>
+          <li>
+            <span class="material-icons">email</span>
+            <span>info&#64;castillo.com</span>
+          </li>
+          <li>
+            <span class="material-icons">schedule</span>
+            <span>Lun - Sáb: 9:00 AM - 8:00 PM</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Sección 4: Newsletter -->
+      <div class="footer-section">
+        <h3>
+          <span class="material-icons">mail</span>
+          Newsletter
+        </h3>
+        <p>Suscríbete para recibir ofertas exclusivas y novedades</p>
+        <div class="newsletter-form">
+          <input type="email" placeholder="Tu correo electrónico" class="newsletter-input">
+          <button class="newsletter-btn">
+            <span class="material-icons">send</span>
+            Suscribirse
+          </button>
+        </div>
+        <div class="payment-methods">
+          <span class="material-icons" title="Visa">credit_card</span>
+          <span class="material-icons" title="PayPal">account_balance</span>
+          <span class="material-icons" title="Efectivo">payments</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+      <div class="footer-bottom-content">
+        <p>&copy; 2024 Casa de Música Castillo. Todos los derechos reservados.</p>
+        <div class="footer-bottom-links">
+          <a href="#">Términos y Condiciones</a>
+          <a href="#">Política de Privacidad</a>
+          <a href="#">Política de Cookies</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

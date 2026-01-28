@@ -1,0 +1,164 @@
+<!-- Banner de Ofertas -->
+<div class="ofertas-banner">
+  <div class="container">
+    <div class="banner-content">
+      <span class="banner-icon material-symbols-outlined">local_offer</span>
+      <div class="banner-text">
+        <h1>¡Ofertas Especiales!</h1>
+        <p>Descuentos increíbles en instrumentos musicales de alta calidad</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Controles de Ordenamiento -->
+<section class="ofertas-controls">
+  <div class="container">
+    <div class="controls-bar">
+      <div class="results-count">
+        <span *ngIf="!loading">{{ ofertas.length }} productos en oferta</span>
+        <span *ngIf="loading">Cargando...</span>
+      </div>
+      
+      <div class="sort-controls">
+        <label>Ordenar por:</label>
+        <button 
+          class="sort-btn" 
+          [class.active]="sortBy === 'discount'"
+          (click)="changeSorting('discount')"
+        >
+          <span class="material-symbols-outlined">trending_down</span>
+          Mayor descuento
+        </button>
+        <button 
+          class="sort-btn" 
+          [class.active]="sortBy === 'price'"
+          (click)="changeSorting('price')"
+        >
+          <span class="material-symbols-outlined">attach_money</span>
+          Menor precio
+        </button>
+        <button 
+          class="sort-btn" 
+          [class.active]="sortBy === 'name'"
+          (click)="changeSorting('name')"
+        >
+          <span class="material-symbols-outlined">sort_by_alpha</span>
+          Nombre
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Grid de Ofertas -->
+<section class="ofertas-content">
+  <div class="container">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+      <span class="material-symbols-outlined spinning">progress_activity</span>
+      <p>Cargando ofertas increíbles...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && ofertas.length === 0" class="empty-state">
+      <span class="material-symbols-outlined">shopping_bag</span>
+      <h3>No hay ofertas disponibles en este momento</h3>
+      <p>Vuelve pronto para encontrar increíbles descuentos</p>
+      <button class="btn-primary" (click)="navigateToHome()">Volver al inicio</button>
+    </div>
+
+    <!-- Ofertas Grid -->
+    <div *ngIf="!loading && ofertas.length > 0" class="ofertas-grid">
+      <div 
+        class="oferta-card" 
+        *ngFor="let oferta of ofertas"
+      >
+        <!-- Discount Badge -->
+        <div class="discount-badge">
+          -{{ oferta.discount }}%
+        </div>
+
+        <!-- Image -->
+        <div class="oferta-image" (click)="verDetalle(oferta)">
+          <img 
+            *ngIf="oferta.images && oferta.images.length > 0" 
+            [src]="oferta.images[0]" 
+            [alt]="oferta.name"
+            class="product-img"
+          >
+          <div class="image-placeholder" *ngIf="!oferta.images || oferta.images.length === 0">
+            <span class="material-symbols-outlined">music_note</span>
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div class="oferta-info">
+          <!-- Category -->
+          <span class="oferta-category">{{ oferta.category.name }}</span>
+          
+          <!-- Nombre -->
+          <h3 class="oferta-nombre" (click)="verDetalle(oferta)">{{ oferta.name }}</h3>
+          
+          <!-- Rating & Stock -->
+          <div class="oferta-meta">
+            <div class="rating-compact" *ngIf="oferta.rating">
+              <span class="material-symbols-outlined star-icon">star</span>
+              <span class="rating-value">{{ oferta.rating }}</span>
+              <span class="rating-reviews">({{ oferta.reviewCount || 0 }})</span>
+            </div>
+            <span class="stock-status" [class.in-stock]="oferta.inStock" [class.out-stock]="!oferta.inStock">
+              <span class="material-symbols-outlined">{{ oferta.inStock ? 'check_circle' : 'cancel' }}</span>
+              {{ oferta.inStock ? 'Disponible' : 'Agotado' }}
+            </span>
+          </div>
+
+          <!-- Precio -->
+          <div class="oferta-precio">
+            <div class="precio-header">
+              <span class="precio-label">Precio anterior:</span>
+              <span class="precio-original">\${{ oferta.originalPrice | number:'1.2-2' }}</span>
+            </div>
+            
+            <div class="precio-main">
+              <span class="precio-actual">\${{ oferta.price | number:'1.2-2' }}</span>
+              <div class="ahorro-info">
+                <span class="ahorro-badge">
+                  <span class="material-symbols-outlined">savings</span>
+                  \${{ calcularAhorro(oferta) | number:'1.0-0' }}
+                </span>
+                <span class="ahorro-text">de descuento</span>
+              </div>
+            </div>
+
+            <div class="precio-cuotas" *ngIf="oferta.installmentInfo">
+              <span class="material-symbols-outlined">credit_card</span>
+              <span class="cuotas-text">
+                <strong>{{ oferta.installmentInfo.months }}x</strong> de 
+                <strong>\${{ oferta.installmentInfo.monthlyPayment | number:'1.2-2' }}</strong>
+              </span>
+            </div>
+          </div>
+
+          <!-- Acciones -->
+          <div class="oferta-actions">
+            <button 
+              class="btn-add-cart" 
+              (click)="agregarAlCarrito(oferta, $event)"
+              [disabled]="!oferta.inStock"
+            >
+              <span class="material-symbols-outlined">shopping_cart</span>
+              Agregar
+            </button>
+            <button 
+              class="btn-details" 
+              (click)="verDetalle(oferta)"
+            >
+              <span class="material-symbols-outlined">visibility</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

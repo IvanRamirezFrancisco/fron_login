@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Subscription } from 'rxjs';
 import { CartService } from '../../services/cart.service';
@@ -10,17 +11,17 @@ import { CartItem } from '../../models/product.model';
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './cart.component.html',
   styleUrls: ['./cart.component.css'],
   animations: [
     trigger('slideIn', [
       transition(':enter', [
-        style({ transform: 'translateX(100%)', opacity: 0 }),
-        animate('300ms ease-in', style({ transform: 'translateX(0%)', opacity: 1 }))
+        style({ transform: 'translateY(-20px)', opacity: 0 }),
+        animate('300ms ease-out', style({ transform: 'translateY(0)', opacity: 1 }))
       ]),
       transition(':leave', [
-        animate('300ms ease-out', style({ transform: 'translateX(-100%)', opacity: 0 }))
+        animate('200ms ease-in', style({ transform: 'translateY(-20px)', opacity: 0 }))
       ])
     ])
   ]
@@ -34,6 +35,8 @@ export class CartComponent implements OnInit, OnDestroy {
   freeShippingThreshold = 1000;
   updating = false;
   showClearConfirm = false;
+  showCouponInput = false;
+  couponCode = '';
 
   private subscriptions: Subscription[] = [];
 
@@ -137,15 +140,28 @@ export class CartComponent implements OnInit, OnDestroy {
     this.showClearConfirm = false;
   }
 
-  // Cancelar vaciar carrito
-  cancelClearCart(): void {
-    this.showClearConfirm = false;
-  }
-
   // Proceder al checkout
   proceedToCheckout(): void {
     if (this.cartItems.length > 0) {
       this.router.navigate(['/checkout']);
+    }
+  }
+
+  // Toggle cupón
+  toggleCoupon(): void {
+    this.showCouponInput = !this.showCouponInput;
+  }
+
+  // Aplicar cupón
+  applyCoupon(): void {
+    if (this.couponCode.trim()) {
+      // TODO: Implementar validación de cupón en el backend
+      console.log('Aplicando cupón:', this.couponCode);
+      // Aquí se haría la petición al backend
+      // Por ahora solo mostramos un mensaje
+      alert('Funcionalidad de cupones próximamente disponible');
+      this.couponCode = '';
+      this.showCouponInput = false;
     }
   }
 

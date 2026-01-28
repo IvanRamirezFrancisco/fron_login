@@ -1,0 +1,140 @@
+<header class="header-main">
+  <div class="container">
+    <div class="header-content">
+      <div class="logo-section" routerLink="/home" style="cursor: pointer;">
+        <img src="assets/logoP.png" alt="Casa de Música Castillo" class="logo-image" />
+        <span class="logo-text">CASTILLO</span>
+      </div>
+      
+      <div class="search-section">
+        <app-global-search></app-global-search>
+      </div>
+      
+      <!-- Acciones para usuario NO logueado -->
+      <div class="user-actions" *ngIf="!isLoggedIn">
+        <button class="action-btn" (click)="toggleWishlist()" title="Lista de deseos">
+          <span class="material-icons">favorite_border</span>
+          <span class="action-count" *ngIf="wishlistCount > 0">{{wishlistCount}}</span>
+        </button>
+        <button class="action-btn" (click)="navigateToLogin()" title="Iniciar sesión">
+          <span class="material-icons">person</span>
+        </button>
+        <button class="action-btn cart-btn" (click)="navigateToCart()" title="Carrito de compras">
+          <span class="material-icons">shopping_cart</span>
+          <span class="cart-count" *ngIf="cartItemCount > 0">{{cartItemCount}}</span>
+        </button>
+      </div>
+
+      <!-- Acciones para usuario LOGUEADO -->
+      <div class="user-actions" *ngIf="isLoggedIn">
+        <button class="action-btn" (click)="toggleWishlist()" title="Lista de deseos">
+          <span class="material-icons">favorite</span>
+          <span class="action-count" *ngIf="wishlistCount > 0">{{wishlistCount}}</span>
+        </button>
+        <button class="action-btn cart-btn" (click)="navigateToCart()" title="Carrito de compras">
+          <span class="material-icons">shopping_cart</span>
+          <span class="cart-count" *ngIf="cartItemCount > 0">{{cartItemCount}}</span>
+        </button>
+        
+        <!-- Menú de usuario logueado -->
+        <div class="user-menu-container">
+          <button class="action-btn user-btn" (click)="toggleUserMenu()" title="Mi cuenta">
+            <span class="material-icons">account_circle</span>
+          </button>
+          
+          <!-- Dropdown del usuario -->
+          <div class="user-dropdown" *ngIf="showUserMenu" (click)="$event.stopPropagation()">
+            <div class="user-dropdown-header">
+              <div class="user-avatar">
+                <span class="material-icons">person</span>
+              </div>
+              <div class="user-info">
+                <p class="user-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</p>
+                <p class="user-email">{{ currentUser?.email }}</p>
+              </div>
+            </div>
+            
+            <div class="dropdown-divider"></div>
+            
+            <ul class="dropdown-menu-list">
+              <li>
+                <button (click)="navigateToProfile()" class="dropdown-item">
+                  <span class="material-icons">settings</span>
+                  <span>Configuración de Seguridad</span>
+                </button>
+              </li>
+              <li>
+                <button (click)="closeUserMenu()" routerLink="/orders" class="dropdown-item">
+                  <span class="material-icons">shopping_bag</span>
+                  <span>Mis Pedidos</span>
+                </button>
+              </li>
+              <li>
+                <button (click)="closeUserMenu()" routerLink="/wishlist" class="dropdown-item">
+                  <span class="material-icons">favorite</span>
+                  <span>Lista de Deseos</span>
+                </button>
+              </li>
+            </ul>
+            
+            <div class="dropdown-divider"></div>
+            
+            <button (click)="logout()" class="dropdown-item logout-item">
+              <span class="material-icons">logout</span>
+              <span>Cerrar Sesión</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Navegación Secundaria (integrada al header para que se comporte como parte del sticky header) -->
+  <nav class="secondary-nav">
+    <div class="container">
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a routerLink="/home" routerLinkActive="active" class="nav-link">
+            <span class="material-icons">home</span>
+            Inicio
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/ofertas" routerLinkActive="active" class="nav-link">
+            <span class="material-icons">local_offer</span>
+            Ofertas
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/catalogo" routerLinkActive="active" class="nav-link">
+            <span class="material-icons">inventory_2</span>
+            Catálogo
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/servicios" routerLinkActive="active" class="nav-link">
+            <span class="material-icons">build</span>
+            Servicios
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/ayuda" routerLinkActive="active" class="nav-link">
+            <span class="material-icons">help</span>
+            Ayuda
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  
+  <!-- Animaciones de productos volando al carrito -->
+  <div class="flying-products-container">
+    <div 
+      *ngFor="let product of flyingProducts" 
+      class="flying-product"
+      [style.left.px]="product.startX"
+      [style.top.px]="product.startY">
+      <img [src]="product.productImage" [alt]="product.productName" />
+    </div>
+  </div>
+</header>

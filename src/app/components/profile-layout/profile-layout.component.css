@@ -4,32 +4,33 @@
    ================================================================= */
 
 :root {
-  --primary-marron: #3E2723;
-  --secondary-naranja: #C75D2C;
-  --highlight-mamey: #FFCF71;
-  --neutral-dark: #2C2825;
+  /* Colores del Home - Borgoña y Dorado */
+  --primary-burgundy: #800020;
+  --secondary-gold: #C5A059;
+  --dark-bg: #34495e;
+  --neutral-dark: #2c3e50;
   --neutral-medium: #F5F3F0;
   --neutral-light: #FAFAF9;
-  --text-primary: #2C2825;
-  --text-secondary: #6B5B4F;
+  --text-primary: #2c3e50;
+  --text-secondary: #7f8c8d;
   --white: #FFFFFF;
-  --success-green: #2E7D32;
-  --error-red: #D32F2F;
-  --shadow-soft: 0 2px 12px rgba(62, 39, 35, 0.08);
-  --shadow-medium: 0 4px 24px rgba(62, 39, 35, 0.12);
-  --shadow-strong: 0 8px 32px rgba(62, 39, 35, 0.16);
+  --success-green: #27ae60;
+  --error-red: #e74c3c;
+  --shadow-soft: 0 2px 12px rgba(128, 0, 32, 0.08);
+  --shadow-medium: 0 4px 24px rgba(128, 0, 32, 0.12);
+  --shadow-strong: 0 8px 32px rgba(128, 0, 32, 0.16);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --border-radius: 12px;
   --font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Tahoma', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Roboto', 'Tahoma', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* ===== CONTENEDOR PRINCIPAL ===== */
 .dashboard-container {
-  min-height: calc(100vh - 80px);
-  background: linear-gradient(135deg, var(--neutral-light) 0%, var(--neutral-medium) 100%);
+  min-height: calc(100vh - 160px); /* Espacio para header y footer */
+  background: #f8f9fa;
   font-family: var(--font-body);
-  padding: 3rem 0;
+  padding: 0;
 }
 
 /* ===== HEADER DE PÁGINA ===== */
@@ -50,7 +51,7 @@
 
 .title-icon {
   font-size: 3rem;
-  color: var(--secondary-naranja);
+  color: var(--secondary-gold);
   margin-bottom: 0.5rem;
   animation: pulse 2s infinite;
 }
@@ -64,7 +65,7 @@
   font-family: var(--font-heading);
   font-size: 2.5rem;
   font-weight: 700;
-  color: var(--primary-marron);
+  color: var(--primary-burgundy);
   margin: 0;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
@@ -112,9 +113,10 @@
 
 /* ===== CONTENIDO PRINCIPAL ===== */
 .dashboard-content {
-  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0;
+  background: transparent;
 }
 
 /* ===== RESPONSIVE ===== */

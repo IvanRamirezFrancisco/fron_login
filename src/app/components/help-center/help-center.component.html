@@ -1,0 +1,153 @@
+<div class="help-center-container">
+  <!-- Header -->
+  <div class="help-header">
+    <button class="back-button" (click)="navigateToHome()">
+      <span class="material-symbols-outlined">arrow_back</span>
+      Volver al Inicio
+    </button>
+    
+    <div class="header-content">
+      <span class="material-symbols-outlined header-icon">help_center</span>
+      <h1>Centro de Ayuda</h1>
+      <p>¿Cómo podemos ayudarte hoy?</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+      <div class="search-box">
+        <span class="material-symbols-outlined">search</span>
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          placeholder="Buscar en preguntas frecuentes..."
+          class="search-input">
+        <button 
+          class="clear-btn" 
+          *ngIf="searchQuery" 
+          (click)="searchQuery = ''">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Categories -->
+  <div class="categories-section">
+    <h2 class="section-title">Categorías</h2>
+    <div class="categories-grid">
+      <div 
+        class="category-card"
+        *ngFor="let category of categories"
+        [class.active]="selectedCategory === category.id"
+        (click)="selectCategory(category.id)">
+        <span class="material-symbols-outlined category-icon">{{ category.icon }}</span>
+        <h3>{{ category.name }}</h3>
+        <span class="category-count">{{ category.count }} preguntas</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQs -->
+  <div class="faqs-section">
+    <h2 class="section-title">
+      Preguntas Frecuentes
+      <span class="results-count" *ngIf="searchQuery">({{ filteredFAQs.length }} resultados)</span>
+    </h2>
+
+    <!-- No Results -->
+    <div class="no-results" *ngIf="filteredFAQs.length === 0">
+      <span class="material-symbols-outlined no-results-icon">search_off</span>
+      <h3>No encontramos resultados</h3>
+      <p>Intenta con otras palabras clave o explora las categorías</p>
+    </div>
+
+    <!-- FAQ List -->
+    <div class="faq-list" *ngIf="filteredFAQs.length > 0">
+      <div 
+        class="faq-item"
+        *ngFor="let faq of filteredFAQs"
+        [class.open]="faq.isOpen">
+        
+        <div class="faq-header" (click)="toggleFAQ(faq)">
+          <div class="faq-question">
+            <span class="material-symbols-outlined question-icon">help</span>
+            <h3>{{ faq.question }}</h3>
+          </div>
+          <span class="material-symbols-outlined toggle-icon">
+            {{ faq.isOpen ? 'expand_less' : 'expand_more' }}
+          </span>
+        </div>
+
+        <div class="faq-answer" *ngIf="faq.isOpen">
+          <div class="answer-content">
+            <span class="material-symbols-outlined answer-icon">check_circle</span>
+            <p>{{ faq.answer }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Section -->
+  <div class="contact-section">
+    <div class="contact-card">
+      <span class="material-symbols-outlined contact-icon">support_agent</span>
+      <h2>¿No encontraste lo que buscabas?</h2>
+      <p>Nuestro equipo de soporte está aquí para ayudarte</p>
+      
+      <div class="contact-methods">
+        <div class="contact-method">
+          <span class="material-symbols-outlined">mail</span>
+          <div class="method-info">
+            <h4>Email</h4>
+            <p>soporte&#64;casamusicacastillo.com</p>
+          </div>
+        </div>
+
+        <div class="contact-method">
+          <span class="material-symbols-outlined">phone</span>
+          <div class="method-info">
+            <h4>Teléfono</h4>
+            <p>55 1234 5678</p>
+          </div>
+        </div>
+
+        <div class="contact-method">
+          <span class="material-symbols-outlined">schedule</span>
+          <div class="method-info">
+            <h4>Horario</h4>
+            <p>Lun - Vie: 9:00 AM - 6:00 PM</p>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-contact" (click)="contactSupport()">
+        <span class="material-symbols-outlined">send</span>
+        Contactar Soporte
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick Links -->
+  <div class="quick-links-section">
+    <h2 class="section-title">Enlaces Rápidos</h2>
+    <div class="quick-links-grid">
+      <a routerLink="/catalogo" class="quick-link">
+        <span class="material-symbols-outlined">inventory_2</span>
+        <span>Catálogo</span>
+      </a>
+      <a routerLink="/ofertas" class="quick-link">
+        <span class="material-symbols-outlined">local_offer</span>
+        <span>Ofertas</span>
+      </a>
+      <a routerLink="/dashboard" class="quick-link">
+        <span class="material-symbols-outlined">account_circle</span>
+        <span>Mi Cuenta</span>
+      </a>
+      <a routerLink="/carrito" class="quick-link">
+        <span class="material-symbols-outlined">shopping_cart</span>
+        <span>Carrito</span>
+      </a>
+    </div>
+  </div>
+</div>

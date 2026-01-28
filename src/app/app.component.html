@@ -1,3 +1,13 @@
 <div class="app-container">
+  <!-- Header Global (se oculta en login/register) -->
+  <app-main-header *ngIf="showHeaderFooter"></app-main-header>
+  
+  <!-- Contenido Dinámico -->
   <router-outlet></router-outlet>
+  
+  <!-- Footer Global (se oculta en login/register) -->
+  <app-main-footer *ngIf="showHeaderFooter"></app-main-footer>
+  
+  <!-- Toast Notifications para Carrito -->
+  <app-cart-toast></app-cart-toast>
 </div>
