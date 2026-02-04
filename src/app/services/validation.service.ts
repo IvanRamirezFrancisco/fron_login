@@ -8,63 +8,36 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class ValidationService {
-  private readonly baseUrl = environment.apiUrl; // 'http://localhost:8080/api'
+  private readonly baseUrl = environment.apiUrl;
   
   constructor(private http: HttpClient) {
-    console.log('🏗️ ValidationService: baseUrl =', this.baseUrl);
-    console.log('🏗️ ValidationService: environment.apiUrl =', environment.apiUrl);
   }
 
-  /**
-   * Método de depuración para ver qué URL se está generando
-   */
   debugUrl(username: string): string {
     const finalUrl = `${this.baseUrl}/auth/check-username/${username}`;
-    console.log('🔧 DEBUG URL CONSTRUCTION:');
-    console.log('  - baseUrl:', this.baseUrl);
-    console.log('  - environment.apiUrl:', environment.apiUrl);
-    console.log('  - username:', username);
-    console.log('  - finalUrl:', finalUrl);
     return finalUrl;
   }
 
-  /**
-   * Valida si un username está disponible
-   * Incluye debounce para evitar múltiples llamadas
-   * IMPORTANTE: Esta es una validación PÚBLICA que no debe requerir autenticación
-   */
   checkUsernameAvailability(username: string): Observable<boolean> {
     if (!username || username.length < 3) {
       return of(false);
     }
 
-    console.log(`🔄 ValidationService: Iniciando validación para "${username}"`);
-
-    // Crear headers explícitos sin autorización para esta petición pública
     const publicHeaders = { 
       'Content-Type': 'application/json',
-      'X-Public-Request': 'true' // Marcador para identificar peticiones públicas
+      'X-Public-Request': 'true'
     };
 
     return timer(500).pipe(
       switchMap(() => {
-        const finalUrl = this.debugUrl(username); // Usar método de debug
-        console.log(`🌐 ValidationService: Ejecutando HTTP GET para "${username}"`);
+        const finalUrl = this.debugUrl(username);
         return this.http.get<any>(finalUrl, { 
           headers: publicHeaders 
         }).pipe(
           map(response => {
-            console.log(`✅ ValidationService: Username "${username}" disponible:`, response.available);
             return response.available;
           }),
           catchError((error) => {
-            console.error(`❌ ValidationService: Error validating username "${username}":`, {
-              status: error.status,
-              message: error.message,
-              url: error.url
-            });
-            // En caso de error, asumimos que no está disponible para ser conservadores
-            // PERO no propagamos el error para evitar redirecciones
             return of(false);
           })
         );

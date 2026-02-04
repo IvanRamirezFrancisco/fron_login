@@ -59,17 +59,14 @@ export class SanitizationService {
   sanitizeUrl(url: string): SafeUrl {
     if (!url) return '';
     
-    // Lista blanca de protocolos permitidos
     const allowedProtocols = ['http:', 'https:', 'mailto:', 'tel:'];
     
     try {
       const urlObj = new URL(url);
       if (!allowedProtocols.includes(urlObj.protocol)) {
-        console.warn('Protocol not allowed:', urlObj.protocol);
         return '';
       }
     } catch (e) {
-      console.warn('Invalid URL:', url);
       return '';
     }
     

@@ -1,0 +1,59 @@
+<div class="error-container">
+  <div class="error-content">
+    <!-- Icono de Error -->
+    <div class="error-icon">
+      <span class="material-icons">error_outline</span>
+    </div>
+
+    <!-- Código de Error -->
+    <div class="error-code">500</div>
+
+    <!-- Título -->
+    <h1 class="error-title">Error Interno del Servidor</h1>
+    
+    <!-- Descripción -->
+    <p class="error-description">
+      Lo sentimos, algo salió mal en nuestro servidor.<br>
+      Nuestro equipo técnico ha sido notificado y está trabajando para solucionarlo.
+    </p>
+
+    <!-- Botones de Acción -->
+    <div class="error-actions">
+      <button class="btn-primary" (click)="reloadPage()">
+        <span class="material-icons">refresh</span>
+        Reintentar
+      </button>
+      <button class="btn-secondary" (click)="goHome()">
+        <span class="material-icons">home</span>
+        Volver al Inicio
+      </button>
+    </div>
+
+    <!-- Información Adicional -->
+    <div class="error-info">
+      <p>
+        <strong>Código:</strong> HTTP 500<br>
+        <strong>Hora:</strong> {{ getCurrentTime() }}
+      </p>
+    </div>
+
+    <!-- Enlaces Útiles -->
+    <div class="helpful-links">
+      <p class="links-title">Mientras tanto, puedes visitar:</p>
+      <div class="links-grid">
+        <a routerLink="/catalogo" class="link-card">
+          <span class="material-icons">library_music</span>
+          <span>Catálogo</span>
+        </a>
+        <a routerLink="/ofertas" class="link-card">
+          <span class="material-icons">local_offer</span>
+          <span>Ofertas</span>
+        </a>
+        <a routerLink="/ayuda" class="link-card">
+          <span class="material-icons">help_outline</span>
+          <span>Ayuda</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

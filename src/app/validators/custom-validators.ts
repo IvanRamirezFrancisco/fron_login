@@ -184,13 +184,10 @@ export class CustomValidators {
         return of(null);
       }
 
-      console.log(`🔍 Iniciando validación de username: "${control.value}"`);
-
       return of(control.value).pipe(
-        debounceTime(500), // Espera 500ms después de que el usuario deje de escribir
-        distinctUntilChanged(), // Solo procesa si el valor cambió
+        debounceTime(500),
+        distinctUntilChanged(),
         switchMap(username => {
-          console.log(`🌐 Ejecutando petición HTTP para username: "${username}"`);
           return validationService.checkUsernameAvailability(username).pipe(
             map(available => {
               const result = available ? null : { 
@@ -199,11 +196,9 @@ export class CustomValidators {
                   value: username 
                 } 
               };
-              console.log(`✅ Resultado validación username "${username}":`, result ? 'NOT AVAILABLE' : 'AVAILABLE');
               return result;
             }),
             catchError((error) => {
-              console.error(`❌ Error en validación username "${username}":`, error);
               return of({ 
                 uniqueUsername: { 
                   message: 'Error checking username availability',

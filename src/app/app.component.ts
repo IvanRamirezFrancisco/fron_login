@@ -18,16 +18,17 @@ export class AppComponent {
   showHeaderFooter = true;
 
   // Rutas donde NO queremos mostrar header/footer
-  private routesWithoutLayout = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-account'];
+  // Admin tiene su propio layout completo con sidebar y topbar
+  private routesWithoutLayout = ['/reset-password', '/verify-account', '/admin'];
 
   constructor(private router: Router) {
-    // Escuchar cambios de ruta para ocultar/mostrar header/footer
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      this.showHeaderFooter = !this.routesWithoutLayout.some(route => 
+      const shouldHide = this.routesWithoutLayout.some(route => 
         event.url.startsWith(route)
       );
+      this.showHeaderFooter = !shouldHide;
     });
   }
 }

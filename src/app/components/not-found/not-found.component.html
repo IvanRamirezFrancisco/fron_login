@@ -1,0 +1,87 @@
+<div class="error-container">
+  <div class="error-content">
+    <!-- SVG Ilustración 404 -->
+    <div class="error-illustration">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <!-- Guitarra rota -->
+        <g class="guitar-broken">
+          <!-- Cuerpo de guitarra (parte izquierda) -->
+          <ellipse cx="60" cy="100" rx="35" ry="50" fill="#800020" opacity="0.9"/>
+          <ellipse cx="60" cy="100" rx="25" ry="40" fill="#600015"/>
+          <circle cx="60" cy="100" r="15" fill="#C5A059"/>
+          
+          <!-- Mástil partido (izquierda) -->
+          <rect x="85" y="95" width="25" height="10" fill="#8B4513" transform="rotate(-15 85 100)"/>
+          
+          <!-- Cuerdas rotas -->
+          <line x1="75" y1="90" x2="105" y2="88" stroke="#FFD700" stroke-width="1" stroke-dasharray="5,5"/>
+          <line x1="75" y1="100" x2="105" y2="100" stroke="#FFD700" stroke-width="1" stroke-dasharray="5,5"/>
+          <line x1="75" y1="110" x2="105" y2="112" stroke="#FFD700" stroke-width="1" stroke-dasharray="5,5"/>
+          
+          <!-- Cuerpo de guitarra (parte derecha) -->
+          <ellipse cx="140" cy="100" rx="35" ry="50" fill="#800020" opacity="0.9"/>
+          <ellipse cx="140" cy="100" rx="25" ry="40" fill="#600015"/>
+          <circle cx="140" cy="100" r="15" fill="#C5A059"/>
+          
+          <!-- Mástil partido (derecha) -->
+          <rect x="115" y="95" width="25" height="10" fill="#8B4513" transform="rotate(15 140 100)"/>
+          
+          <!-- Fragmentos -->
+          <path d="M 100 85 L 105 80 L 110 85 L 105 90 Z" fill="#C5A059" opacity="0.7"/>
+          <path d="M 95 110 L 100 105 L 105 110 L 100 115 Z" fill="#8B4513" opacity="0.7"/>
+        </g>
+        
+        <!-- Notas musicales flotantes -->
+        <text x="30" y="40" font-size="20" fill="#C5A059" opacity="0.6" class="float-note">♪</text>
+        <text x="160" y="50" font-size="18" fill="#C5A059" opacity="0.5" class="float-note float-delayed">♫</text>
+        <text x="50" y="160" font-size="22" fill="#C5A059" opacity="0.4" class="float-note float-slow">♬</text>
+        <text x="150" y="150" font-size="16" fill="#C5A059" opacity="0.6" class="float-note">♩</text>
+      </svg>
+    </div>
+
+    <!-- Código de error -->
+    <div class="error-code">
+      <span class="code-digit">4</span>
+      <span class="code-digit code-middle">0</span>
+      <span class="code-digit">4</span>
+    </div>
+
+    <!-- Mensaje -->
+    <h1 class="error-title">¡Ups! Página no encontrada</h1>
+    <p class="error-description">
+      Parece que esta página se ha perdido entre las notas musicales. 🎵<br>
+      La URL que buscas no existe o fue movida a otro lugar.
+    </p>
+
+    <!-- Botones de acción -->
+    <div class="error-actions">
+      <button class="btn-primary" (click)="goHome()">
+        <span class="material-icons">home</span>
+        Volver al Inicio
+      </button>
+      <button class="btn-secondary" (click)="goBack()">
+        <span class="material-icons">arrow_back</span>
+        Página Anterior
+      </button>
+    </div>
+
+    <!-- Enlaces útiles -->
+    <div class="helpful-links">
+      <p class="links-title">¿Necesitas ayuda?</p>
+      <div class="links-container">
+        <a routerLink="/catalogo" class="helpful-link">
+          <span class="material-icons">library_music</span>
+          Ver Catálogo
+        </a>
+        <a routerLink="/ofertas" class="helpful-link">
+          <span class="material-icons">local_offer</span>
+          Ver Ofertas
+        </a>
+        <a routerLink="/ayuda" class="helpful-link">
+          <span class="material-icons">help_outline</span>
+          Centro de Ayuda
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

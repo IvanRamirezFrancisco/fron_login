@@ -56,6 +56,13 @@ export class NavigationHeaderComponent implements OnInit, OnDestroy {
   toggleMobileMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;
     this.isProfileMenuOpen = false;
+    
+    // Controlar el scroll del body
+    if (this.isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
   }
 
   toggleProfileMenu(): void {
@@ -78,6 +85,7 @@ export class NavigationHeaderComponent implements OnInit, OnDestroy {
   closeMenus(): void {
     this.isMenuOpen = false;
     this.isProfileMenuOpen = false;
+    document.body.style.overflow = ''; // Restaurar scroll
   }
 
   getInitials(user: User): string {

@@ -67,7 +67,6 @@ export class OfertasComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error cargando ofertas:', err);
         this.loading = false;
       }
     });
@@ -159,7 +158,7 @@ export class OfertasComponent implements OnInit {
 
   performSearch(): void {
     if (this.searchQuery.trim()) {
-      console.log('Buscando:', this.searchQuery);
+      // Búsqueda silenciosa
     }
   }
 
@@ -172,7 +171,7 @@ export class OfertasComponent implements OnInit {
   }
 
   toggleWishlist(): void {
-    console.log('Toggle wishlist');
+    // Toggle silencioso
   }
 
   navigateToHome(): void {

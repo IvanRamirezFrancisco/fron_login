@@ -46,13 +46,25 @@ export class RegisterComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute
   ) {
-    console.log('🚀 RegisterComponent constructor iniciado - FORMULARIO SIMPLIFICADO');
-    
-    // FORMULARIO MEJORADO: Con validaciones en tiempo real y retroalimentación específica
     this.registerForm = this.fb.group({
-      username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(30)]],
-      firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
-      lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      username: ['', [
+        Validators.required, 
+        Validators.minLength(3), 
+        Validators.maxLength(30),
+        this.usernameSecurityValidator.bind(this) // ✅ Validador de seguridad
+      ]],
+      firstName: ['', [
+        Validators.required, 
+        Validators.minLength(2), 
+        Validators.maxLength(50),
+        this.nameSecurityValidator.bind(this) // ✅ Validador de seguridad
+      ]],
+      lastName: ['', [
+        Validators.required, 
+        Validators.minLength(2), 
+        Validators.maxLength(50),
+        this.nameSecurityValidator.bind(this) // ✅ Validador de seguridad
+      ]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [
         Validators.required, 
@@ -65,18 +77,13 @@ export class RegisterComponent implements OnInit {
       acceptTerms: [false, [Validators.requiredTrue]]
     }, { validators: this.passwordMatchValidator });
 
-    // Suscripciones para validación en tiempo real
     this.setupRealTimeValidation();
-
-    console.log('✅ RegisterForm MEJORADO creado exitosamente - Con validaciones profesionales');
   }
 
   ngOnInit(): void {
-    // Si viene email como query param desde el login, lo pre-llena
     this.route.queryParams.subscribe(params => {
       if (params['email']) {
         this.registerForm.patchValue({ email: params['email'] });
-        console.log('📧 Email pre-llenado desde login:', params['email']);
       }
     });
   }
@@ -179,25 +186,34 @@ export class RegisterComponent implements OnInit {
     switch (fieldName) {
       case 'username':
         if (errors['required']) return 'El nombre de usuario es obligatorio';
-        if (errors['minlength']) return 'El nombre de usuario debe tener al menos 3 caracteres';
-        if (errors['maxlength']) return 'El nombre de usuario no puede tener más de 30 caracteres';
-        if (errors['invalidChars']) return 'El nombre de usuario contiene caracteres no válidos';
+        if (errors['minlength']) return `El nombre de usuario debe tener al menos ${errors['minlength'].requiredLength} caracteres`;
+        if (errors['maxlength']) return `El nombre de usuario no puede tener más de ${errors['maxlength'].requiredLength} caracteres`;
+        if (errors['sqlInjection']) return errors['sqlInjection'].message;
+        if (errors['xssAttempt']) return errors['xssAttempt'].message;
+        if (errors['suspiciousChars']) return errors['suspiciousChars'].message;
+        if (errors['invalidFormat']) return errors['invalidFormat'].message;
         break;
         
       case 'firstName':
         if (errors['required']) return 'El nombre es obligatorio';
-        if (errors['minlength']) return 'El nombre debe tener al menos 2 caracteres';
-        if (errors['maxlength']) return 'El nombre no puede tener más de 50 caracteres';
-        if (errors['invalidChars']) return 'El nombre contiene caracteres no válidos. Solo se permiten letras, acentos, espacios, guiones y apóstrofes';
-        if (errors['maliciousContent']) return 'El nombre contiene código malicioso o caracteres peligrosos';
+        if (errors['minlength']) return `El nombre debe tener al menos ${errors['minlength'].requiredLength} caracteres`;
+        if (errors['maxlength']) return `El nombre no puede tener más de ${errors['maxlength'].requiredLength} caracteres`;
+        if (errors['sqlInjection']) return errors['sqlInjection'].message;
+        if (errors['xssAttempt']) return errors['xssAttempt'].message;
+        if (errors['containsNumbers']) return errors['containsNumbers'].message;
+        if (errors['invalidChars']) return errors['invalidChars'].message;
+        if (errors['maliciousContent']) return 'El nombre contiene contenido malicioso';
         break;
         
       case 'lastName':
         if (errors['required']) return 'El apellido es obligatorio';
-        if (errors['minlength']) return 'El apellido debe tener al menos 2 caracteres';
-        if (errors['maxlength']) return 'El apellido no puede tener más de 50 caracteres';
-        if (errors['invalidChars']) return 'El apellido contiene caracteres no válidos. Solo se permiten letras, acentos, espacios, guiones y apóstrofes';
-        if (errors['maliciousContent']) return 'El apellido contiene código malicioso o caracteres peligrosos';
+        if (errors['minlength']) return `El apellido debe tener al menos ${errors['minlength'].requiredLength} caracteres`;
+        if (errors['maxlength']) return `El apellido no puede tener más de ${errors['maxlength'].requiredLength} caracteres`;
+        if (errors['sqlInjection']) return errors['sqlInjection'].message;
+        if (errors['xssAttempt']) return errors['xssAttempt'].message;
+        if (errors['containsNumbers']) return errors['containsNumbers'].message;
+        if (errors['invalidChars']) return errors['invalidChars'].message;
+        if (errors['maliciousContent']) return 'El apellido contiene contenido malicioso';
         break;
         
       case 'email':
@@ -210,8 +226,18 @@ export class RegisterComponent implements OnInit {
         
       case 'password':
         if (errors['required']) return 'La contraseña es obligatoria';
-        if (errors['minlength']) return 'La contraseña debe tener al menos 8 caracteres';
-        if (errors['maxlength']) return 'La contraseña no puede tener más de 255 caracteres';
+        if (errors['minlength']) return `La contraseña debe tener al menos ${errors['minlength'].requiredLength} caracteres`;
+        if (errors['maxlength']) return `La contraseña no puede tener más de ${errors['maxlength'].requiredLength} caracteres`;
+        if (errors['zxcvbnWeak']) {
+          const warning = errors['zxcvbnWeak'].warning;
+          const suggestions = errors['zxcvbnWeak'].suggestions;
+          let message = 'La contraseña es muy débil. ';
+          if (warning) message += warning + '. ';
+          if (suggestions && suggestions.length > 0) {
+            message += suggestions[0];
+          }
+          return message;
+        }
         if (errors['simplePattern']) return 'Esta contraseña es muy simple. Evite patrones como 123456, qwerty o abc123';
         if (errors['commonPassword']) return 'Esta es una contraseña muy común. Elija una más segura';
         if (errors['sequentialChars']) return 'Evite secuencias como 123, abc o qwerty';
@@ -220,6 +246,7 @@ export class RegisterComponent implements OnInit {
         
       case 'confirmPassword':
         if (errors['required']) return 'Por favor confirma tu contraseña';
+        if (errors['passwordMismatch']) return 'Las contraseñas no coinciden';
         break;
     }
     
@@ -501,6 +528,181 @@ export class RegisterComponent implements OnInit {
   }
 
   /**
+   * ✅ VALIDADOR DE SEGURIDAD PARA USERNAME
+   * Detecta inyecciones SQL, XSS y otros patrones maliciosos
+   */
+  private usernameSecurityValidator(control: AbstractControl): ValidationErrors | null {
+    const username = control.value;
+    
+    if (!username) {
+      return null; // Si está vacío, lo maneja el Validators.required
+    }
+
+    // Patrones de inyección SQL
+    const sqlInjectionPatterns = [
+      /(\bOR\b|\bAND\b)\s*['"]?\s*\d+\s*['"]?\s*=\s*['"]?\s*\d+/i, // OR '1'='1', AND 1=1
+      /(\bOR\b|\bAND\b)\s+['"]?\s*\w+\s*['"]?\s*=\s*['"]?\s*\w+/i, // OR 'a'='a'
+      /'\s*(OR|AND)\s+'/i, // ' OR ', ' AND '
+      /--/,  // SQL comments
+      /\/\*/,  // SQL block comments
+      /;.*DROP/i, // DROP TABLE
+      /;.*DELETE/i, // DELETE FROM
+      /;.*INSERT/i, // INSERT INTO
+      /;.*UPDATE/i, // UPDATE SET
+      /;.*SELECT/i, // SELECT FROM
+      /UNION.*SELECT/i, // UNION SELECT
+      /EXEC\s*\(/i, // EXEC(
+      /EXECUTE\s*\(/i, // EXECUTE(
+      /xp_/i, // Extended stored procedures
+      /sp_/i, // Stored procedures
+      /0x[0-9a-f]+/i, // Hexadecimal values
+      /\bCAST\s*\(/i, // CAST function
+      /\bCONVERT\s*\(/i, // CONVERT function
+    ];
+
+    // Patrones de XSS
+    const xssPatterns = [
+      /<script.*?>/i, // <script>
+      /<\/script>/i, // </script>
+      /<iframe.*?>/i, // <iframe>
+      /<embed.*?>/i, // <embed>
+      /<object.*?>/i, // <object>
+      /javascript:/i, // javascript:
+      /on\w+\s*=/i, // onclick=, onerror=, etc.
+      /<img.*?onerror/i, // <img onerror=
+      /eval\s*\(/i, // eval(
+      /alert\s*\(/i, // alert(
+      /document\./i, // document.
+      /window\./i, // window.
+      /<svg.*?onload/i, // <svg onload=
+      /expression\s*\(/i, // CSS expression
+    ];
+
+    // Caracteres sospechosos
+    const suspiciousChars = /[<>{}[\]\\;'"&|]/;
+
+    // Validar contra patrones de inyección SQL
+    for (const pattern of sqlInjectionPatterns) {
+      if (pattern.test(username)) {
+        return {
+          sqlInjection: {
+            message: 'El nombre de usuario no es válido. No puede contener comandos SQL.'
+          }
+        };
+      }
+    }
+
+    // Validar contra patrones de XSS
+    for (const pattern of xssPatterns) {
+      if (pattern.test(username)) {
+        return {
+          xssAttempt: {
+            message: 'El nombre de usuario no es válido. No puede contener código HTML o JavaScript.'
+          }
+        };
+      }
+    }
+
+    // Validar caracteres sospechosos
+    if (suspiciousChars.test(username)) {
+      return {
+        suspiciousChars: {
+          message: 'El nombre de usuario contiene caracteres no permitidos. Solo use letras, números, guiones y guiones bajos.'
+        }
+      };
+    }
+
+    // Validar que solo contenga caracteres alfanuméricos, guiones y guiones bajos
+    const validPattern = /^[a-zA-Z0-9_-]+$/;
+    if (!validPattern.test(username)) {
+      return {
+        invalidFormat: {
+          message: 'El nombre de usuario debe ser válido. Solo puede contener letras, números, guiones (-) y guiones bajos (_).'
+        }
+      };
+    }
+
+    return null; // Válido
+  }
+
+  /**
+   * ✅ VALIDADOR DE SEGURIDAD PARA NOMBRES (firstName, lastName)
+   * Detecta inyecciones SQL, XSS y caracteres inválidos
+   */
+  private nameSecurityValidator(control: AbstractControl): ValidationErrors | null {
+    const name = control.value;
+    
+    if (!name) {
+      return null; // Si está vacío, lo maneja el Validators.required
+    }
+
+    // Patrones de inyección SQL
+    const sqlPatterns = [
+      /(\bOR\b|\bAND\b)\s*['"]?\s*\d+\s*['"]?\s*=\s*['"]?\s*\d+/i,
+      /'\s*(OR|AND)\s+'/i,
+      /--/,
+      /\/\*/,
+      /;.*DROP/i,
+      /;.*DELETE/i,
+      /;.*SELECT/i,
+      /UNION.*SELECT/i,
+    ];
+
+    // Patrones de XSS
+    const xssPatterns = [
+      /<.*?>/,  // Cualquier tag HTML
+      /javascript:/i,
+      /on\w+\s*=/i,
+      /eval\s*\(/i,
+      /alert\s*\(/i,
+      /document\./i,
+    ];
+
+    // Validar contra SQL injection
+    for (const pattern of sqlPatterns) {
+      if (pattern.test(name)) {
+        return {
+          sqlInjection: {
+            message: 'El nombre no es válido.'
+          }
+        };
+      }
+    }
+
+    // Validar contra XSS
+    for (const pattern of xssPatterns) {
+      if (pattern.test(name)) {
+        return {
+          xssAttempt: {
+            message: 'El nombre no es válido. No puede contener código HTML o JavaScript.'
+          }
+        };
+      }
+    }
+
+    // No permitir números en nombres
+    if (/\d/.test(name)) {
+      return {
+        containsNumbers: {
+          message: 'El nombre no puede contener números.'
+        }
+      };
+    }
+
+    // Validar que solo contenga letras, espacios, acentos, guiones y apóstrofes
+    const validPattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/;
+    if (!validPattern.test(name)) {
+      return {
+        invalidChars: {
+          message: 'El nombre debe ser válido. Solo puede contener letras, espacios, guiones (-) y apóstrofes (\').'
+        }
+      };
+    }
+
+    return null; // Válido
+  }
+
+  /**
    * ✅ VALIDADOR PERSONALIZADO CON ZXCVBN
    * Evalúa la fortaleza de la contraseña usando zxcvbn
    * Rechaza contraseñas con score < 3 (bloquea patrones, secuencias, repeticiones)
@@ -773,25 +975,17 @@ export class RegisterComponent implements OnInit {
   }
 
   onSubmit(): void {
-    console.log('🚀 Enviando formulario de registro...');
-    
-    // ✅ FIX CRÍTICO: Resetear estado antes de intentar registro
-    // Esto permite re-intentos sin recargar la página
     this.errorMessage = '';
     this.successMessage = '';
     this.showEmailVerification = false;
     
-    // Marcar todos los campos como tocados para mostrar errores
     this.markFormGroupTouched();
     
-    // Validar formulario antes de continuar
     if (!this.registerForm.valid) {
-      console.log('❌ Formulario inválido');
       this.errorMessage = 'Por favor completa todos los campos correctamente para continuar';
       return;
     }
     
-    // Sanitizar datos antes de validar
     const rawData = this.registerForm.value;
     const sanitizedData = {
       username: this.sanitizationService.sanitizeUserInput(rawData.username || ''),
@@ -814,12 +1008,8 @@ export class RegisterComponent implements OnInit {
       return;
     }
     
-    // ✅ Iniciar loading DESPUÉS de todas las validaciones
     this.isLoading = true;
 
-    console.log('📋 Datos del formulario sanitizados:', sanitizedData);
-
-    // Preparar datos en el formato exacto que espera el backend
     const registerData = {
       username: sanitizedData.username,
       email: sanitizedData.email,
@@ -827,31 +1017,20 @@ export class RegisterComponent implements OnInit {
       firstName: sanitizedData.firstName,
       lastName: sanitizedData.lastName
     };
-
-    console.log('🌐 Enviando datos al backend:', registerData);
     
     this.authService.register(registerData).subscribe({
       next: (response) => {
-        console.log('✅ Registro exitoso:', response);
         this.isLoading = false;
         this.errorMessage = '';
         this.showEmailVerification = true;
         this.successMessage = '¡Cuenta creada exitosamente! Revisa tu correo electrónico para verificar tu cuenta antes de iniciar sesión.';
       },
       error: (error) => {
-        console.error('❌ Error en registro:', error);
-        
-        // ✅ FIX: Asegurar que isLoading se desactive SIEMPRE en error
         this.isLoading = false;
         
-        // ✅ MEJORADO: Parsear correctamente el objeto de errores del backend
         if (error.status === 409 || error.error?.message?.includes('ya existe')) {
-          // Error de duplicado (email o username ya existe)
           this.errorMessage = '❌ ' + (error.error?.message || 'Este correo o nombre de usuario ya está registrado.');
         } else if (error.error?.errors) {
-          // Errores de validación del backend - Parsear el objeto correctamente
-          console.log('🔍 Errores de validación del servidor:', error.error.errors);
-          
           const errorsArray: string[] = [];
           const errorsObj = error.error.errors;
           
@@ -893,13 +1072,8 @@ export class RegisterComponent implements OnInit {
           // Error genérico
           this.errorMessage = '❌ ' + (error.message || 'Ocurrió un error al crear tu cuenta. Por favor intenta nuevamente.');
         }
-        
-        // ✅ FIX: NO resetear el formulario en error para permitir correcciones
-        // El usuario puede corregir los datos y re-intentar
       },
       complete: () => {
-        console.log('🏁 Proceso de registro completado');
-        // ✅ Asegurar que loading se desactive en complete también
         this.isLoading = false;
       }
     });

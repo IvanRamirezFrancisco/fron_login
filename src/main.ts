@@ -15,7 +15,9 @@ bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideAnimationsAsync(), // ✅ AGREGADO: Soporte para animaciones
+    provideAnimationsAsync(),
     importProvidersFrom(ReactiveFormsModule)
   ]
-}).catch(err => console.error(err));
+}).catch(err => {
+  // Error silencioso en producción
+});

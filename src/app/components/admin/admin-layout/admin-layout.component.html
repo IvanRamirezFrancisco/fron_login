@@ -1,0 +1,86 @@
+<div class="admin-container">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" [class.collapsed]="isSidebarCollapsed">
+    <!-- Logo -->
+    <div class="sidebar-header">
+      <div class="logo" *ngIf="!isSidebarCollapsed">
+        <span class="material-icons logo-icon">music_note</span>
+        <span class="logo-text">Admin Panel</span>
+      </div>
+      <button class="toggle-btn" (click)="toggleSidebar()">
+        <span class="material-icons">{{ isSidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</span>
+      </button>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+      <a 
+        *ngFor="let item of menuItems" 
+        [routerLink]="item.route"
+        class="nav-item"
+        [class.active]="isActive(item.route)"
+        [title]="item.title">
+        <span class="material-icons nav-icon">{{ item.icon }}</span>
+        <span class="nav-text" *ngIf="!isSidebarCollapsed">{{ item.title }}</span>
+        <span class="badge" *ngIf="item.badge && !isSidebarCollapsed">{{ item.badge }}</span>
+      </a>
+    </nav>
+
+    <!-- User Section -->
+    <div class="sidebar-footer">
+      <div class="user-info" *ngIf="currentUser && !isSidebarCollapsed">
+        <div class="user-avatar">
+          <span class="material-icons">admin_panel_settings</span>
+        </div>
+        <div class="user-details">
+          <span class="user-name">{{ currentUser.firstName }}</span>
+          <span class="user-role">Administrador</span>
+        </div>
+      </div>
+      
+      <button class="btn-action" (click)="goToStore()" [title]="'Ver Tienda'">
+        <span class="material-icons">storefront</span>
+        <span *ngIf="!isSidebarCollapsed">Ver Tienda</span>
+      </button>
+      
+      <button class="btn-logout" (click)="logout()" [title]="'Cerrar Sesión'">
+        <span class="material-icons">logout</span>
+        <span *ngIf="!isSidebarCollapsed">Cerrar Sesión</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="admin-main" [class.expanded]="isSidebarCollapsed">
+    <!-- Top Bar -->
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button class="mobile-menu-btn" (click)="toggleSidebar()">
+          <span class="material-icons">menu</span>
+        </button>
+        <h1 class="page-title">Panel de Administración</h1>
+      </div>
+      
+      <div class="topbar-right">
+        <button class="topbar-btn">
+          <span class="material-icons">notifications</span>
+          <span class="notification-badge">3</span>
+        </button>
+        
+        <button class="topbar-btn">
+          <span class="material-icons">settings</span>
+        </button>
+        
+        <div class="user-menu">
+          <span class="material-icons">account_circle</span>
+          <span class="user-name-top">{{ currentUser?.firstName || 'Admin' }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="admin-content">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

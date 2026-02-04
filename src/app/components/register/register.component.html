@@ -1,76 +1,4 @@
-﻿<!-- Header -->
-<header class="header-main">
-  <div class="container">
-    <div class="header-content">
-      <div class="logo-section" (click)="navigateToHome()" style="cursor: pointer;">
-        <img src="assets/logoP.png" alt="Casa de Música Castillo" class="logo-image">
-        <span class="logo-text">CASTILLO</span>
-      </div>
-      
-      <div class="search-section">
-        <div class="search-bar">
-          <span class="material-icons search-icon">search</span>
-          <input type="text" placeholder="Busca guitarras, pianos, y más..." class="search-input">
-          <button class="search-btn" type="button">
-            <span class="material-icons">arrow_forward</span>
-          </button>
-        </div>
-      </div>
-      
-      <div class="user-actions">
-        <button class="action-btn" title="Lista de deseos">
-          <span class="material-icons">favorite_border</span>
-        </button>
-        <button class="action-btn" (click)="navigateToLogin()" title="Iniciar sesión" style="cursor: pointer;">
-          <span class="material-icons">person</span>
-        </button>
-        <button class="action-btn cart-btn" title="Carrito de compras">
-          <span class="material-icons">shopping_cart</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</header>
-
-<!-- Navegación -->
-<nav class="secondary-nav">
-  <div class="container">
-    <ul class="nav-menu">
-      <li class="nav-item">
-        <a routerLink="/home" class="nav-link">
-          <span class="material-icons">home</span>
-          Inicio
-        </a>
-      </li>
-      <li class="nav-item">
-        <a routerLink="/ofertas" class="nav-link">
-          <span class="material-icons">local_offer</span>
-          Ofertas
-        </a>
-      </li>
-      <li class="nav-item">
-        <a routerLink="/catalogo" class="nav-link">
-          <span class="material-icons">inventory_2</span>
-          Catálogo
-        </a>
-      </li>
-      <li class="nav-item">
-        <a routerLink="/servicios" class="nav-link">
-          <span class="material-icons">build</span>
-          Servicios
-        </a>
-      </li>
-      <li class="nav-item">
-        <a routerLink="/ayuda" class="nav-link">
-          <span class="material-icons">help</span>
-          Ayuda
-        </a>
-      </li>
-    </ul>
-  </div>
-</nav>
-
-<!-- Contenido Principal -->
+﻿<!-- Contenido Principal -->
 <div class="register-content">
   <div class="container">
     
@@ -128,12 +56,11 @@
             </div>
             <div class="error-message" *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
               <span class="material-icons">error</span>
-              <span *ngIf="registerForm.get('username')?.errors?.['required']">El nombre de usuario es requerido</span>
-              <span *ngIf="registerForm.get('username')?.errors?.['minlength']">Mínimo 3 caracteres</span>
+              <span>{{ getFieldError('username') }}</span>
             </div>
             <div class="success-message" *ngIf="registerForm.get('username')?.valid && registerForm.get('username')?.touched">
               <span class="material-icons">check_circle</span>
-              Nombre de usuario válido
+              Nombre de usuario válido ✓
             </div>
           </div>
 
@@ -158,7 +85,11 @@
             </div>
             <div class="error-message" *ngIf="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched">
               <span class="material-icons">error</span>
-              <span *ngIf="registerForm.get('firstName')?.errors?.['required']">El nombre es requerido</span>
+              <span>{{ getFieldError('firstName') }}</span>
+            </div>
+            <div class="success-message" *ngIf="registerForm.get('firstName')?.valid && registerForm.get('firstName')?.touched">
+              <span class="material-icons">check_circle</span>
+              Nombre válido ✓
             </div>
           </div>
 
@@ -183,7 +114,11 @@
             </div>
             <div class="error-message" *ngIf="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched">
               <span class="material-icons">error</span>
-              <span *ngIf="registerForm.get('lastName')?.errors?.['required']">El apellido es requerido</span>
+              <span>{{ getFieldError('lastName') }}</span>
+            </div>
+            <div class="success-message" *ngIf="registerForm.get('lastName')?.valid && registerForm.get('lastName')?.touched">
+              <span class="material-icons">check_circle</span>
+              Apellido válido ✓
             </div>
           </div>
 
@@ -208,8 +143,11 @@
             </div>
             <div class="error-message" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
               <span class="material-icons">error</span>
-              <span *ngIf="registerForm.get('email')?.errors?.['required']">El email es requerido</span>
-              <span *ngIf="registerForm.get('email')?.errors?.['email']">Email inválido</span>
+              <span>{{ getFieldError('email') }}</span>
+            </div>
+            <div class="success-message" *ngIf="registerForm.get('email')?.valid && registerForm.get('email')?.touched">
+              <span class="material-icons">check_circle</span>
+              Email válido ✓
             </div>
           </div>
 
@@ -287,11 +225,7 @@
 
             <div class="error-message" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
               <span class="material-icons">error</span>
-              <span *ngIf="registerForm.get('password')?.errors?.['required']">La contraseña es requerida</span>
-              <span *ngIf="registerForm.get('password')?.errors?.['minlength']">Mínimo 10 caracteres requeridos</span>
-              <span *ngIf="registerForm.get('password')?.errors?.['zxcvbnWeak']">
-                La contraseña no cumple con los requisitos de seguridad. Verifica la lista de validación.
-              </span>
+              <span>{{ getFieldError('password') }}</span>
             </div>
           </div>
 
@@ -315,19 +249,17 @@
                 <span class="material-icons">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</span>
               </button>
             </div>
-            <div class="error-message" *ngIf="registerForm.get('confirmPassword')?.touched">
-              <span *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">
-                <span class="material-icons">error</span>
-                Confirma tu contraseña
-              </span>
-              <span *ngIf="registerForm.errors?.['passwordMismatch'] && !registerForm.get('confirmPassword')?.errors?.['required']">
-                <span class="material-icons">error</span>
-                Las contraseñas no coinciden
-              </span>
+            <div class="error-message" *ngIf="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched">
+              <span class="material-icons">error</span>
+              <span>{{ getFieldError('confirmPassword') }}</span>
+            </div>
+            <div class="error-message" *ngIf="registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched && !registerForm.get('confirmPassword')?.errors?.['required']">
+              <span class="material-icons">error</span>
+              <span>Las contraseñas no coinciden</span>
             </div>
             <div class="success-message" *ngIf="registerForm.get('confirmPassword')?.valid && !registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched">
               <span class="material-icons">check_circle</span>
-              Las contraseñas coinciden
+              Las contraseñas coinciden ✓
             </div>
           </div>
 
@@ -397,134 +329,3 @@
     </div>
   </div>
 </div>
-
-<!-- Footer -->
-<footer class="footer">
-  <div class="container">
-    <div class="footer-content">
-      <!-- Sección 1: Acerca de -->
-      <div class="footer-section">
-        <div class="footer-logo">
-          <img src="assets/logoP.png" alt="Casa de Música Castillo">
-          <span class="footer-logo-text">CASTILLO</span>
-        </div>
-        <p class="footer-description">
-          Tu destino para los mejores instrumentos musicales. Calidad, pasión y excelencia desde 1995.
-        </p>
-        <div class="social-links">
-          <a href="#" class="social-link" title="Facebook">
-            <span class="material-icons">facebook</span>
-          </a>
-          <a href="#" class="social-link" title="Instagram">
-            <span class="material-icons">photo_camera</span>
-          </a>
-          <a href="#" class="social-link" title="Twitter">
-            <span class="material-icons">tag</span>
-          </a>
-          <a href="#" class="social-link" title="YouTube">
-            <span class="material-icons">play_circle</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Sección 2: Enlaces Rápidos -->
-      <div class="footer-section">
-        <h3>
-          <span class="material-icons">menu</span>
-          Enlaces Rápidos
-        </h3>
-        <ul class="footer-links">
-          <li>
-            <a routerLink="/home">
-              <span class="material-icons">home</span>
-              Inicio
-            </a>
-          </li>
-          <li>
-            <a routerLink="/ofertas">
-              <span class="material-icons">local_offer</span>
-              Ofertas
-            </a>
-          </li>
-          <li>
-            <a routerLink="/catalogo">
-              <span class="material-icons">inventory_2</span>
-              Catálogo
-            </a>
-          </li>
-          <li>
-            <a routerLink="/servicios">
-              <span class="material-icons">build</span>
-              Servicios
-            </a>
-          </li>
-          <li>
-            <a routerLink="/ayuda">
-              <span class="material-icons">help</span>
-              Ayuda
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Sección 3: Contacto -->
-      <div class="footer-section">
-        <h3>
-          <span class="material-icons">contact_mail</span>
-          Contacto
-        </h3>
-        <ul class="contact-info">
-          <li>
-            <span class="material-icons">location_on</span>
-            <span>Av. Principal #123, Ciudad de México</span>
-          </li>
-          <li>
-            <span class="material-icons">phone</span>
-            <span>+52 55 1234 5678</span>
-          </li>
-          <li>
-            <span class="material-icons">email</span>
-            <span>info&#64;castillo.com</span>
-          </li>
-          <li>
-            <span class="material-icons">schedule</span>
-            <span>Lun - Sáb: 9:00 AM - 8:00 PM</span>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Sección 4: Newsletter -->
-      <div class="footer-section">
-        <h3>
-          <span class="material-icons">mail</span>
-          Newsletter
-        </h3>
-        <p>Suscríbete para recibir ofertas exclusivas y novedades</p>
-        <div class="newsletter-form">
-          <input type="email" placeholder="Tu correo electrónico" class="newsletter-input">
-          <button class="newsletter-btn">
-            <span class="material-icons">send</span>
-            Suscribirse
-          </button>
-        </div>
-        <div class="payment-methods">
-          <span class="material-icons" title="Visa">credit_card</span>
-          <span class="material-icons" title="PayPal">account_balance</span>
-          <span class="material-icons" title="Efectivo">payments</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer Bottom -->
-    <div class="footer-bottom">
-      <div class="footer-bottom-content">
-        <p>&copy; 2024 Casa de Música Castillo. Todos los derechos reservados.</p>
-        <div class="footer-bottom-links">
-          <a href="#">Términos y Condiciones</a>
-          <a href="#">Política de Privacidad</a>
-          <a href="#">Política de Cookies</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</footer>

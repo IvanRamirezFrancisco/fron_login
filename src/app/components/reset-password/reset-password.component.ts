@@ -41,18 +41,12 @@ export class ResetPasswordComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('🔄 ResetPasswordComponent iniciado');
-    
-    // Obtener el token de la URL
     this.route.queryParams.subscribe(params => {
-      console.log('📊 Query params recibidos:', params);
       this.token = params['token'];
       
       if (this.token) {
-        console.log('✅ Token encontrado:', this.token);
         this.validateToken();
       } else {
-        console.error('❌ No se encontró token en la URL');
         this.error = 'Token de reset no válido';
       }
     });
@@ -71,23 +65,18 @@ export class ResetPasswordComponent implements OnInit {
   }
 
   validateToken(): void {
-    console.log('🔍 Validando token:', this.token);
     this.loading = true;
     
     this.passwordResetService.validateResetToken(this.token).subscribe({
       next: (response) => {
-        console.log('✅ Respuesta de validación:', response);
         this.loading = false;
         if (response.success) {
-          console.log('✅ Token válido, mostrando formulario');
           this.tokenValid = true;
         } else {
-          console.error('❌ Token inválido:', response.message);
           this.error = response.message || 'Token inválido o expirado';
         }
       },
       error: (err) => {
-        console.error('❌ Error validando token:', err);
         this.loading = false;
         if (err.status === 400) {
           this.error = 'El enlace de reset ha expirado o es inválido';
@@ -178,7 +167,6 @@ hasLowerCase(password: string): boolean {
       },
       error: (err) => {
         this.loading = false;
-        console.error('Error resetting password:', err);
         
         if (err.error?.message) {
           this.error = err.error.message;

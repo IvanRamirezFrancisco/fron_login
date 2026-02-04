@@ -309,6 +309,9 @@
       </ul>
     </nav>
 
+    <!-- Overlay para cerrar el menú móvil -->
+    <div class="mobile-overlay" *ngIf="menuMovilAbierto" (click)="cerrarMenuMovil()"></div>
+
   </div>
 </header>
 

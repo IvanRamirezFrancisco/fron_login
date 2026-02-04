@@ -99,10 +99,8 @@ export class ForgotPasswordComponent implements OnInit, AfterViewInit, OnDestroy
       },
       error: (err) => {
         this.loading = false;
-        console.error('Error in forgot password:', err);
         
         if (err.status === 429) {
-          // Rate limit exceeded - usar la información de tiempo del servidor
           this.handleRateLimitError(err.error);
         } else if (err.error?.message) {
           this.error = err.error.message;

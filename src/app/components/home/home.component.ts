@@ -260,7 +260,7 @@ export class HomeComponent implements OnInit {
   }
 
   toggleWishlist() {
-    console.log('Toggle wishlist');
+    // Toggle silencioso
   }
 
   toggleFavorite(productId: number) {
@@ -272,21 +272,17 @@ export class HomeComponent implements OnInit {
 
   addToCart(product: any) {
     this.cartItemCount++;
-    console.log('Producto agregado al carrito:', product.name);
   }
 
   subscribeNewsletter() {
     if (this.emailSubscription.trim()) {
-      console.log('Suscripción newsletter:', this.emailSubscription);
       this.emailSubscription = '';
       alert('¡Gracias por suscribirte a nuestro newsletter!');
     }
   }
 
-  // Métodos para el producto especial
   addSpecialToCart() {
     this.cartItemCount++;
-    console.log('Producto especial agregado al carrito');
     alert('¡Producto especial agregado al carrito!');
   }
 

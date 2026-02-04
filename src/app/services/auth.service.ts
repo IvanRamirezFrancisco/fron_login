@@ -105,7 +105,6 @@ export class AuthService {
   public isLoggedIn$ = new BehaviorSubject<boolean>(this.isAuthenticated());
 
   constructor(private http: HttpClient, private router: Router) {
-    console.log('AuthService API URL:', this.API_URL);
   }
 
 
@@ -121,8 +120,6 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
   return this.http.post<SpringBootAuthResponse>(`${this.API_URL}/login`, credentials)
     .pipe(
       map(response => {
-        console.log('🔍 Login response received:', response);
-        
         // Maneja el caso donde la respuesta indica que se requiere 2FA
         if (response.data?.twoFactorRequired || response.twoFactorRequired) {
           return {
@@ -131,7 +128,7 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
           } as AuthResponse;
         }
         
-        // ✅ CORREGIDO: Buscar token en la estructura correcta de respuesta
+        // Buscar token en la estructura correcta de respuesta
         const token = response.data?.jwtResponse?.accessToken ?? 
                      response.data?.accessToken ?? 
                      response.accessToken ?? 
@@ -141,9 +138,6 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
                     response.data?.user ?? 
                     response.user;
         
-        console.log('🔍 Extracted token:', token ? 'Found' : 'Not found');
-        console.log('🔍 Extracted user:', user ? 'Found' : 'Not found');
-        
         if (token && user) {
           return {
             token,
@@ -152,7 +146,6 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
         }
         
         // Si no hay token ni usuario, respuesta inválida
-        console.error('❌ No token or user found in response');
         return {
           message: 'Respuesta de login inválida'
         } as AuthResponse;
@@ -185,44 +178,29 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
         }
         return null;
       }),
-      // Si hay error relacionado con token, limpiar sesión y devolver null para que el UI lo maneje
       catchError(err => {
-        console.error('Error al obtener usuario:', err);
-        
-        // SOLO hacer logout si es un 401 en una petición de usuario autenticado
-        // NO hacer logout por errores en validaciones públicas o problemas de conectividad
         if (err?.status === 401) {
-          console.warn('AuthService: Token inválido detectado, ejecutando logout');
           this.logout();
-        } else {
-          console.log('AuthService: Error no relacionado con autenticación, manteniendo sesión');
         }
-        
         return of(null);
       })
     );
   }
 
   register(userData: RegisterRequest): Observable<AuthResponse> {
-    console.log('Intentando registro con:', userData);
-    
     return this.http.post<SpringBootAuthResponse>(`${this.API_URL}/register`, userData)
       .pipe(
         map(response => {
-          console.log('Respuesta original del registro:', response);
           const adaptedResponse: AuthResponse = {
             token: response.accessToken,
             user: response.user
           };
-          console.log('Respuesta de registro adaptada:', adaptedResponse);
           return adaptedResponse;
         }),
         tap(response => {
-          console.log('Guardando sesión de registro:', response);
           this.setSession(response);
         }),
         catchError(error => {
-          console.error('Error en registro:', error);
           return throwError(() => error);
         })
       );
@@ -230,11 +208,8 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
 
   logout(): void {
     const currentUrl = this.router.url;
-    console.log('Cerrando sesión desde:', currentUrl);
     
-    // Evitar logout si ya estamos en páginas públicas para prevenir loops
     if (['/login', '/register', '/'].includes(currentUrl)) {
-      console.log('Ya estamos en página pública, evitando redirección');
       return;
     }
     
@@ -244,21 +219,16 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
     this.userSubject.next(null);
     this.isLoggedIn$.next(false);
     
-    console.log('Sesión cerrada, redirigiendo a login');
     this.router.navigate(['/login']);
   }
 
-  // ✅ MÉTODO PÚBLICO isAuthenticated() - esto es lo que faltaba
   isAuthenticated(): boolean {
     const token = this.getStoredToken();
     const isValid = !!token && !this.isTokenExpired(token);
-    console.log('Verificando autenticación:', { token: !!token, isValid });
     return isValid;
   }
 
-private setSession(authResult: AuthResponse): void {
-    console.log('Guardando sesión:', authResult);
-    // Guardar token solo si existe y no es vacío
+  private setSession(authResult: AuthResponse): void {
     if (authResult.token && authResult.token.trim() !== '') {
       localStorage.setItem('token', authResult.token);
       this.tokenSubject.next(authResult.token);
@@ -276,10 +246,8 @@ private setSession(authResult: AuthResponse): void {
       this.userSubject.next(null);
     }
 
-    // Actualiza estado de login según token válido
     const token = this.getStoredToken();
     this.isLoggedIn$.next(!!token && !this.isTokenExpired(token));
-    console.log('Sesión guardada exitosamente');
   }
 
 
@@ -298,43 +266,33 @@ private setSession(authResult: AuthResponse): void {
       const token = localStorage.getItem('token');
       return token && token !== 'null' && token !== 'undefined' ? token : null;
     } catch (error) {
-      console.error('Error getting stored token:', error);
       localStorage.removeItem('token');
       return null;
     }
   }
   
-
   private getStoredUser(): User | null {
     try {
       const userData = localStorage.getItem('user');
       
-      // Validar que exista y no sea null/undefined
       if (!userData || userData === 'null' || userData === 'undefined') {
         return null;
       }
       
-      // Intentar parsear el JSON
       return JSON.parse(userData);
     } catch (error) {
-      console.error('Error parsing stored user data:', error);
-      // Limpiar datos corruptos
       localStorage.removeItem('user');
       localStorage.removeItem('token');
       return null;
     }
   }
   
-  
-
   private isTokenExpired(token: string): boolean {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const isExpired = payload.exp * 1000 < Date.now();
-      console.log('Token expirado?', isExpired);
       return isExpired;
     } catch (error) {
-      console.log('Error al verificar token:', error);
       return true;
     }
   }
@@ -423,31 +381,16 @@ private setSession(authResult: AuthResponse): void {
     };
     
     return this.http.post<any>(`${environment.apiUrl}/2fa/verify`, payload).pipe(
-      tap(response => {
-        if (response.success) {
-          console.log('✅ Backup code verification successful for login');
-        }
-      }),
       catchError(error => {
-        console.error('❌ Backup code verification failed for login:', error);
         return throwError(() => error);
       })
     );
   }
 
-  /**
-   * Verificar email con token
-   */
   verifyEmail(token: string): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/auth/verify-email`, { token })
       .pipe(
-        tap(response => {
-          if (response.success) {
-            console.log('✅ Email verification successful');
-          }
-        }),
         catchError(error => {
-          console.error('❌ Email verification failed:', error);
           return throwError(() => error);
         })
       );

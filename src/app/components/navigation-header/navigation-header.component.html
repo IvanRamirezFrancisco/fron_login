@@ -108,6 +108,12 @@
 
   </nav>
 
+  <!-- Overlay para cerrar menús (fuera de los menús) -->
+  <div class="mobile-overlay" 
+       *ngIf="isMenuOpen || isProfileMenuOpen" 
+       (click)="closeMenus()">
+  </div>
+
   <!-- Menú Móvil -->
   <div class="mobile-menu" [class.active]="isMenuOpen">
     
@@ -179,12 +185,6 @@
       </a>
     </div>
 
-  </div>
-
-  <!-- Overlay para cerrar menús -->
-  <div class="mobile-overlay" 
-       [class.active]="isMenuOpen || isProfileMenuOpen" 
-       (click)="closeMenus()">
   </div>
        
 </header>

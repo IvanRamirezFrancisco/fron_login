@@ -52,16 +52,12 @@ export class SearchService {
     }
 
     if (query.length > this.MAX_SEARCH_LENGTH) {
-      console.warn('Search query too long, truncating');
       query = query.substring(0, this.MAX_SEARCH_LENGTH);
     }
 
-    // Paso 2: Sanitizar entrada para prevenir XSS
     const sanitizedQuery = this.sanitizeSearchQuery(query);
 
-    // Paso 3: Validar que no contenga patrones peligrosos
     if (!this.isValidSearchQuery(sanitizedQuery)) {
-      console.error('Invalid search query detected:', query);
       return of({
         products: [],
         query: sanitizedQuery,
@@ -144,14 +140,11 @@ export class SearchService {
       return false;
     }
 
-    // Verificar que solo contenga caracteres alfanuméricos y espacios permitidos
     const allowedPattern = /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑüÜ\-_.]+$/;
     if (!allowedPattern.test(query)) {
-      console.warn('Query contains invalid characters:', query);
       return false;
     }
 
-    // Verificar patrones de ataque comunes
     const dangerousPatterns = [
       /<script/i,
       /javascript:/i,
@@ -165,7 +158,6 @@ export class SearchService {
 
     for (const pattern of dangerousPatterns) {
       if (pattern.test(query)) {
-        console.error('Dangerous pattern detected in search query');
         return false;
       }
     }
@@ -211,7 +203,7 @@ export class SearchService {
     try {
       localStorage.setItem('search_history', JSON.stringify(history));
     } catch (e) {
-      console.warn('Could not save search history to localStorage', e);
+      // Error silencioso
     }
   }
 
@@ -234,7 +226,7 @@ export class SearchService {
         }
       }
     } catch (e) {
-      console.warn('Could not load search history from localStorage', e);
+      // Error silencioso
     }
   }
 

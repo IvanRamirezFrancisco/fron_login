@@ -1,6 +1,11 @@
 <header class="header-main">
   <div class="container">
     <div class="header-content">
+      <!-- Mobile Menu Button -->
+      <button class="mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Toggle menu">
+        <span class="material-icons">{{ isMobileMenuOpen ? 'close' : 'menu' }}</span>
+      </button>
+
       <div class="logo-section" routerLink="/home" style="cursor: pointer;">
         <img src="assets/logoP.png" alt="Casa de Música Castillo" class="logo-image" />
         <span class="logo-text">CASTILLO</span>
@@ -89,39 +94,93 @@
     </div>
   </div>
   
+  <!-- Overlay para cerrar el menú (fuera del nav) -->
+  <div class="mobile-overlay" *ngIf="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
+  
   <!-- Navegación Secundaria (integrada al header para que se comporte como parte del sticky header) -->
-  <nav class="secondary-nav">
-    <div class="container">
+  <nav class="secondary-nav" [class.mobile-open]="isMobileMenuOpen">
+    <div class="container nav-container" [class.mobile-open]="isMobileMenuOpen">
+      <!-- Header del menú móvil con Logo -->
+      <div class="mobile-nav-header">
+        <div class="mobile-logo-section">
+          <img src="assets/logoP.png" alt="Casa de Música Castillo" class="mobile-logo-image" />
+          <div class="mobile-brand-text">
+            <span class="mobile-logo-title">Casa de Música</span>
+            <span class="mobile-logo-subtitle">CASTILLO</span>
+          </div>
+        </div>
+        <button class="close-mobile-menu" (click)="closeMobileMenu()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
       <ul class="nav-menu">
         <li class="nav-item">
-          <a routerLink="/home" routerLinkActive="active" class="nav-link">
+          <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" (click)="closeMobileMenu()">
             <span class="material-icons">home</span>
-            Inicio
+            <span class="nav-text">Inicio</span>
           </a>
         </li>
         <li class="nav-item">
-          <a routerLink="/ofertas" routerLinkActive="active" class="nav-link">
+          <a routerLink="/ofertas" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
             <span class="material-icons">local_offer</span>
-            Ofertas
+            <span class="nav-text">Ofertas</span>
           </a>
         </li>
         <li class="nav-item">
-          <a routerLink="/catalogo" routerLinkActive="active" class="nav-link">
-            <span class="material-icons">inventory_2</span>
-            Catálogo
+          <a routerLink="/catalogo" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+            <span class="material-icons">library_music</span>
+            <span class="nav-text">Catálogo</span>
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="!isLoggedIn">
+          <a routerLink="/register" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+            <span class="material-icons">person_add</span>
+            <span class="nav-text">Registrarse</span>
           </a>
         </li>
         <li class="nav-item">
-          <a routerLink="/servicios" routerLinkActive="active" class="nav-link">
-            <span class="material-icons">build</span>
-            Servicios
+          <a routerLink="/ayuda" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+            <span class="material-icons">help_outline</span>
+            <span class="nav-text">Ayuda</span>
           </a>
         </li>
-        <li class="nav-item">
-          <a routerLink="/ayuda" routerLinkActive="active" class="nav-link">
-            <span class="material-icons">help</span>
-            Ayuda
-          </a>
+        
+        <!-- Menú desplegable "Más" -->
+        <li class="nav-item dropdown-nav">
+          <button class="nav-link dropdown-trigger" (click)="toggleMoreMenu(); $event.stopPropagation()">
+            <span class="material-icons">more_horiz</span>
+            <span class="nav-text">Más</span>
+            <span class="material-icons dropdown-arrow" [class.open]="showMoreMenu">expand_more</span>
+          </button>
+          
+          <div class="dropdown-menu-nav" *ngIf="showMoreMenu" (click)="$event.stopPropagation()">
+            <a routerLink="/ayuda/contacto" (click)="closeMoreMenu(); closeMobileMenu()" class="dropdown-item-nav">
+              <span class="material-icons">email</span>
+              <span>Contáctanos</span>
+            </a>
+            <a routerLink="/mapa-sitio" (click)="closeMoreMenu(); closeMobileMenu()" class="dropdown-item-nav">
+              <span class="material-icons">map</span>
+              <span>Mapa del Sitio</span>
+            </a>
+            <a routerLink="/forgot-password" (click)="closeMoreMenu(); closeMobileMenu()" class="dropdown-item-nav" *ngIf="!isLoggedIn">
+              <span class="material-icons">lock_reset</span>
+              <span>Recuperar Contraseña</span>
+            </a>
+            <a routerLink="/ayuda/chat" (click)="closeMoreMenu(); closeMobileMenu()" class="dropdown-item-nav">
+              <span class="material-icons">chat</span>
+              <span>Chat de Soporte</span>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a routerLink="/nosotros" (click)="closeMoreMenu(); closeMobileMenu()" class="dropdown-item-nav">
+              <span class="material-icons">info</span>
+              <span>Sobre Nosotros</span>
+            </a>
+            <a routerLink="/terminos" (click)="closeMoreMenu(); closeMobileMenu()" class="dropdown-item-nav">
+              <span class="material-icons">gavel</span>
+              <span>Términos y Condiciones</span>
+            </a>
+          </div>
         </li>
       </ul>
     </div>

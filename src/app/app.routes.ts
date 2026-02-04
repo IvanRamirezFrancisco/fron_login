@@ -16,20 +16,32 @@ import { CatalogoComponent } from './components/catalogo/catalogo.component';
 import { ProductDetailComponent } from './components/product-detail/product-detail.component';
 import { SearchResultsComponent } from './components/search-results/search-results.component';
 import { HelpCenterComponent } from './components/help-center/help-center.component';
+import { NotFoundComponent } from './components/not-found/not-found.component';
+import { ServerErrorComponent } from './components/server-error/server-error.component';
+import { SiteMapComponent } from './components/site-map/site-map.component';
+import { AdminGuard } from './guards/admin.guard';
+import { AdminLayoutComponent } from './components/admin/admin-layout/admin-layout.component';
+import { AdminDashboardComponent } from './components/admin/admin-dashboard/admin-dashboard.component';
+import { guestGuard } from './guards/guest.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'home', component: HomeComponent },
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
-  { path: 'register-debug', component: RegisterDebugComponent },
-  { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'reset-password', component: ResetPasswordComponent },
+  
+  // Rutas de autenticación (solo para usuarios NO logueados)
+  { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
+  { path: 'register', component: RegisterComponent, canActivate: [guestGuard] },
+  { path: 'register-debug', component: RegisterDebugComponent, canActivate: [guestGuard] },
+  { path: 'forgot-password', component: ForgotPasswordComponent, canActivate: [guestGuard] },
+  { path: 'reset-password', component: ResetPasswordComponent, canActivate: [guestGuard] },
   { path: 'verify-account', component: VerifyAccountComponent },
+  
+  // Rutas públicas
   { path: 'ofertas', component: OfertasComponent },
   { path: 'catalogo', component: CatalogoComponent },
   { path: 'busqueda', component: SearchResultsComponent },
   { path: 'ayuda', component: HelpCenterComponent },
+  { path: 'mapa-sitio', component: SiteMapComponent },
   
   // Nueva arquitectura: /dashboard con rutas anidadas
   { 
@@ -88,5 +100,23 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./google-auth-setup/google-auth-setup.component').then(m => m.GoogleAuthSetupComponent)
   },
-  { path: '**', redirectTo: '' }
+  
+  // Rutas de Administración (protegidas con AdminGuard)
+  {
+    path: 'admin',
+    component: AdminLayoutComponent,
+    canActivate: [AdminGuard],
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: AdminDashboardComponent },
+      // TODO: Agregar más rutas de admin (productos, categorías, órdenes, etc.)
+    ]
+  },
+  
+  // Páginas de error
+  { path: 'not-found', component: NotFoundComponent },
+  { path: 'server-error', component: ServerErrorComponent },
+  
+  // Wildcard - debe ser la última ruta
+  { path: '**', component: NotFoundComponent }
 ];

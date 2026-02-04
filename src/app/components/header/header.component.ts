@@ -160,6 +160,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
    */
   toggleMenuMovil(): void {
     this.menuMovilAbierto = !this.menuMovilAbierto;
+    
+    // Controlar el scroll del body
+    if (this.menuMovilAbierto) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
   }
 
   /**
@@ -167,6 +174,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
    */
   cerrarMenuMovil(): void {
     this.menuMovilAbierto = false;
+    document.body.style.overflow = ''; // Restaurar scroll
   }
 
   /**

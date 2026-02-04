@@ -76,7 +76,6 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
         this.showDropdown = this.hasSearched;
       },
       error: (err) => {
-        console.error('Error en búsqueda:', err);
         this.isSearching = false;
         this.searchResults = [];
         this.noResults = true;

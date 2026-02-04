@@ -25,6 +25,8 @@ export class MainHeaderComponent implements OnInit, OnDestroy {
   isLoggedIn = false;
   currentUser: User | null = null;
   showUserMenu = false;
+  showMoreMenu = false;
+  isMobileMenuOpen = false;
   
   // Animación de productos
   flyingProducts: CartAnimation[] = [];
@@ -78,23 +80,41 @@ export class MainHeaderComponent implements OnInit, OnDestroy {
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
     const userMenuContainer = target.closest('.user-menu-container');
+    const moreMenuContainer = target.closest('.dropdown-nav');
     
     if (!userMenuContainer && this.showUserMenu) {
       this.showUserMenu = false;
+    }
+    
+    if (!moreMenuContainer && this.showMoreMenu) {
+      this.showMoreMenu = false;
     }
   }
 
   toggleUserMenu(): void {
     this.showUserMenu = !this.showUserMenu;
+    if (this.showUserMenu) {
+      this.showMoreMenu = false;
+    }
   }
 
   closeUserMenu(): void {
     this.showUserMenu = false;
   }
 
+  toggleMoreMenu(): void {
+    this.showMoreMenu = !this.showMoreMenu;
+    if (this.showMoreMenu) {
+      this.showUserMenu = false;
+    }
+  }
+
+  closeMoreMenu(): void {
+    this.showMoreMenu = false;
+  }
+
   toggleWishlist(): void {
-    // Implementar lógica de wishlist
-    console.log('Toggle wishlist');
+    // Wishlist silencioso
   }
 
   navigateToLogin(): void {
@@ -110,8 +130,23 @@ export class MainHeaderComponent implements OnInit, OnDestroy {
     this.router.navigate(['/dashboard/seguridad']);
   }
 
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+    if (this.isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden'; // Prevenir scroll cuando el menú está abierto
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen = false;
+    document.body.style.overflow = '';
+  }
+
   logout(): void {
     this.closeUserMenu();
+    this.closeMobileMenu();
     this.authService.logout();
     this.isLoggedIn = false;
     this.currentUser = null;

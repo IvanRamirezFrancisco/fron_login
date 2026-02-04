@@ -1,0 +1,43 @@
+<nav class="breadcrumbs-container" *ngIf="breadcrumbs.length > 0" aria-label="breadcrumb">
+  <div class="container">
+    <ol class="breadcrumbs-list">
+      <!-- Home siempre presente -->
+      <li class="breadcrumb-item">
+        <a routerLink="/home" class="breadcrumb-link home-link">
+          <span class="material-icons breadcrumb-icon">home</span>
+          <span class="breadcrumb-text">Inicio</span>
+        </a>
+        <span class="breadcrumb-separator">
+          <span class="material-icons">chevron_right</span>
+        </span>
+      </li>
+
+      <!-- Breadcrumbs dinámicos -->
+      <li 
+        *ngFor="let breadcrumb of breadcrumbs; let i = index; let last = last"
+        class="breadcrumb-item"
+        [class.active]="last">
+        
+        <!-- Link si no es el último -->
+        <a 
+          *ngIf="!last" 
+          [routerLink]="breadcrumb.url" 
+          class="breadcrumb-link">
+          <span *ngIf="breadcrumb.icon" class="material-icons breadcrumb-icon">{{ breadcrumb.icon }}</span>
+          <span class="breadcrumb-text">{{ breadcrumb.label }}</span>
+        </a>
+
+        <!-- Texto plano si es el último -->
+        <span *ngIf="last" class="breadcrumb-current">
+          <span *ngIf="breadcrumb.icon" class="material-icons breadcrumb-icon">{{ breadcrumb.icon }}</span>
+          <span class="breadcrumb-text">{{ breadcrumb.label }}</span>
+        </span>
+
+        <!-- Separador (no en el último) -->
+        <span *ngIf="!last" class="breadcrumb-separator">
+          <span class="material-icons">chevron_right</span>
+        </span>
+      </li>
+    </ol>
+  </div>
+</nav>

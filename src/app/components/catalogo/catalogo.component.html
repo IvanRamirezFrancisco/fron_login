@@ -1,3 +1,12 @@
+<!-- Breadcrumbs -->
+<nav class="breadcrumbs">
+  <div class="container">
+    <a routerLink="/home">Inicio</a>
+    <span class="separator">/</span>
+    <span class="current">Catálogo</span>
+  </div>
+</nav>
+
 <!-- Banner de catálogo -->
 <div class="catalogo-banner">
   <div class="container">
@@ -10,14 +19,32 @@
 <section class="catalogo-content">
   <div class="container">
     <div class="catalogo-layout">
+      
+      <!-- Botón flotante para abrir filtros en móvil -->
+      <button class="btn-filtros-mobile" (click)="toggleFiltros()" [class.active]="mostrarFiltros">
+        <span class="material-icons">tune</span>
+        <span class="btn-text">Filtros</span>
+        <span class="filtros-count" *ngIf="contadorFiltrosActivos() > 0">{{ contadorFiltrosActivos() }}</span>
+      </button>
+
+      <!-- Overlay para cerrar filtros -->
+      <div class="filtros-overlay" 
+           [class.active]="mostrarFiltros" 
+           (click)="cerrarFiltros()"></div>
+
       <!-- Barra lateral de filtros -->
-      <aside class="filtros-sidebar">
+      <aside class="filtros-sidebar" [class.active]="mostrarFiltros">
         <div class="filtros-header">
           <h2>Filtros</h2>
-          <button class="btn-limpiar" (click)="limpiarFiltros()">
-            <span class="material-icons">refresh</span>
-            Limpiar
-          </button>
+          <div class="filtros-actions">
+            <button class="btn-limpiar" (click)="limpiarFiltros()">
+              <span class="material-icons">refresh</span>
+              Limpiar
+            </button>
+            <button class="btn-cerrar-filtros" (click)="cerrarFiltros()">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
         </div>
 
         <!-- Filtro por Categoría -->
@@ -53,27 +80,51 @@
         <!-- Filtro por Precio -->
         <div class="filtro-section">
           <h3>Rango de Precio</h3>
-          <div class="precio-inputs">
-            <div class="precio-input-group">
-              <label>Mínimo</label>
-              <input 
-                type="number" 
-                [(ngModel)]="precioMin" 
-                class="precio-input"
-                placeholder="$0"
-              />
+          <div class="precio-range-container">
+            <div class="precio-inputs">
+              <div class="precio-input-group">
+                <label>Mínimo</label>
+                <div class="input-wrapper">
+                  <span class="currency-symbol">$</span>
+                  <input 
+                    type="number" 
+                    [(ngModel)]="precioMin" 
+                    (change)="aplicarFiltros()"
+                    class="precio-input"
+                    placeholder="0"
+                    min="0"
+                  />
+                </div>
+              </div>
+              <span class="precio-separator">-</span>
+              <div class="precio-input-group">
+                <label>Máximo</label>
+                <div class="input-wrapper">
+                  <span class="currency-symbol">$</span>
+                  <input 
+                    type="number" 
+                    [(ngModel)]="precioMax" 
+                    (change)="aplicarFiltros()"
+                    class="precio-input"
+                    placeholder="100,000"
+                    min="0"
+                  />
+                </div>
+              </div>
             </div>
-            <div class="precio-input-group">
-              <label>Máximo</label>
-              <input 
-                type="number" 
-                [(ngModel)]="precioMax" 
-                class="precio-input"
-                placeholder="$100,000"
-              />
+            <div class="precio-display" *ngIf="precioMin > 0 || precioMax < 100000">
+              <span class="precio-range-text">
+                ${{ precioMin.toLocaleString('es-MX') }} - ${{ precioMax.toLocaleString('es-MX') }}
+              </span>
             </div>
           </div>
         </div>
+
+        <!-- Botón de aplicar filtros (visible solo en móvil) -->
+        <button class="btn-aplicar-filtros" (click)="aplicarFiltrosYCerrar()">
+          <span class="material-icons">check_circle</span>
+          Aplicar Filtros
+        </button>
       </aside>
 
       <!-- Grid de productos -->

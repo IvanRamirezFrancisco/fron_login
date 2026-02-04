@@ -4,9 +4,52 @@
 .help-center-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0;
   min-height: 100vh;
   background: #f8f9fa;
+}
+
+/* ===================================
+   BREADCRUMBS
+   =================================== */
+.breadcrumbs {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(128, 0, 32, 0.1);
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+}
+
+.breadcrumbs-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.breadcrumbs a {
+  color: #800020;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.breadcrumbs a:hover {
+  color: #C5A059;
+  transform: translateX(2px);
+}
+
+.breadcrumbs .separator {
+  color: #6c757d;
+  margin: 0 0.25rem;
+}
+
+.breadcrumbs .current {
+  color: #2C3E50;
+  font-weight: 600;
 }
 
 /* ===================================
@@ -15,6 +58,7 @@
 .help-header {
   text-align: center;
   margin-bottom: 3rem;
+  padding: 2rem 2rem 0;
 }
 
 .back-button {

@@ -128,18 +128,15 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
   }
 
   private loadUserData(): void {
-    // Suscribirse al usuario actual del AuthService
     this.subscription.add(
       this.authService.user$.subscribe({
         next: (user: User | null) => {
           this.currentUser = user;
-          console.log('Usuario actual cargado:', user);
           if (user) {
             this.loadBackupCodesStatus();
           }
         },
         error: (error) => {
-          console.error('Error cargando datos de usuario:', error);
           this.errorMessage = 'Error al cargar información del usuario';
         }
       })
@@ -168,8 +165,6 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
         },
         error: (error: any) => {
           this.loading = false;
-          console.error('Error cargando configuración de seguridad:', error);
-          // Mantener valores por defecto en caso de error
           this.lastPasswordChange = null;
         }
       });
@@ -195,7 +190,6 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
           }
         },
         error: (error: any) => {
-          console.error('Error cargando estado de backup codes:', error);
           this.backupCodesCount = 0;
         }
       });
@@ -289,23 +283,12 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
     
     const headers = this.getAuthHeaders();
     
-    console.log('🔄 Iniciando configuración de Google Authenticator...');
-    
-    // Paso 1: Habilitar Google Authenticator (genera secreto y QR)
     this.http.post<ApiResponse>(`${environment.apiUrl}/2fa/google/enable`, {}, { headers })
       .subscribe({
         next: (response: ApiResponse) => {
-          console.log('✅ Google Authenticator habilitado:', response);
-          console.log('📦 response.data completo:', JSON.stringify(response.data, null, 2));
-          
           if (response.success && response.data) {
-            // Buscar qrCode y secret en response.data (estructura plana desde el backend)
             const qrCode = response.data.qrCode;
             const manualKey = response.data.manualEntryKey || response.data.secret;
-            
-            console.log('🔍 Extrayendo datos:');
-            console.log('  - qrCode encontrado:', qrCode ? '✅ SÍ' : '❌ NO');
-            console.log('  - manualKey encontrado:', manualKey ? '✅ SÍ' : '❌ NO');
             
             if (qrCode || manualKey) {
               this.loading = false;
@@ -315,33 +298,20 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
                 verificationCode: ''
               };
 
-              console.log('🎉 Datos 2FA configurados desde enable:');
-              console.log('  - QR Code (primeros 50 chars):', this.twoFactorData.qrCode.substring(0, 50) + '...');
-              console.log('  - Manual Key:', this.twoFactorData.secret);
-
               this.successMessage = 'QR Code y código manual generados correctamente. Escanea el QR con tu app Google Authenticator.';
               return;
             }
             
-            // Fallback: solicitar QR existente si el enable no incluyó los datos
-            console.log('⚠️ El enable no devolvió QR/secret, haciendo fallback a GET /qrcode...');
             this.fetchQRCodeFallback(headers);
             
           } else {
             this.loading = false;
-            console.error('❌ Error en respuesta de enable:', response);
             this.errorMessage = response.message || 'Error al habilitar Google Authenticator';
           }
         },
         error: (error: any) => {
-          console.error('❌ Error habilitando Google Auth:', error);
-          console.error('  Status:', error.status);
-          console.error('  Error body:', error.error);
-
-          // Si ya está habilitado, intentar obtener QR directamente
           const msg = (error.error?.message || '').toString().toLowerCase();
           if (error.status === 400 && (msg.includes('already enabled') || msg.includes('ya está habilitado') || msg.includes('ya esta habilitado'))) {
-            console.log('ℹ️ Google Auth ya habilitado, obteniendo QR existente...');
             this.getExistingQRCode();
           } else {
             this.loading = false;
@@ -356,8 +326,6 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (qrResponse: ApiResponse) => {
           this.loading = false;
-          console.log('✅ QR Code obtenido (fallback):', qrResponse);
-          console.log('📦 qrResponse.data completo:', JSON.stringify(qrResponse.data, null, 2));
 
           if (qrResponse.success && qrResponse.data) {
             this.twoFactorData = {
@@ -365,22 +333,14 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
               secret: qrResponse.data.manualEntryKey || qrResponse.data.secret || 'N/A',
               verificationCode: ''
             };
-            
-            console.log('🎉 Datos 2FA configurados desde fallback:');
-            console.log('  - QR Code (primeros 50 chars):', this.twoFactorData.qrCode.substring(0, 50) + '...');
-            console.log('  - Manual Key:', this.twoFactorData.secret);
 
             this.successMessage = 'QR Code y código manual generados correctamente. Escanea el QR con tu app Google Authenticator.';
           } else {
-            console.error('❌ Respuesta QR sin datos válidos (fallback):', qrResponse);
             this.errorMessage = qrResponse.message || 'No se pudo generar el código QR';
           }
         },
         error: (error: any) => {
           this.loading = false;
-          console.error('❌ Error obteniendo QR (fallback):', error);
-          console.error('  Status:', error.status);
-          console.error('  Error body:', error.error);
 
           if (error.status === 400) {
             this.errorMessage = error.error?.message || 'Error: Debes habilitar Google Authenticator primero';
@@ -422,7 +382,6 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
         },
         error: (error: any) => {
           this.loading = false;
-          console.error('Error verificando 2FA:', error);
           this.errorMessage = error.error?.message || 'Código de verificación incorrecto';
         }
       });
@@ -552,14 +511,12 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
    * Obtener QR existente cuando Google Auth ya está habilitado
    */
   private getExistingQRCode(): void {
-    console.log('🔄 Obteniendo QR existente...');
     const headers = this.getAuthHeaders();
 
     this.http.get<ApiResponse>(`${environment.apiUrl}/2fa/google/qrcode`, { headers })
       .subscribe({
         next: (response: ApiResponse) => {
           this.loading = false;
-          console.log('✅ QR existente obtenido:', response);
           
           if (response.success && response.data) {
             this.twoFactorData = {
@@ -570,18 +527,13 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
             
             this.show2FASetup = true;
             this.successMessage = 'QR Code existente cargado correctamente';
-            console.log('🔍 QR existente configurado:', this.twoFactorData);
             
           } else {
-            console.error('❌ QR existente sin datos:', response);
             this.errorMessage = response.message || 'Error al obtener código QR existente';
           }
         },
         error: (error: any) => {
           this.loading = false;
-          console.error('❌ Error obteniendo QR existente:', error);
-          console.error('  Status:', error.status);
-          console.error('  Error body:', error.error);
           
           this.errorMessage = error.error?.message || 'Error al obtener código QR existente';
         }
@@ -629,7 +581,6 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
         },
         error: (error: any) => {
           this.loading = false;
-          console.error('Error generando backup codes:', error);
           this.errorMessage = error.error?.message || 'Error al generar códigos de respaldo';
         }
       });
@@ -717,25 +668,16 @@ export class ProfileSecurityComponent implements OnInit, OnDestroy {
   }
 
   private reloadUserFromBackend(): void {
-    console.log('🔄 Recargando datos del usuario desde el backend...');
     this.authService.getCurrentUserFromBackend().subscribe({
       next: (user: User | null) => {
         if (user) {
-          console.log('✅ Usuario recargado del backend:', user);
-          console.log('   - twoFactorEnabled:', user.twoFactorEnabled);
-          console.log('   - googleAuthEnabled:', user.googleAuthEnabled);
-          console.log('   - backupCodesEnabled:', user.backupCodesEnabled);
-          
-          // Actualizar el usuario en el AuthService y localStorage
           this.authService.updateCurrentUser(user);
           this.currentUser = user;
           
-          // Recargar estado de códigos de respaldo con datos frescos
           this.loadBackupCodesStatus();
         }
       },
       error: (error: any) => {
-        console.error('❌ Error recargando usuario:', error);
         this.errorMessage = 'Error al cargar datos de usuario';
       }
     });

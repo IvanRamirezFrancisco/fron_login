@@ -30,6 +30,8 @@ export class CartService {
   constructor() {
     this.loadCartFromStorage();
     this.updateCartTotals();
+    // Emitir el estado inicial del carrito
+    this.cartItemsSubject.next([...this.cartItems]);
   }
 
   // Agregar producto al carrito con animación
@@ -176,7 +178,7 @@ export class CartService {
     try {
       localStorage.setItem('music-store-cart', JSON.stringify(this.cartItems));
     } catch (error) {
-      console.error('Error saving cart to localStorage:', error);
+      // Error silencioso
     }
   }
 
@@ -184,17 +186,21 @@ export class CartService {
     try {
       const savedCart = localStorage.getItem('music-store-cart');
       if (savedCart) {
-        this.cartItems = JSON.parse(savedCart);
+        const parsedCart = JSON.parse(savedCart);
+        if (Array.isArray(parsedCart)) {
+          this.cartItems = parsedCart;
+        } else {
+          this.cartItems = [];
+        }
+      } else {
+        this.cartItems = [];
       }
     } catch (error) {
-      console.error('Error loading cart from localStorage:', error);
       this.cartItems = [];
     }
   }
 
   private showNotification(message: string): void {
-    // Aquí podrías integrar con un servicio de notificaciones
-    // Por ahora, solo mostramos en consola
-    console.log('Cart notification:', message);
+    // Notificación silenciosa en producción
   }
 }

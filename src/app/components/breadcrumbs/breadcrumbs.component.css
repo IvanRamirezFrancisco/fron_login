@@ -1,0 +1,226 @@
+/* =================================================================
+   BREADCRUMBS COMPONENT - Casa de Música Castillo
+   Navegación breadcrumbs funcional y elegante
+   ================================================================= */
+
+.breadcrumbs-container {
+  background: linear-gradient(135deg, rgba(245, 245, 245, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%);
+  border-bottom: 2px solid rgba(128, 0, 32, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 12px 0;
+  position: sticky;
+  top: 80px; /* Debajo del header */
+  z-index: 999;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.breadcrumbs-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.breadcrumb-link,
+.breadcrumb-current {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #5A6C7D;
+}
+
+/* Estilo para links */
+.breadcrumb-link {
+  cursor: pointer;
+}
+
+.breadcrumb-link:hover {
+  background: rgba(128, 0, 32, 0.08);
+  color: #800020;
+  transform: translateY(-1px);
+}
+
+.breadcrumb-link:hover .material-icons {
+  color: #800020;
+  transform: scale(1.1);
+}
+
+/* Estilo especial para Home */
+.home-link {
+  background: rgba(128, 0, 32, 0.05);
+  color: #800020;
+}
+
+.home-link:hover {
+  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  color: #F5F5F5;
+  box-shadow: 0 4px 12px rgba(128, 0, 32, 0.2);
+}
+
+.home-link:hover .material-icons {
+  color: #F5F5F5;
+}
+
+/* Breadcrumb actual (último) */
+.breadcrumb-item.active .breadcrumb-current {
+  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  color: #F5F5F5;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(128, 0, 32, 0.3);
+  cursor: default;
+}
+
+.breadcrumb-item.active .material-icons {
+  color: #C5A059;
+}
+
+/* Iconos */
+.breadcrumb-icon {
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+.breadcrumb-text {
+  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+/* Separadores */
+.breadcrumb-separator {
+  display: flex;
+  align-items: center;
+  color: rgba(128, 0, 32, 0.3);
+  transition: all 0.3s ease;
+}
+
+.breadcrumb-separator .material-icons {
+  font-size: 20px;
+}
+
+.breadcrumb-item:hover + .breadcrumb-item .breadcrumb-separator {
+  color: #800020;
+  transform: translateX(2px);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Efecto de hover en el contenedor completo */
+.breadcrumbs-container:hover {
+  box-shadow: 0 4px 15px rgba(128, 0, 32, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .breadcrumbs-container {
+    top: 70px; /* Ajustar si el header es más pequeño en móvil */
+    padding: 10px 0;
+  }
+
+  .breadcrumb-link,
+  .breadcrumb-current {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .breadcrumb-icon {
+    font-size: 16px;
+  }
+
+  .breadcrumb-separator .material-icons {
+    font-size: 18px;
+  }
+
+  /* Ocultar texto en mobile, solo iconos */
+  .breadcrumb-text {
+    display: none;
+  }
+
+  .breadcrumb-icon {
+    margin: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .breadcrumbs-list {
+    gap: 4px;
+  }
+
+  .breadcrumb-link,
+  .breadcrumb-current {
+    padding: 6px 8px;
+  }
+
+  .breadcrumb-icon {
+    font-size: 14px;
+  }
+
+  .breadcrumb-separator .material-icons {
+    font-size: 16px;
+  }
+}
+
+/* Accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus para navegación con teclado */
+.breadcrumb-link:focus {
+  outline: 2px solid #800020;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Estado de carga (opcional) */
+.breadcrumbs-container.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Variante compacta (clase opcional) */
+.breadcrumbs-container.compact {
+  padding: 8px 0;
+}
+
+.breadcrumbs-container.compact .breadcrumb-link,
+.breadcrumbs-container.compact .breadcrumb-current {
+  padding: 6px 10px;
+  font-size: 13px;
+}

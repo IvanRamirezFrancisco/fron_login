@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -18,7 +18,7 @@ import { Product } from '../../models/product.model';
     '(document:click)': 'onDocumentClick($event)'
   }
 })
-export class CatalogoComponent implements OnInit {
+export class CatalogoComponent implements OnInit, OnDestroy {
   searchQuery = '';
   cartItemCount = 0;
   wishlistCount = 0;
@@ -40,6 +40,9 @@ export class CatalogoComponent implements OnInit {
   productos: Product[] = [];
   productosFiltrados: Product[] = [];
   loading = true;
+
+  // Control de filtros móvil
+  mostrarFiltros = false;
 
   constructor(
     private router: Router,
@@ -74,13 +77,11 @@ export class CatalogoComponent implements OnInit {
         // Obtener marcas únicas
         this.marcas = Array.from(new Set(products.map(p => p.brand)));
         
-        // Calcular precio máximo
-        this.precioMax = Math.max(...products.map(p => p.price)) + 1000;
+        this.precioMax = Math.max(...this.productos.map(p => p.price)) + 1000;
         
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error cargando productos:', err);
         this.loading = false;
       }
     });
@@ -192,6 +193,31 @@ export class CatalogoComponent implements OnInit {
     this.aplicarFiltros();
   }
 
+  // Métodos para control de filtros móvil
+  toggleFiltros(): void {
+    this.mostrarFiltros = !this.mostrarFiltros;
+    // Prevenir scroll del body cuando los filtros están abiertos
+    if (this.mostrarFiltros) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+
+  cerrarFiltros(): void {
+    this.mostrarFiltros = false;
+    document.body.style.overflow = '';
+  }
+
+  contadorFiltrosActivos(): number {
+    return this.categoriaSeleccionada.length + this.marcaSeleccionada.length;
+  }
+
+  aplicarFiltrosYCerrar(): void {
+    this.aplicarFiltros();
+    this.cerrarFiltros();
+  }
+
   performSearch(): void {
     if (this.searchQuery.trim()) {
       // Implementar búsqueda por nombre/descripción
@@ -213,11 +239,16 @@ export class CatalogoComponent implements OnInit {
   }
 
   toggleWishlist(): void {
-    console.log('Toggle wishlist');
+    // Toggle silencioso
   }
 
   navigateToHome(): void {
     this.router.navigate(['/home']);
+  }
+
+  ngOnDestroy(): void {
+    // Limpiar overflow del body al destruir el componente
+    document.body.style.overflow = '';
   }
 }
 

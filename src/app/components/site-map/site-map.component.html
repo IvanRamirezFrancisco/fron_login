@@ -1,0 +1,84 @@
+<div class="sitemap-container">
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumbs">
+    <div class="breadcrumbs-inner">
+      <a routerLink="/home">Inicio</a>
+      <span class="separator">/</span>
+      <span class="current">Mapa del Sitio</span>
+    </div>
+  </nav>
+
+  <!-- Header Section -->
+  <div class="sitemap-header">
+    <div class="header-icon">
+      <span class="material-icons">map</span>
+    </div>
+    <h1 class="sitemap-title">Mapa del Sitio</h1>
+    <p class="sitemap-subtitle">
+      Navega fácilmente por todas las secciones de Casa de Música Castillo
+    </p>
+  </div>
+
+  <!-- Sitemap Grid -->
+  <div class="sitemap-grid">
+    <div class="sitemap-section" *ngFor="let section of siteMapSections; let i = index" [style.animation-delay.ms]="i * 100">
+      <div class="section-header">
+        <div class="section-icon-wrapper">
+          <span class="material-icons">{{ section.icon }}</span>
+        </div>
+        <h2 class="section-title">{{ section.title }}</h2>
+      </div>
+      
+      <ul class="section-links">
+        <li *ngFor="let link of section.links" class="link-item">
+          <a [routerLink]="link.path" (click)="navigateToLink(link.path, $event)" class="link-content">
+            <div class="link-header">
+              <span class="material-icons link-icon">arrow_forward</span>
+              <span class="link-name">{{ link.name }}</span>
+            </div>
+            <p class="link-description">{{ link.description }}</p>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="sitemap-stats">
+    <div class="stat-card">
+      <span class="material-icons stat-icon">folder</span>
+      <div class="stat-content">
+        <span class="stat-number">{{ siteMapSections.length }}</span>
+        <span class="stat-label">Secciones</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <span class="material-icons stat-icon">link</span>
+      <div class="stat-content">
+        <span class="stat-number">{{ getTotalLinks() }}</span>
+        <span class="stat-label">Enlaces</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <span class="material-icons stat-icon">calendar_today</span>
+      <div class="stat-content">
+        <span class="stat-number">{{ getCurrentYear() }}</span>
+        <span class="stat-label">Actualizado</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back to Top Button -->
+  <button class="back-to-top" (click)="scrollToTop()" aria-label="Volver arriba">
+    <span class="material-icons">keyboard_arrow_up</span>
+    <span>Volver arriba</span>
+  </button>
+
+  <!-- Footer Info -->
+  <div class="sitemap-footer">
+    <div class="footer-content">
+      <span class="material-icons footer-icon">info</span>
+      <p>¿No encuentras lo que buscas? <a routerLink="/ayuda/contacto" class="footer-link">Contáctanos</a> y te ayudaremos.</p>
+    </div>
+  </div>
+</div>

@@ -58,7 +58,6 @@ export class VerifyAccountComponent implements OnInit {
       },
       error: (err: any) => {
         this.loading = false;
-        console.error('Error verifying account:', err);
         
         if (err.error?.message) {
           this.error = err.error.message;
@@ -78,7 +77,6 @@ export class VerifyAccountComponent implements OnInit {
   }
 
   resendVerification(): void {
-    // Implementar reenvío de verificación si es necesario
-    console.log('Reenvío de verificación solicitado');
+    // Reenvío de verificación
   }
 }

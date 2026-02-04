@@ -124,16 +124,12 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
 
-    console.log('🔐 Iniciando sesión con:', { email: formData.email });
-
     this.authService.login(formData).subscribe({
       next: (response) => {
-        console.log('✅ Respuesta del servidor:', response);
         this.isLoading = false;
         
         // Si el backend indica que se requiere 2FA
         if (response.data?.twoFactorRequired || response.twoFactorRequired) {
-          console.log('🔒 2FA requerido');
           this.showTwoFactorForm = true;
           this.pendingUser = response.data?.user ?? response.user ?? response.pendingUser ?? null;
           this.setupTwoFactorMethods();
@@ -145,25 +141,25 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
         const user = response.data?.user ?? response.user;
         
         if (token && user) {
-          console.log('✅ Login exitoso, guardando sesión...');
           this.authService.completeLogin(token, user);
           
-          // Navegar según el rol del usuario
-          const isAdmin = user.roles && user.roles.includes('ADMIN');
-          const targetRoute = isAdmin ? '/dashboard' : '/home';
-          console.log(`🚀 Redirigiendo a ${targetRoute}...`);
+          // Navegar según el rol del usuario (verificar ROLE_ADMIN primero)
+          const isAdmin = user.roles && Array.isArray(user.roles) && user.roles.some((role: string) => {
+            return role === 'ROLE_ADMIN' || role === 'ADMIN';
+          });
           
-          this.router.navigate([targetRoute]).then(
-            success => console.log('✅ Navegación exitosa:', success),
-            error => console.error('❌ Error en navegación:', error)
-          );
+          const targetRoute = isAdmin ? '/admin/dashboard' : '/home';
+          
+          // Usar replaceUrl para evitar que el guestGuard interfiera
+          this.router.navigate([targetRoute], { 
+            replaceUrl: true,
+            skipLocationChange: false 
+          });
         } else {
-          console.error('❌ Respuesta inválida del servidor:', response);
           this.errorMessage = 'Error al procesar la respuesta del servidor';
         }
       },
       error: (error) => {
-        console.error('❌ Error en login:', error);
         this.isLoading = false;
         
         // Verificar si es un error de rate limiting (429)
@@ -174,7 +170,6 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
             this.handleRateLimitError(error.error);
           } else {
             // Ya estábamos bloqueados, solo mostrar mensaje sin reiniciar countdown
-            console.warn('⚠️ Intento adicional durante bloqueo activo. Countdown NO reiniciado.');
             this.errorMessage = `Ya tienes un bloqueo activo. Espera ${this.formatTimeLeft()}.`;
           }
         } else {
@@ -497,17 +492,13 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * MÉTODO RADICAL para preservar strings en código 2FA
+   * MÉTODO para manejar entrada de código 2FA
    */
   onCodeInput(event: any): void {
-    console.log('🔥 RADICAL onCodeInput INICIADO 🔥');
     const rawValue = event.target.value;
-    console.log('Raw input:', rawValue, 'Type:', typeof rawValue);
     
-    // TRIPLE conversión para garantizar string absoluto
+    // Conversión a string
     let stringValue = String(rawValue || '');
-    stringValue = `${stringValue}`;  // Template literal force
-    stringValue = stringValue.toString();  // Explicit toString
     
     // Solo permitir dígitos
     stringValue = stringValue.replace(/[^0-9]/g, '');
@@ -516,10 +507,6 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     if (stringValue.length > 6) {
       stringValue = stringValue.substring(0, 6);
     }
-    
-    console.log('Triple converted:', stringValue, 'Type:', typeof stringValue);
-    console.log('Is string?', typeof stringValue === 'string');
-    console.log('Constructor:', stringValue.constructor.name);
     
     // Asignar con Object.defineProperty para forzar tipo
     Object.defineProperty(this, 'twoFactorCode', {
@@ -531,10 +518,6 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     
     // Actualizar DOM también
     event.target.value = stringValue;
-    
-    console.log('Final assignment:', this.twoFactorCode, 'Type:', typeof this.twoFactorCode);
-    console.log('Property descriptor:', Object.getOwnPropertyDescriptor(this, 'twoFactorCode'));
-    console.log('🔥 RADICAL onCodeInput COMPLETADO 🔥');
   }
 
   // Getter que siempre retorna string
@@ -689,7 +672,6 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loginWithGoogle(): void {
     // TODO: Implementar login con Google OAuth
-    console.log('Login con Google iniciado');
     // this.router.navigate(['/google-auth']);
   }
 

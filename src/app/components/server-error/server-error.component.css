@@ -1,0 +1,309 @@
+/* =================================================================
+   SERVER ERROR (500) COMPONENT - Casa de Música Castillo
+   Diseño profesional y elegante con colores corporativos
+   ================================================================= */
+
+/* Contenedor principal */
+.error-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+  padding: 2rem;
+}
+
+/* Patrón de fondo sutil - removido para fondo blanco limpio */
+.error-container::before {
+  display: none;
+}
+
+/* Contenedor de contenido */
+.error-content {
+  background: white;
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+  animation: fadeInScale 0.5s ease-out;
+  border: 1px solid #e0e0e0;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Icono de error */
+.error-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.error-icon .material-icons {
+  font-size: 120px;
+  color: #800020;
+  animation: pulseIcon 2s ease-in-out infinite;
+}
+
+@keyframes pulseIcon {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+/* Código de error */
+.error-code {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 96px;
+  font-weight: 800;
+  color: #800020;
+  text-align: center;
+  margin-bottom: 1rem;
+  letter-spacing: 0.1em;
+  text-shadow: 2px 2px 4px rgba(128, 0, 32, 0.1);
+}
+
+/* Título */
+.error-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #2C3E50;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* Descripción */
+.error-description {
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  color: #555;
+  text-align: center;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Botones de acción */
+.error-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.error-actions button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #800020 0%, #66001a 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #66001a 0%, #4d0015 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(128, 0, 32, 0.3);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #C5A059 0%, #b8934f 100%);
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #b8934f 0%, #a07d3e 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(197, 160, 89, 0.3);
+}
+
+/* Información adicional */
+.error-info {
+  background: #f8f9fa;
+  border-left: 4px solid #C5A059;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.error-info p {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.error-info strong {
+  color: #800020;
+  font-weight: 600;
+}
+
+/* Enlaces útiles */
+.helpful-links {
+  border-top: 2px solid #f0f0f0;
+  padding-top: 2rem;
+  margin-top: 2rem;
+}
+
+.links-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2C3E50;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.link-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #2C3E50;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.link-card:hover {
+  border-color: #C5A059;
+  background: #fffef7;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(197, 160, 89, 0.2);
+}
+
+.link-card .material-icons {
+  font-size: 32px;
+  color: #800020;
+}
+
+/* =================================================================
+   RESPONSIVE DESIGN
+   ================================================================= */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 768px) {
+  .error-container {
+    padding: 1.5rem;
+  }
+
+  .error-content {
+    padding: 2rem 1.5rem;
+  }
+
+  .error-icon .material-icons {
+    font-size: 90px;
+  }
+
+  .error-code {
+    font-size: 72px;
+  }
+
+  .error-title {
+    font-size: 24px;
+  }
+
+  .error-description {
+    font-size: 15px;
+  }
+
+  .error-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .error-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .links-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Móviles */
+@media (max-width: 480px) {
+  .error-container {
+    padding: 1rem;
+  }
+
+  .error-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .error-icon .material-icons {
+    font-size: 70px;
+  }
+
+  .error-code {
+    font-size: 56px;
+  }
+
+  .error-title {
+    font-size: 20px;
+  }
+
+  .error-description {
+    font-size: 14px;
+  }
+
+  .error-actions button {
+    padding: 0.75rem 1.5rem;
+    font-size: 14px;
+  }
+
+  .error-info {
+    padding: 0.875rem 1rem;
+  }
+
+  .error-info p {
+    font-size: 13px;
+  }
+}
