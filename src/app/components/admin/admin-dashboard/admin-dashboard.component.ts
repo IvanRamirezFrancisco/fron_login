@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { AdminDashboardService } from '../../../services/admin-dashboard.service';
+import { DashboardStats, Order, Product } from '../../../models/admin.models';
 
 interface StatCard {
   title: string;
@@ -28,110 +30,154 @@ interface RecentOrder {
   styleUrl: './admin-dashboard.component.css'
 })
 export class AdminDashboardComponent implements OnInit {
-  stats: StatCard[] = [
-    {
-      title: 'Ventas del Mes',
-      value: '$125,430',
-      change: '+12.5%',
-      changeType: 'positive',
-      icon: 'trending_up',
-      color: '#27ae60'
-    },
-    {
-      title: 'Órdenes Totales',
-      value: '1,248',
-      change: '+8.3%',
-      changeType: 'positive',
-      icon: 'shopping_cart',
-      color: '#3498db'
-    },
-    {
-      title: 'Productos',
-      value: '342',
-      change: '+23',
-      changeType: 'positive',
-      icon: 'inventory_2',
-      color: '#9b59b6'
-    },
-    {
-      title: 'Clientes',
-      value: '892',
-      change: '+45',
-      changeType: 'positive',
-      icon: 'people',
-      color: '#e67e22'
-    }
-  ];
+  stats: StatCard[] = [];
+  recentOrders: Order[] = [];
+  topProducts: Product[] = [];
+  loading: boolean = true;
+  error: string = '';
 
-  recentOrders: RecentOrder[] = [
-    {
-      id: 'ORD-001',
-      customer: 'Juan Pérez',
-      product: 'Guitarra Acústica Yamaha',
-      amount: 4500,
-      status: 'completed',
-      date: new Date()
-    },
-    {
-      id: 'ORD-002',
-      customer: 'María García',
-      product: 'Piano Digital Roland',
-      amount: 12500,
-      status: 'pending',
-      date: new Date()
-    },
-    {
-      id: 'ORD-003',
-      customer: 'Carlos López',
-      product: 'Batería Electrónica Alesis',
-      amount: 8900,
-      status: 'completed',
-      date: new Date()
-    },
-    {
-      id: 'ORD-004',
-      customer: 'Ana Martínez',
-      product: 'Bajo Eléctrico Fender',
-      amount: 6700,
-      status: 'pending',
-      date: new Date()
-    },
-    {
-      id: 'ORD-005',
-      customer: 'Luis Rodríguez',
-      product: 'Amplificador Marshall',
-      amount: 3200,
-      status: 'cancelled',
-      date: new Date()
-    }
-  ];
-
-  topProducts = [
-    { name: 'Guitarra Acústica Yamaha', sales: 145, revenue: 652500 },
-    { name: 'Piano Digital Roland', sales: 89, revenue: 1112500 },
-    { name: 'Batería Electrónica Alesis', sales: 67, revenue: 596300 },
-    { name: 'Bajo Eléctrico Fender', sales: 54, revenue: 361800 },
-    { name: 'Amplificador Marshall', sales: 42, revenue: 134400 }
-  ];
+  constructor(private dashboardService: AdminDashboardService) {}
 
   ngOnInit(): void {
-    // Aquí cargarías los datos reales desde tu servicio
+    this.loadDashboardData();
+  }
+
+  private loadDashboardData(): void {
+    this.loading = true;
+
+    // Cargar estadísticas
+    this.dashboardService.getDashboardStats().subscribe({
+      next: (data: DashboardStats) => {
+        this.updateStats(data);
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar estadísticas:', err);
+        this.error = 'Error al cargar las estadísticas del dashboard';
+        this.loading = false;
+        // Mantener datos de ejemplo si hay error
+        this.loadFallbackData();
+      }
+    });
+
+    // Cargar órdenes recientes
+    this.dashboardService.getRecentOrders(5).subscribe({
+      next: (orders: Order[]) => {
+        this.recentOrders = orders;
+      },
+      error: (err) => {
+        console.error('Error al cargar órdenes recientes:', err);
+      }
+    });
+
+    // Cargar productos más vendidos
+    this.dashboardService.getTopProducts(5).subscribe({
+      next: (products: Product[]) => {
+        this.topProducts = products;
+      },
+      error: (err) => {
+        console.error('Error al cargar productos top:', err);
+      }
+    });
+  }
+
+  private updateStats(data: DashboardStats): void {
+    this.stats = [
+      {
+        title: 'Ventas del Mes',
+        value: `$${data.monthSales.toLocaleString('es-MX')}`,
+        change: '+12.5%',
+        changeType: 'positive',
+        icon: 'trending_up',
+        color: '#27ae60'
+      },
+      {
+        title: 'Órdenes Totales',
+        value: data.totalOrders.toLocaleString('es-MX'),
+        change: `${data.pendingOrders} pendientes`,
+        changeType: 'positive',
+        icon: 'shopping_cart',
+        color: '#3498db'
+      },
+      {
+        title: 'Productos',
+        value: data.totalProducts.toLocaleString('es-MX'),
+        change: '+23 vs mes anterior',
+        changeType: 'positive',
+        icon: 'inventory_2',
+        color: '#9b59b6'
+      },
+      {
+        title: 'Clientes',
+        value: data.totalCustomers.toLocaleString('es-MX'),
+        change: '+45 vs mes anterior',
+        changeType: 'positive',
+        icon: 'people',
+        color: '#e67e22'
+      }
+    ];
+  }
+
+  private loadFallbackData(): void {
+    // Datos de respaldo si falla la API
+    this.stats = [
+      {
+        title: 'Ventas del Mes',
+        value: '$0',
+        change: '+0%',
+        changeType: 'positive',
+        icon: 'trending_up',
+        color: '#27ae60'
+      },
+      {
+        title: 'Órdenes Totales',
+        value: '0',
+        change: '0 pendientes',
+        changeType: 'positive',
+        icon: 'shopping_cart',
+        color: '#3498db'
+      },
+      {
+        title: 'Productos',
+        value: '0',
+        change: '+0',
+        changeType: 'positive',
+        icon: 'inventory_2',
+        color: '#9b59b6'
+      },
+      {
+        title: 'Clientes',
+        value: '0',
+        change: '+0',
+        changeType: 'positive',
+        icon: 'people',
+        color: '#e67e22'
+      }
+    ];
   }
 
   getStatusClass(status: string): string {
     const classes: { [key: string]: string } = {
-      'completed': 'status-completed',
-      'pending': 'status-pending',
-      'cancelled': 'status-cancelled'
+      'DELIVERED': 'status-completed',
+      'CONFIRMED': 'status-completed',
+      'PENDING': 'status-pending',
+      'PROCESSING': 'status-pending',
+      'SHIPPED': 'status-pending',
+      'CANCELLED': 'status-cancelled',
+      'REFUNDED': 'status-cancelled'
     };
-    return classes[status] || '';
+    return classes[status] || 'status-pending';
   }
 
   getStatusText(status: string): string {
     const texts: { [key: string]: string } = {
-      'completed': 'Completada',
-      'pending': 'Pendiente',
-      'cancelled': 'Cancelada'
+      'PENDING': 'Pendiente',
+      'CONFIRMED': 'Confirmada',
+      'PROCESSING': 'En Proceso',
+      'SHIPPED': 'Enviada',
+      'DELIVERED': 'Entregada',
+      'CANCELLED': 'Cancelada',
+      'REFUNDED': 'Reembolsada'
     };
     return texts[status] || status;
   }

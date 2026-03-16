@@ -24,8 +24,23 @@ export interface Product {
     monthlyPayment: number;
   };
   relatedProducts?: string[]; // IDs de productos relacionados
+  
+  // NUEVOS CAMPOS: Sistema híbrido de especificaciones
+  customAttributes?: ProductAttribute[];  // Atributos dinámicos clave-valor
+  detailedDescription?: string;           // Descripción rica con HTML
+  
+  // Campos opcionales para logística de envío (mantener compatibilidad)
+  weight?: number;                        // Peso en kilogramos
+  dimensions?: string;                    // Dimensiones como string (formato libre)
+  
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Nueva interfaz para atributos personalizados
+export interface ProductAttribute {
+  key: string;    // Nombre del atributo (ej: "Calibre", "Material", "Tipo de Madera")
+  value: string;  // Valor del atributo (ej: ".009-.042", "Caoba", "Acero niquelado")
 }
 
 export interface ProductReview {
@@ -107,4 +122,78 @@ export interface ProductSearchResponse {
       max: number;
     };
   };
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// API PÚBLICA — Storefront (mapea PublicProductDTO / PublicCategoryDTO del backend)
+// ══════════════════════════════════════════════════════════════════════════════
+
+export interface PublicProductImage {
+  url: string;
+  displayOrder: number;
+}
+
+export interface PublicCategoryRef {
+  id: number;
+  name: string;
+  parentId: number | null;
+  parentName: string | null;
+}
+
+export interface PublicBrandRef {
+  id: number;
+  name: string;
+  logoUrl: string | null;
+}
+
+export interface PublicProductAttribute {
+  name: string;
+  value: string;
+  displayOrder: number;
+}
+
+/** Mapea exactamente com.security.dto.public_api.PublicProductDTO */
+export interface PublicProduct {
+  id: number;
+  sku: string;
+  name: string;
+  description: string | null;
+  detailedDescription: string | null;
+  price: number;
+  discountPrice: number | null;
+  stock: number;
+  imageUrl: string | null;
+  images: PublicProductImage[];
+  category: PublicCategoryRef | null;
+  brand: PublicBrandRef | null;
+  attributes: PublicProductAttribute[];
+  model: string | null;
+  weight: number | null;
+  dimensions: string | null;
+  featured: boolean;
+  averageRating: number;
+  reviewCount: number;
+}
+
+/** Mapea exactamente com.security.dto.public_api.PublicCategoryDTO */
+export interface PublicCategory {
+  id: number;
+  name: string;
+  description: string | null;
+  imageUrl: string | null;
+  parentId: number | null;
+  parentName: string | null;
+  activeProductCount: number;
+}
+
+/** Respuesta paginada de Spring Data (Page<T>) */
+export interface SpringPage<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;       // página actual (0-indexed)
+  size: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
 }

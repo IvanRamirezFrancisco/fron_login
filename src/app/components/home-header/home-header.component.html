@@ -16,14 +16,14 @@
     <!-- Navegación Principal -->
     <nav class="main-nav">
       <ul class="nav-list">
-        <li><a href="#inicio" (click)="scrollToSection('inicio')" class="nav-link">Inicio</a></li>
-        <li><a href="#productos" (click)="scrollToSection('productos')" class="nav-link">Productos</a></li>
-        <li><a href="#sobre-nosotros" (click)="scrollToSection('sobre-nosotros')" class="nav-link">Nosotros</a></li>
-        <li><a href="#contacto" (click)="scrollToSection('contacto')" class="nav-link">Contacto</a></li>
-        <li><a (click)="navigateToCatalog()" class="nav-link catalog-link">
+        <li><button (click)="scrollToSection('inicio')" class="nav-link nav-link--btn">Inicio</button></li>
+        <li><button (click)="scrollToSection('productos')" class="nav-link nav-link--btn">Productos</button></li>
+        <li><button (click)="scrollToSection('sobre-nosotros')" class="nav-link nav-link--btn">Nosotros</button></li>
+        <li><button (click)="scrollToSection('contacto')" class="nav-link nav-link--btn">Contacto</button></li>
+        <li><button (click)="navigateToCatalog()" class="nav-link nav-link--btn catalog-link">
           <span class="material-symbols-outlined">store</span>
           Ayuda
-        </a></li>
+        </button></li>
       </ul>
     </nav>
 

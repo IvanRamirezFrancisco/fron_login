@@ -1,0 +1,14 @@
+/*
+  csv-import-export.component.css
+  ─────────────────────────────────────────────────────────────────────────────
+  This component uses Tailwind CSS utility classes exclusively in the template.
+  Only structural overrides that Tailwind cannot express inline are placed here.
+*/
+
+/*
+  Ensure the modal backdrop sits above any fixed sidebars / navbars that
+  the admin shell might have set at z-index < 50.
+*/
+:host {
+  display: contents; /* Let the button participate in parent's flex/grid layout */
+}

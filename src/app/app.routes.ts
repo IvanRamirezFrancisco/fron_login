@@ -20,8 +20,18 @@ import { NotFoundComponent } from './components/not-found/not-found.component';
 import { ServerErrorComponent } from './components/server-error/server-error.component';
 import { SiteMapComponent } from './components/site-map/site-map.component';
 import { AdminGuard } from './guards/admin.guard';
+import { SuperAdminGuard } from './guards/super-admin.guard';
 import { AdminLayoutComponent } from './components/admin/admin-layout/admin-layout.component';
 import { AdminDashboardComponent } from './components/admin/admin-dashboard/admin-dashboard.component';
+import { AdminCouponsComponent } from './components/admin/admin-coupons/admin-coupons.component';
+import { AdminReviewsComponent } from './components/admin/admin-reviews/admin-reviews.component';
+import { AdminAbandonedCartsComponent } from './components/admin/admin-abandoned-carts/admin-abandoned-carts.component';
+import { AdminBrandsComponent } from './components/admin/admin-brands/admin-brands.component';
+import { AdminCategoriesComponent } from './components/admin/admin-categories/admin-categories.component';
+import { AdminStaffComponent } from './components/admin/admin-staff/admin-staff.component';
+import { AdminRolesComponent } from './components/admin/admin-roles/admin-roles.component';
+import { AdminBackupsComponent } from './components/admin/admin-backups/admin-backups.component';
+import { AdminDbManagementComponent } from './components/admin/admin-db-management/admin-db-management.component';
 import { guestGuard } from './guards/guest.guard';
 
 export const routes: Routes = [
@@ -109,7 +119,31 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: AdminDashboardComponent },
-      // TODO: Agregar más rutas de admin (productos, categorías, órdenes, etc.)
+      { path: 'brands', component: AdminBrandsComponent },
+      { path: 'categories', component: AdminCategoriesComponent },
+      { 
+        path: 'products', 
+        loadComponent: () => import('./components/admin/admin-products/admin-products.component')
+          .then(m => m.AdminProductsComponent)
+      },
+      { 
+        path: 'orders', 
+        loadComponent: () => import('./components/admin/admin-orders/admin-orders.component')
+          .then(m => m.AdminOrdersComponent)
+      },
+      { path: 'coupons', component: AdminCouponsComponent },
+      { path: 'reviews', component: AdminReviewsComponent },
+      { path: 'abandoned-carts', component: AdminAbandonedCartsComponent },
+      // Nuevas rutas: Gestión de Staff, Clientes y Roles
+      { path: 'staff', component: AdminStaffComponent },
+      { path: 'roles', component: AdminRolesComponent, canActivate: [SuperAdminGuard] },
+      { path: 'backups', component: AdminBackupsComponent, canActivate: [SuperAdminGuard] },
+      { path: 'gestion-db', component: AdminDbManagementComponent, canActivate: [SuperAdminGuard] },
+      {
+        path: 'customers',
+        loadComponent: () => import('./components/admin/admin-customers/admin-customers.component')
+          .then(m => m.AdminCustomersComponent)
+      }
     ]
   },
   

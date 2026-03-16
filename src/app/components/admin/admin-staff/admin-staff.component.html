@@ -1,0 +1,317 @@
+<!-- Header con título y botones de acción -->
+<div class="container-fluid py-4">
+  <!-- Filtros y buscador -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+
+        <!-- Buscador -->
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold text-muted mb-1">Buscar</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white">
+              <i class="bi bi-search text-wine"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Nombre o email..."
+              [(ngModel)]="searchTerm"
+              (keyup.enter)="onSearch()">
+            <button
+              *ngIf="searchTerm"
+              class="btn btn-outline-secondary"
+              type="button"
+              (click)="searchTerm = ''; onSearch()"
+              title="Limpiar búsqueda">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filtro por rol -->
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold text-muted mb-1">Rol</label>
+          <select class="form-select" [(ngModel)]="selectedRoleId" (change)="applyFilters()">
+            <option [value]="null">Todos los roles</option>
+            <option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</option>
+          </select>
+        </div>
+
+        <!-- Filtro por estado -->
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold text-muted mb-1">Estado</label>
+          <select class="form-select" [(ngModel)]="filterEnabled" (change)="applyFilters()">
+            <option [value]="null">Todos</option>
+            <option [value]="true">Activos</option>
+            <option [value]="false">Inactivos</option>
+          </select>
+        </div>
+
+        <!-- Filtro por bloqueo -->
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold text-muted mb-1">Cuenta</label>
+          <select class="form-select" [(ngModel)]="filterLocked" (change)="applyFilters()">
+            <option [value]="null">Todas</option>
+            <option [value]="false">Desbloqueadas</option>
+            <option [value]="true">Bloqueadas</option>
+          </select>
+        </div>
+
+        <!-- Limpiar filtros -->
+        <div class="col-md-1">
+          <label class="form-label small fw-semibold text-muted mb-1 d-block">&nbsp;</label>
+          <button
+            class="btn btn-outline-secondary w-100"
+            (click)="clearFilters()"
+            title="Limpiar todos los filtros">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       TARJETA DE TABLA
+       ═══════════════════════════════════════════════════ -->
+  <div class="card shadow-sm staff-table-card">
+
+    <!-- ── Spinner de carga ── -->
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-wine" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-3 mb-0">Cargando usuarios...</p>
+    </div>
+
+    <!-- ── Tabla ── -->
+    <div *ngIf="!loading">
+
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+          <thead class="thead-staff">
+            <tr>
+              <th style="width:210px">Usuario</th>
+              <th>Email</th>
+              <th style="width:140px">Roles</th>
+              <th class="text-center" style="width:100px">Estado</th>
+              <th class="text-center" style="width:110px">Cuenta</th>
+              <th class="text-center" style="width:70px">Intentos</th>
+              <th class="text-center" style="width:90px">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr *ngFor="let user of staffList; trackBy: trackByUserId">
+
+              <!-- ①  Usuario -->
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-circle flex-shrink-0">
+                    {{ (user.firstName || '?').charAt(0).toUpperCase() }}{{ (user.lastName || '?').charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="lh-sm overflow-hidden">
+                    <div class="fw-semibold cell-text text-truncate" style="max-width:155px" [title]="getFullName(user)">
+                      {{ getFullName(user) }}
+                    </div>
+                    <div class="text-muted cell-sub">ID #{{ user.id }}</div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- ②  Email -->
+              <td class="text-nowrap">
+                <a [href]="'mailto:' + user.email" class="text-decoration-none text-dark cell-text" [title]="user.email">
+                  {{ user.email }}
+                </a>
+              </td>
+
+              <!-- ③  Roles -->
+              <td>
+                <div class="d-flex flex-wrap gap-1">
+                  <span *ngFor="let role of user.roles" class="badge role-badge" [title]="role.name">
+                    {{ role.name | slice:5 }}
+                  </span>
+                  <span *ngIf="!user.roles || user.roles.length === 0" class="text-muted fst-italic cell-sub">–</span>
+                </div>
+              </td>
+
+              <!-- ④  Estado -->
+              <td class="text-center">
+                <div class="d-flex justify-content-center align-items-center gap-1">
+                  <input
+                    class="form-check-input staff-switch m-0"
+                    type="checkbox"
+                    role="switch"
+                    [id]="'sw-' + user.id"
+                    [checked]="user.enabled"
+                    (click)="$event.preventDefault(); toggleEnabled(user)"
+                    [title]="user.enabled ? 'Activo – click para desactivar' : 'Inactivo – click para activar'">
+                  <span class="badge fs-badge"
+                        [class.badge-activo]="user.enabled"
+                        [class.badge-inactivo]="!user.enabled">
+                    {{ user.enabled ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </div>
+              </td>
+
+              <!-- ⑤  Cuenta -->
+              <td class="text-center">
+                <span class="badge fs-badge d-inline-flex align-items-center gap-1 cursor-pointer"
+                      [class.badge-ok]="user.accountNonLocked"
+                      [class.badge-bloqueado]="!user.accountNonLocked"
+                      (click)="toggleLock(user)"
+                      [title]="user.accountNonLocked ? 'Desbloqueada – click para bloquear' : 'Bloqueada – click para desbloquear'"
+                      style="cursor:pointer">
+                  <i class="bi" [class.bi-unlock-fill]="user.accountNonLocked" [class.bi-lock-fill]="!user.accountNonLocked"></i>
+                  {{ user.accountNonLocked ? 'OK' : 'Bloqueado' }}
+                </span>
+              </td>
+
+              <!-- ⑥  Intentos -->
+              <td class="text-center">
+                <div class="d-flex justify-content-center align-items-center gap-1">
+                  <span class="badge fs-badge"
+                        [class.bg-success]="(user.failedLoginAttempts || 0) === 0"
+                        [class.bg-warning]="(user.failedLoginAttempts || 0) > 0 && (user.failedLoginAttempts || 0) < 3"
+                        [class.bg-danger]="(user.failedLoginAttempts || 0) >= 3"
+                        [class.text-dark]="(user.failedLoginAttempts || 0) > 0 && (user.failedLoginAttempts || 0) < 3"
+                        [title]="(user.failedLoginAttempts || 0) + ' intentos fallidos'">
+                    {{ user.failedLoginAttempts || 0 }}
+                  </span>
+                  <button *ngIf="(user.failedLoginAttempts || 0) > 0"
+                          class="btn-reset-link"
+                          (click)="resetFailedAttempts(user)"
+                          title="Resetear intentos">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                  </button>
+                </div>
+              </td>
+
+              <!-- ⑦  Acciones -->
+              <td class="text-center">
+                <div class="d-flex justify-content-center gap-1">
+                  <button class="accion-btn accion-edit"
+                          (click)="openEditModal(user)"
+                          title="Editar usuario">
+                    <i class="bi bi-pencil-fill"></i>
+                  </button>
+                  <button class="accion-btn accion-delete"
+                          (click)="deleteUser(user)"
+                          title="Eliminar usuario">
+                    <i class="bi bi-trash-fill"></i>
+                  </button>
+                </div>
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Estado vacío ── -->
+      <div *ngIf="staffList.length === 0" class="text-center py-5">
+        <i class="bi bi-people display-1 text-muted"></i>
+        <p class="text-muted mt-3 mb-1 fw-semibold">No se encontraron usuarios</p>
+        <p class="text-muted small mb-3">
+          {{ searchTerm || selectedRoleId || filterEnabled !== null || filterLocked !== null
+              ? 'Prueba con otros filtros o limpia la búsqueda.'
+              : 'Aún no tienes empleados registrados en el sistema.' }}
+        </p>
+        <button class="btn btn-tinto" (click)="openCreateModal()">
+          <i class="bi bi-person-plus me-2"></i>
+          Crear primer usuario
+        </button>
+      </div>
+
+      <!-- ── Pie: info + paginación ── -->
+      <div *ngIf="staffList.length > 0" class="staff-table-footer">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+          <!-- Conteo de registros -->
+          <div class="footer-info">
+            <span class="footer-count">
+              Mostrando
+              <strong>{{ currentPage * pageSize + 1 }}</strong>
+              –
+              <strong>{{ Math.min((currentPage + 1) * pageSize, totalElements) }}</strong>
+              de
+              <strong>{{ totalElements }}</strong>
+              usuario{{ totalElements !== 1 ? 's' : '' }}
+            </span>
+          </div>
+
+          <!-- Paginación profesional -->
+          <nav aria-label="Paginación de empleados" class="pagination-nav">
+            <div class="pagination-wrapper">
+
+              <!-- Botón Primera página -->
+              <button class="page-btn page-btn-nav"
+                      [disabled]="currentPage === 0"
+                      (click)="onPageChange(0)"
+                      title="Primera página">
+                <i class="bi bi-chevron-double-left"></i>
+              </button>
+
+              <!-- Botón Anterior -->
+              <button class="page-btn page-btn-nav"
+                      [disabled]="currentPage === 0"
+                      (click)="onPageChange(currentPage - 1)"
+                      title="Página anterior">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+
+              <!-- Números de página -->
+              <button *ngFor="let page of getPageNumbers()"
+                      class="page-btn"
+                      [class.page-btn-active]="page === currentPage"
+                      (click)="onPageChange(page)"
+                      [title]="'Ir a página ' + (page + 1)">
+                {{ page + 1 }}
+              </button>
+
+              <!-- Botón Siguiente -->
+              <button class="page-btn page-btn-nav"
+                      [disabled]="currentPage >= totalPages - 1"
+                      (click)="onPageChange(currentPage + 1)"
+                      title="Página siguiente">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+
+              <!-- Botón Última página -->
+              <button class="page-btn page-btn-nav"
+                      [disabled]="currentPage >= totalPages - 1"
+                      (click)="onPageChange(totalPages - 1)"
+                      title="Última página">
+                <i class="bi bi-chevron-double-right"></i>
+              </button>
+
+            </div>
+          </nav>
+
+        </div>
+      </div>
+
+    </div><!-- /!loading -->
+  </div><!-- /card -->
+</div><!-- /container-fluid -->
+
+<!-- ═══════════════════════════════════════════════════
+     Modal de formulario — diseño brand-modal-*
+     z-index: 9999 (sobre sidebar 1000 y topbar 200)
+     ═══════════════════════════════════════════════════ -->
+<div *ngIf="showModal"
+     class="brand-modal-overlay staff-modal-overlay"
+     (click)="closeModal()">
+  <div class="brand-modal-panel staff-modal-panel" (click)="$event.stopPropagation()">
+    <app-staff-form-modal
+      [isEditMode]="isEditMode"
+      [user]="selectedUser"
+      [roles]="roles"
+      (close)="closeModal()"
+      (saved)="onUserSaved()">
+    </app-staff-form-modal>
+  </div>
+</div>

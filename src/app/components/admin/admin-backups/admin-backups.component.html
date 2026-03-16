@@ -1,0 +1,384 @@
+﻿<!-- ------------------------------------------------------------------------
+     Gestión de Respaldos - Módulo Administración
+     Acceso exclusivo: SUPER_ADMIN
+     ------------------------------------------------------------------------ -->
+<div class="bc-root">
+
+  <!-- ── MODAL DE CONFIRMACIÓN DE RESPALDO EXITOSO ──────────────────────── -->
+  <div *ngIf="showSuccessModal" class="success-backdrop" (click)="closeSuccessModal()">
+    <div class="success-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="success-modal__circle">
+        <svg class="checkmark" viewBox="0 0 52 52">
+          <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+          <path  class="checkmark__check"  fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+      </div>
+      <h3 class="success-modal__title">¡Respaldo iniciado!</h3>
+      <p class="success-modal__msg">
+        El proceso corre en segundo plano. El historial se actualizará en unos segundos.
+      </p>
+      <div class="success-modal__bar">
+        <div class="success-modal__bar-fill"></div>
+      </div>
+      <p class="success-modal__hint">Se cerrará automáticamente…</p>
+    </div>
+  </div>
+
+  <!-- ── MODAL DE ERROR ─────────────────────────────────────────────────── -->
+  <div *ngIf="errorModal" class="modal-backdrop" (click)="closeErrorModal()">
+    <div class="modal modal--error" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <div class="modal__icon-wrap modal__icon-wrap--error">
+          <span class="material-icons">error_outline</span>
+        </div>
+        <div class="modal__header-text">
+          <h3 class="modal__title">Detalle del Error</h3>
+          <p class="modal__subtitle" title="{{ errorModal.filename }}">
+            {{ errorModal.filename }}
+          </p>
+        </div>
+        <button class="modal__close" (click)="closeErrorModal()" aria-label="Cerrar">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div class="modal__body">
+        <div class="modal__error-label">
+          <span class="material-icons">bug_report</span>
+          Mensaje de error registrado:
+        </div>
+        <pre class="modal__pre">{{ errorModal.message }}</pre>
+      </div>
+      <div class="modal__footer">
+        <button class="btn-secondary" (click)="closeErrorModal()">
+          <span class="material-icons">close</span> Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOAST DE NOTIFICACIÓN ──────────────────────────────────────────── -->
+  <div *ngIf="notification"
+       class="toast"
+       [class.toast--success]="notification.type === 'success'"
+       [class.toast--error]="notification.type === 'error'"
+       [class.toast--warning]="notification.type === 'warning'"
+       [class.toast--info]="notification.type === 'info'"
+       role="alert">
+    <span class="material-icons toast__icon">
+      {{ notification.type === 'success' ? 'check_circle'  :
+         notification.type === 'error'   ? 'error'          :
+         notification.type === 'warning' ? 'warning'        : 'info' }}
+    </span>
+    <div class="toast__body">
+      <strong>{{ notification.title }}</strong>
+      <span>{{ notification.message }}</span>
+    </div>
+    <button class="toast__close" (click)="clearNotification()" aria-label="Cerrar">
+      <span class="material-icons">close</span>
+    </button>
+  </div>
+
+  <!-- ── ENCABEZADO ─────────────────────────────────────────────────────── -->
+  <header class="bc-header">
+    <div class="bc-header__left">
+      <div class="bc-header__icon">
+        <span class="material-icons">cloud_done</span>
+      </div>
+      <div>
+        <h1 class="bc-header__title">Gestión de Respaldos</h1>
+        <p class="bc-header__sub">
+          Respaldos PostgreSQL · Almacenamiento en la nube (Supabase Storage) · Solo SUPER ADMIN
+        </p>
+      </div>
+    </div>
+    <span class="bc-header__badge">
+      <span class="material-icons">verified_user</span> SUPER ADMIN
+    </span>
+  </header>
+
+  <!-- ── AVISO INFORMATIVO ──────────────────────────────────────────────── -->
+  <div class="callout">
+    <span class="material-icons callout__icon">info</span>
+    <div class="callout__body">
+      <strong>Almacenamiento seguro fuera del servidor</strong>
+      <span>
+        Los respaldos se generan en el servidor y se suben automáticamente a
+        <strong>Supabase Storage</strong> (bucket privado).
+        El archivo temporal se elimina del servidor tras la subida.
+        Para descargar, usa <em>"Obtener Enlace"</em> — genera una URL firmada válida por 1 hora.
+      </span>
+    </div>
+  </div>
+
+  <!-- ── GRID PRINCIPAL ────────────────────────────────────────────────── -->
+  <div class="bc-grid">
+
+    <!-- Tarjeta: generar respaldo -->
+    <div class="card card--main">
+      <div class="card__header">
+        <div class="card__icon card__icon--primary">
+          <span class="material-icons">backup</span>
+        </div>
+        <div>
+          <h2 class="card__title">Respaldo Manual</h2>
+          <p class="card__label">PostgreSQL · pg_dump · Formato comprimido</p>
+        </div>
+      </div>
+
+      <div class="card__body">
+        <p class="card__desc">
+          Genera un volcado completo de la base de datos en formato comprimido
+          <code>.dump</code>. El proceso se ejecuta en <strong>segundo plano</strong>
+          y el archivo se sube directamente a Supabase Storage.
+        </p>
+        <div class="pill-row">
+          <span class="pill"><span class="material-icons">compress</span> Comprimido</span>
+          <span class="pill"><span class="material-icons">layers</span> DDL + DML</span>
+          <span class="pill"><span class="material-icons">bolt</span> Asíncrono</span>
+          <span class="pill"><span class="material-icons">cloud_upload</span> Off-site</span>
+        </div>
+      </div>
+
+      <div class="card__footer">
+        <button class="btn-trigger"
+                (click)="triggerBackup()"
+                [disabled]="isTriggering"
+                [attr.aria-busy]="isTriggering">
+          <span class="material-icons" [class.spin]="isTriggering">
+            {{ isTriggering ? 'sync' : 'cloud_upload' }}
+          </span>
+          {{ isTriggering ? 'Iniciando respaldo...' : 'Generar Respaldo Manual' }}
+        </button>
+
+        <p *ngIf="isTriggering" class="status-hint">
+          <span class="material-icons">schedule</span>
+          El historial se actualizará automáticamente en unos segundos...
+        </p>
+
+        <p *ngIf="hasPending && !isTriggering" class="status-hint status-hint--polling">
+          <span class="spinner-xs"></span>
+          Actualizando automáticamente mientras haya respaldos en proceso...
+        </p>
+      </div>
+    </div>
+
+    <!-- Tarjeta: información del proceso -->
+    <div class="card card--info">
+      <div class="card__header">
+        <div class="card__icon card__icon--slate">
+          <span class="material-icons">account_tree</span>
+        </div>
+        <div>
+          <h2 class="card__title">¿Cómo funciona?</h2>
+          <p class="card__label">Flujo del proceso de respaldo</p>
+        </div>
+      </div>
+      <div class="card__body">
+        <ol class="flow-list">
+          <li>
+            <span class="step">1</span>
+            <span>Servidor acepta la solicitud y responde
+              <code>202 Accepted</code> de inmediato</span>
+          </li>
+          <li>
+            <span class="step">2</span>
+            <span><code>pg_dump</code> ejecuta en un hilo dedicado en segundo plano</span>
+          </li>
+          <li>
+            <span class="step">3</span>
+            <span>Se verifica que el archivo generado existe y tiene contenido</span>
+          </li>
+          <li>
+            <span class="step">4</span>
+            <span>El archivo se sube a <strong>Supabase Storage</strong> (bucket privado)</span>
+          </li>
+          <li>
+            <span class="step">5</span>
+            <span>El archivo temporal del servidor es eliminado</span>
+          </li>
+          <li>
+            <span class="step">6</span>
+            <span>El registro se actualiza a <code>COMPLETADO</code> con los metadatos</span>
+          </li>
+        </ol>
+
+        <div class="notice notice--amber">
+          <span class="material-icons">info</span>
+          <p>Los archivos <code>.dump</code> son formato binario de PostgreSQL.
+             Para restaurar se utiliza <code>pg_restore</code>.</p>
+        </div>
+
+        <div class="notice notice--green">
+          <span class="material-icons">schedule</span>
+          <p>El sistema genera respaldos automáticos cada día a las <strong>03:00 AM</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /bc-grid -->
+
+  <!-- ── HISTORIAL ──────────────────────────────────────────────────────── -->
+  <section class="history" aria-label="Historial de respaldos">
+
+    <div class="history__header">
+      <h2 class="history__title">
+        <span class="material-icons">history</span>
+        Historial de Respaldos
+        <span *ngIf="backupPage" class="history__count">
+          {{ backupPage.totalElements }} registros
+        </span>
+      </h2>
+      <button class="btn-refresh" (click)="loadHistory()" [disabled]="historyLoading">
+        <span class="material-icons" [class.spin]="historyLoading">refresh</span>
+        {{ historyLoading ? 'Cargando...' : 'Actualizar' }}
+      </button>
+    </div>
+
+    <!-- Skeleton loader -->
+    <div *ngIf="historyLoading && !backupPage" class="skeleton-wrap">
+      <div class="skeleton-row" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div *ngIf="!historyLoading && backupPage && backupPage.totalElements === 0"
+         class="empty-state">
+      <span class="material-icons">cloud_off</span>
+      <h3>Sin respaldos registrados</h3>
+      <p>Inicia el primer respaldo con el botón <strong>"Generar Respaldo Manual"</strong>.</p>
+    </div>
+
+    <!-- Tabla -->
+    <div *ngIf="backupPage && backupPage.totalElements > 0" class="table-wrap">
+      <table class="bc-table">
+        <thead>
+          <tr>
+            <th scope="col">Fecha / Hora</th>
+            <th scope="col">Nombre del archivo</th>
+            <th scope="col">Tamaño</th>
+            <th scope="col">Tiempo ejecución</th>
+            <th scope="col">Disparado por</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of rows; trackBy: trackById"
+              [class.row--pending]="log.status === 'PENDING'"
+              [class.row--failed]="log.status === 'FAILED'">
+
+            <td class="td-date">
+              <span class="date-main">{{ log.createdAt | date:'dd/MM/yyyy' }}</span>
+              <span class="date-time">{{ log.createdAt | date:'HH:mm:ss' }}</span>
+            </td>
+
+            <td class="td-file">
+              <span class="material-icons file-icon">description</span>
+              <span class="file-name">{{ log.filename }}</span>
+            </td>
+
+            <td class="td-mono">{{ formatFileSize(log.fileSizeBytes) }}</td>
+
+            <td class="td-mono">{{ formatMs(log.executionTimeMs) }}</td>
+
+            <td class="td-user">
+              <span class="user-chip">
+                <span class="material-icons">person</span>
+                {{ log.triggeredBy }}
+              </span>
+            </td>
+
+            <td class="td-status">
+              <span class="badge"
+                    [class.badge--completed]="log.status === 'COMPLETED'"
+                    [class.badge--pending]="log.status === 'PENDING'"
+                    [class.badge--failed]="log.status === 'FAILED'">
+                <span *ngIf="log.status === 'PENDING'" class="spinner-badge"></span>
+                <span *ngIf="log.status !== 'PENDING'" class="material-icons badge__icon">
+                  {{ log.status === 'COMPLETED' ? 'check_circle' : 'cancel' }}
+                </span>
+                {{ log.status === 'COMPLETED' ? 'Completado' :
+                   log.status === 'PENDING'   ? 'En proceso'  : 'Fallido' }}
+              </span>
+            </td>
+
+            <td class="td-actions">
+              <!-- COMPLETED: mostrar botón según si el enlace expiró -->
+              <ng-container *ngIf="log.status === 'COMPLETED'">
+
+                <!-- Enlace aún vigente (< 1 hora desde creación) -->
+                <button *ngIf="!isExpired(log.createdAt)"
+                        class="btn-action btn-action--download"
+                        (click)="downloadBackup(log.id)"
+                        [disabled]="loadingUrlId === log.id"
+                        title="Obtener enlace de descarga (válido 1 hora desde la creación)">
+                  <span *ngIf="loadingUrlId === log.id" class="spinner-xs-inline"></span>
+                  <span *ngIf="loadingUrlId !== log.id" class="material-icons">download</span>
+                  {{ loadingUrlId === log.id ? 'Generando...' : 'Obtener Enlace' }}
+                </button>
+
+                <!-- Enlace expirado (≥ 1 hora desde creación) -->
+                <button *ngIf="isExpired(log.createdAt)"
+                        class="btn-action btn-action--expired"
+                        disabled
+                        title="El enlace firmado ya expiró (válido solo 1 hora tras la creación). Genera un nuevo respaldo si lo necesitas.">
+                  <span class="material-icons">schedule</span>
+                  Expirado
+                </button>
+
+              </ng-container>
+
+              <!-- FAILED: ver detalle del error -->
+              <button *ngIf="log.status === 'FAILED'"
+                      class="btn-action btn-action--error"
+                      (click)="openErrorModal(log)"
+                      title="Ver detalle del error">
+                <span class="material-icons">info_outline</span>
+                Ver Error
+              </button>
+
+              <!-- PENDING -->
+              <span *ngIf="log.status === 'PENDING'" class="td-pending-hint">
+                <span class="spinner-xs"></span> Procesando...
+              </span>
+            </td>
+
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Paginación -->
+      <div class="pagination" *ngIf="backupPage && backupPage.totalPages > 1">
+        <div class="pagination__info">
+          Página <strong>{{ backupPage.number + 1 }}</strong> de
+          <strong>{{ backupPage.totalPages }}</strong>
+          · {{ backupPage.totalElements }} registros
+        </div>
+        <div class="pagination__controls">
+          <button class="pg-btn" (click)="goToPage(0)" [disabled]="backupPage.first" title="Primera">
+            <span class="material-icons">first_page</span>
+          </button>
+          <button class="pg-btn" (click)="goToPage(currentPage - 1)" [disabled]="backupPage.first" title="Anterior">
+            <span class="material-icons">chevron_left</span>
+          </button>
+          <span class="pg-pages">
+            <button *ngFor="let p of [].constructor(backupPage.totalPages); let i = index"
+                    class="pg-btn pg-btn--num"
+                    [class.pg-btn--active]="i === backupPage.number"
+                    (click)="goToPage(i)">
+              {{ i + 1 }}
+            </button>
+          </span>
+          <button class="pg-btn" (click)="goToPage(currentPage + 1)" [disabled]="backupPage.last" title="Siguiente">
+            <span class="material-icons">chevron_right</span>
+          </button>
+          <button class="pg-btn" (click)="goToPage(backupPage.totalPages - 1)" [disabled]="backupPage.last" title="Última">
+            <span class="material-icons">last_page</span>
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /table-wrap -->
+
+  </section>
+
+</div><!-- /bc-root -->

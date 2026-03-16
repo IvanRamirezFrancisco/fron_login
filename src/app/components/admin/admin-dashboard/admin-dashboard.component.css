@@ -463,3 +463,194 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* No Data Messages */
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: #6c757d;
+}
+
+.no-data .material-icons {
+  font-size: 4rem;
+  color: #dee2e6;
+  margin-bottom: 1rem;
+}
+
+.no-data p {
+  margin: 0;
+  font-size: 1rem;
+  color: #adb5bd;
+}
+
+/* ─── Header actions group ────────────────────────────────────────────────── */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ─── Backup button (header) ──────────────────────────────────────────────── */
+.btn-backup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  background: transparent;
+  color: #800020;
+  border: 2px solid #800020;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-backup:hover:not(:disabled) {
+  background: #800020;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(128, 0, 32, 0.35);
+}
+
+.btn-backup:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.btn-backup .material-icons {
+  font-size: 1.1rem;
+}
+
+/* ─── Backup action card (quick-actions) ──────────────────────────────────── */
+.action-card--backup {
+  position: relative;
+  background: linear-gradient(135deg, #fff5f7 0%, #fff 100%);
+  border: 2px solid rgba(128, 0, 32, 0.25);
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  text-align: center;
+  outline: none;
+}
+
+.action-card--backup:hover:not(:disabled) {
+  background: linear-gradient(135deg, #800020 0%, #a0002a 100%);
+  border-color: #800020;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(128, 0, 32, 0.3);
+}
+
+.action-card--backup:hover:not(:disabled) .action-icon,
+.action-card--backup:hover:not(:disabled) .action-text {
+  color: #fff;
+}
+
+.action-card--backup:hover:not(:disabled) .action-badge {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+}
+
+.action-card--backup:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.action-card--backup .action-icon {
+  color: #800020;
+}
+
+.action-card--backup .action-text {
+  color: #800020;
+  font-weight: 600;
+}
+
+.action-badge {
+  display: inline-block;
+  margin-top: 0.4rem;
+  padding: 0.15rem 0.5rem;
+  background: rgba(128, 0, 32, 0.1);
+  color: #800020;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* ─── Spinning icon animation ─────────────────────────────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spin {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+/* ─── Backup notifications ────────────────────────────────────────────────── */
+.backup-notification {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.25rem;
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.backup-notification--success {
+  background: #edfbf3;
+  border: 1px solid #6fcf97;
+  color: #1a7740;
+}
+
+.backup-notification--success .material-icons {
+  color: #27ae60;
+  font-size: 1.3rem;
+}
+
+.backup-notification--error {
+  background: #fff5f7;
+  border: 1px solid #e57373;
+  color: #c0392b;
+}
+
+.backup-notification--error .material-icons {
+  color: #e74c3c;
+  font-size: 1.3rem;
+}
+
+.backup-notification span:nth-child(2) {
+  flex: 1;
+}
+
+.notif-close {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.6;
+  padding: 0;
+  line-height: 1;
+  transition: opacity 0.2s;
+}
+
+.notif-close:hover { opacity: 1; }
+
+.notif-close .material-icons { font-size: 1.1rem; }

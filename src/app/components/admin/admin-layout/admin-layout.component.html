@@ -34,7 +34,7 @@
         </div>
         <div class="user-details">
           <span class="user-name">{{ currentUser.firstName }}</span>
-          <span class="user-role">Administrador</span>
+          <span class="user-role">{{ userRoleLabel }}</span>
         </div>
       </div>
       
@@ -58,28 +58,51 @@
         <button class="mobile-menu-btn" (click)="toggleSidebar()">
           <span class="material-icons">menu</span>
         </button>
-        <h1 class="page-title">Panel de Administración</h1>
+        <div class="module-header">
+          <div class="module-icon">
+            <span class="material-icons">{{ currentModuleHeader.icon }}</span>
+          </div>
+          <div class="module-text">
+            <span class="module-title">{{ currentModuleHeader.title }}</span>
+            <span class="module-subtitle" *ngIf="currentModuleHeader.subtitle">
+              {{ currentModuleHeader.subtitle }}
+            </span>
+          </div>
+        </div>
       </div>
       
       <div class="topbar-right">
-        <button class="topbar-btn">
-          <span class="material-icons">notifications</span>
-          <span class="notification-badge">3</span>
-        </button>
-        
-        <button class="topbar-btn">
-          <span class="material-icons">settings</span>
-        </button>
-        
-        <div class="user-menu">
-          <span class="material-icons">account_circle</span>
-          <span class="user-name-top">{{ currentUser?.firstName || 'Admin' }}</span>
+        <div class="module-action-group" *ngIf="canShowAnyModuleAction || isActive('/admin/products')">
+          <!-- Botón secundario (ej. "Actualizar" en Clientes) -->
+          <button
+            *ngIf="currentModuleHeader.secondaryActionLabel && canShowSecondaryModuleAction"
+            class="module-action-btn module-action-btn--secondary"
+            (click)="triggerSecondaryModuleAction()">
+            <span class="material-icons">{{ currentModuleHeader.secondaryActionIcon || 'refresh' }}</span>
+            <span>{{ currentModuleHeader.secondaryActionLabel }}</span>
+          </button>
+
+          <!-- Botón CSV: solo visible en la sección de Productos -->
+          <app-csv-import-export
+            *ngIf="isActive('/admin/products')"
+            moduleType="products"
+            (importSuccess)="triggerSecondaryModuleAction()">
+          </app-csv-import-export>
+
+          <!-- Botón de acción principal (ej. "Nuevo Producto") -->
+          <button
+            *ngIf="currentModuleHeader.actionLabel && canShowModuleAction"
+            class="module-action-btn"
+            (click)="triggerModuleAction()">
+            <span class="material-icons">{{ currentModuleHeader.actionIcon || 'add' }}</span>
+            <span>{{ currentModuleHeader.actionLabel }}</span>
+          </button>
         </div>
       </div>
     </header>
 
     <!-- Content Area -->
-    <div class="admin-content">
+    <div class="admin-content" [class.admin-content--flush]="activeRoute.includes('/gestion-db')">
       <router-outlet></router-outlet>
     </div>
   </main>

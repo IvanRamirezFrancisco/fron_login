@@ -1,12 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
-import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
+import { PublicApiService } from '../../services/public-api.service';
 import { User } from '../../models/user.model';
-import { Product } from '../../models/product.model';
+import { PublicProduct, PublicCategory, SpringPage } from '../../models/product.model';
 
 @Component({
   selector: 'app-catalogo',
@@ -28,108 +30,179 @@ export class CatalogoComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
   showUserMenu = false;
 
-  // Filtros
-  categoriaSeleccionada: string[] = [];
-  marcaSeleccionada: string[] = [];
+  // Filtros activos
+  categoriaSeleccionada: number[] = [];   // IDs numéricos del backend
+  marcaSeleccionada: number[] = [];       // IDs numéricos del backend
   precioMin = 0;
   precioMax = 100000;
 
-  categorias = ['guitars', 'pianos', 'keyboards', 'drums', 'bass'];
-  marcas: string[] = [];
+  // Datos reales del backend
+  categorias: PublicCategory[] = [];
+  marcasDisponibles: { id: number; name: string }[] = [];
 
-  productos: Product[] = [];
-  productosFiltrados: Product[] = [];
+  // Productos paginados
+  paginaActual = 0;
+  tamanioPagina = 12;
+  totalProductos = 0;
+  totalPaginas = 0;
+
+  productos: PublicProduct[] = [];
   loading = true;
+  error: string | null = null;
 
   // Control de filtros móvil
   mostrarFiltros = false;
 
+  // Control de visibilidad del sidebar de filtros (desktop)
+  filtrosVisibles = true;
+
+  // Ordenación
+  sortBy: 'featured' | 'price_asc' | 'price_desc' | 'name_asc' = 'featured';
+  sortOptions = [
+    { value: 'featured',   label: 'Destacados'            },
+    { value: 'price_asc',  label: 'Precio: menor a mayor' },
+    { value: 'price_desc', label: 'Precio: mayor a menor' },
+    { value: 'name_asc',   label: 'Nombre: A → Z'         },
+  ];
+
+  // Para búsqueda con debounce
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private authService: AuthService,
-    private productService: ProductService,
+    private publicApiService: PublicApiService,
     private cartService: CartService
   ) {}
 
   ngOnInit(): void {
     // Verificar autenticación
-    this.authService.getCurrentUser().subscribe((user: User | null) => {
+    this.authService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe((user: User | null) => {
       this.currentUser = user;
       this.isLoggedIn = !!user;
     });
 
-    // Cargar productos
-    this.loadProducts();
+    // Cargar categorías con productos activos para el sidebar
+    this.publicApiService.getActiveCategories(true).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (cats) => this.categorias = cats,
+      error: () => {}
+    });
+
+    // Leer filtro de categoría desde query params (ej: /catalogo?categoryId=3)
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      const catId = params['categoryId'] ? +params['categoryId'] : null;
+      if (catId) {
+        this.categoriaSeleccionada = [catId];
+      }
+      this.loadProducts();
+    });
+
+    // Búsqueda con debounce de 400ms para no saturar el backend
+    this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.paginaActual = 0;
+      this.loadProducts();
+    });
 
     // Actualizar contador de carrito
-    this.cartService.cartCount$.subscribe(count => {
+    this.cartService.cartCount$.pipe(takeUntil(this.destroy$)).subscribe(count => {
       this.cartItemCount = count;
     });
   }
 
   loadProducts(): void {
     this.loading = true;
-    this.productService.getProducts().subscribe({
-      next: (products) => {
-        this.productos = products;
-        this.productosFiltrados = products;
-        
-        // Obtener marcas únicas
-        this.marcas = Array.from(new Set(products.map(p => p.brand)));
-        
-        this.precioMax = Math.max(...this.productos.map(p => p.price)) + 1000;
-        
+    this.error = null;
+    this.publicApiService.getCatalog({
+      keyword:    this.searchQuery.trim() || undefined,
+      categoryId: this.categoriaSeleccionada.length === 1 ? this.categoriaSeleccionada[0] : undefined,
+      brandId:    this.marcaSeleccionada.length === 1 ? this.marcaSeleccionada[0] : undefined,
+      sortBy:     this.sortBy,
+      page:       this.paginaActual,
+      size:       this.tamanioPagina
+    }).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (page: SpringPage<PublicProduct>) => {
+        this.productos = page.content;
+        this.totalProductos = page.totalElements;
+        this.totalPaginas = page.totalPages;
+
+        // Extraer marcas únicas de los resultados para el sidebar
+        const marcasMap = new Map<number, string>();
+        page.content.forEach(p => {
+          if (p.brand) {
+            marcasMap.set(p.brand.id, p.brand.name);
+          }
+        });
+        this.marcasDisponibles = Array.from(marcasMap.entries()).map(([id, name]) => ({ id, name }));
+
         this.loading = false;
       },
-      error: (err) => {
+      error: () => {
+        this.error = 'No se pudo cargar el catálogo. Inténtalo de nuevo.';
         this.loading = false;
       }
     });
   }
 
-  // Aplicar filtros
+  // Alias para compatibilidad con el template existente
+  get productosFiltrados(): PublicProduct[] {
+    return this.productos;
+  }
+
+  // Alias de marcas para compatibilidad con el template
+  get marcas(): string[] {
+    return this.marcasDisponibles.map(m => m.name);
+  }
+
+  /** Aplica filtros relanzando la llamada al backend (nunca en memoria). */
   aplicarFiltros(): void {
-    this.productosFiltrados = this.productos.filter(producto => {
-      // Filtrar por categoría
-      const cumpleCategoria = this.categoriaSeleccionada.length === 0 || 
-        this.categoriaSeleccionada.includes(producto.category.id);
-      
-      // Filtrar por marca
-      const cumpleMarca = this.marcaSeleccionada.length === 0 || 
-        this.marcaSeleccionada.includes(producto.brand);
-      
-      // Filtrar por precio
-      const cumplePrecio = producto.price >= this.precioMin && producto.price <= this.precioMax;
-      
-      return cumpleCategoria && cumpleMarca && cumplePrecio;
-    });
+    this.paginaActual = 0;
+    this.loadProducts();
+  }
+
+  cambiarPagina(pagina: number): void {
+    if (pagina < 0 || pagina >= this.totalPaginas) return;
+    this.paginaActual = pagina;
+    this.loadProducts();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  get paginas(): number[] {
+    return Array.from({ length: this.totalPaginas }, (_, i) => i);
   }
 
   // Ver detalle del producto
-  verDetalle(producto: Product): void {
+  verDetalle(producto: PublicProduct): void {
     this.router.navigate(['/producto', producto.id]);
   }
 
   // Agregar producto al carrito
-  agregarAlCarrito(producto: Product, event?: MouseEvent): void {
+  agregarAlCarrito(producto: PublicProduct, event?: MouseEvent): void {
     if (event) {
       event.stopPropagation();
     }
-
     if (!this.isLoggedIn) {
-      // Redirigir al login si no está autenticado
-      this.router.navigate(['/login'], { 
-        queryParams: { returnUrl: this.router.url } 
+      this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url }
       });
       return;
     }
-
-    // Obtener coordenadas del botón para la animación
     const buttonElement = event?.currentTarget as HTMLElement;
     const rect = buttonElement?.getBoundingClientRect();
-    
-    // Agregar al carrito con animación
-    this.cartService.addToCart(producto, 1, undefined, {
+    // Adaptador de PublicProduct al contrato de CartService
+    const cartProduct = {
+      id: String(producto.id),
+      name: producto.name,
+      price: producto.price,
+      imageUrl: producto.imageUrl,
+      stock: producto.stock
+    } as any;
+    this.cartService.addToCart(cartProduct, 1, undefined, {
       x: rect ? rect.left + rect.width / 2 : window.innerWidth / 2,
       y: rect ? rect.top + rect.height / 2 : window.innerHeight / 2
     });
@@ -138,7 +211,6 @@ export class CatalogoComponent implements OnInit, OnDestroy {
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
     const userMenuContainer = target.closest('.user-menu-container');
-    
     if (!userMenuContainer && this.showUserMenu) {
       this.showUserMenu = false;
     }
@@ -165,22 +237,22 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     this.router.navigate(['/home']);
   }
 
-  toggleFiltroCategoria(categoria: string): void {
-    const index = this.categoriaSeleccionada.indexOf(categoria);
+  toggleFiltroCategoria(categoriaId: number): void {
+    const index = this.categoriaSeleccionada.indexOf(categoriaId);
     if (index > -1) {
       this.categoriaSeleccionada.splice(index, 1);
     } else {
-      this.categoriaSeleccionada.push(categoria);
+      this.categoriaSeleccionada.push(categoriaId);
     }
     this.aplicarFiltros();
   }
 
-  toggleFiltroMarca(marca: string): void {
-    const index = this.marcaSeleccionada.indexOf(marca);
+  toggleFiltroMarca(marcaId: number): void {
+    const index = this.marcaSeleccionada.indexOf(marcaId);
     if (index > -1) {
       this.marcaSeleccionada.splice(index, 1);
     } else {
-      this.marcaSeleccionada.push(marca);
+      this.marcaSeleccionada.push(marcaId);
     }
     this.aplicarFiltros();
   }
@@ -189,19 +261,15 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     this.categoriaSeleccionada = [];
     this.marcaSeleccionada = [];
     this.precioMin = 0;
-    this.precioMax = Math.max(...this.productos.map(p => p.price)) + 1000;
+    this.precioMax = 100000;
+    this.searchQuery = '';
     this.aplicarFiltros();
   }
 
-  // Métodos para control de filtros móvil
+  // Filtros móvil
   toggleFiltros(): void {
     this.mostrarFiltros = !this.mostrarFiltros;
-    // Prevenir scroll del body cuando los filtros están abiertos
-    if (this.mostrarFiltros) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = this.mostrarFiltros ? 'hidden' : '';
   }
 
   cerrarFiltros(): void {
@@ -209,8 +277,32 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     document.body.style.overflow = '';
   }
 
+  // Sidebar filtros desktop (ocultar / mostrar)
+  toggleFiltrosVisibles(): void {
+    this.filtrosVisibles = !this.filtrosVisibles;
+  }
+
+  // Cambio de ordenación
+  onSortChange(): void {
+    this.paginaActual = 0;
+    this.loadProducts();
+  }
+
+  onSortSelect(value: string): void {
+    this.sortBy = value as 'featured' | 'price_asc' | 'price_desc' | 'name_asc';
+    this.onSortChange();
+  }
+
   contadorFiltrosActivos(): number {
     return this.categoriaSeleccionada.length + this.marcaSeleccionada.length;
+  }
+
+  getNombreCategoria(id: number): string {
+    return this.categorias.find(c => c.id === id)?.name ?? '';
+  }
+
+  getNombreMarca(id: number): string {
+    return this.marcasDisponibles.find(m => m.id === id)?.name ?? '';
   }
 
   aplicarFiltrosYCerrar(): void {
@@ -219,15 +311,7 @@ export class CatalogoComponent implements OnInit, OnDestroy {
   }
 
   performSearch(): void {
-    if (this.searchQuery.trim()) {
-      // Implementar búsqueda por nombre/descripción
-      this.productosFiltrados = this.productos.filter(producto =>
-        producto.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        producto.description?.toLowerCase().includes(this.searchQuery.toLowerCase())
-      );
-    } else {
-      this.aplicarFiltros();
-    }
+    this.searchSubject.next(this.searchQuery);
   }
 
   navigateToLogin(): void {
@@ -238,17 +322,26 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     this.router.navigate(['/carrito']);
   }
 
-  toggleWishlist(): void {
-    // Toggle silencioso
-  }
+  toggleWishlist(): void {}
 
   navigateToHome(): void {
     this.router.navigate(['/home']);
   }
 
   ngOnDestroy(): void {
-    // Limpiar overflow del body al destruir el componente
     document.body.style.overflow = '';
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /** Precio efectivo: discountPrice si existe, si no price. */
+  getEffectivePrice(p: PublicProduct): number {
+    return p.discountPrice ?? p.price;
+  }
+
+  /** Porcentaje de descuento redondeado. */
+  getDiscountPercent(p: PublicProduct): number {
+    if (!p.discountPrice || p.discountPrice >= p.price) return 0;
+    return Math.round((1 - p.discountPrice / p.price) * 100);
   }
 }
-

@@ -1,4 +1,5 @@
 <div class="dashboard-container">
+
   <!-- Page Header -->
   <div class="page-header">
     <div>
@@ -47,30 +48,30 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th>Número de Orden</th>
               <th>Cliente</th>
-              <th>Producto</th>
-              <th>Monto</th>
+              <th>Total</th>
               <th>Estado</th>
+              <th>Fecha</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let order of recentOrders">
-              <td class="order-id">{{ order.id }}</td>
+              <td class="order-id">{{ order.orderNumber }}</td>
               <td>
                 <div class="customer-cell">
                   <span class="material-icons">account_circle</span>
-                  <span>{{ order.customer }}</span>
+                  <span>{{ order.customerName || 'Cliente #' + order.customerId }}</span>
                 </div>
               </td>
-              <td class="product-name">{{ order.product }}</td>
-              <td class="amount">\${{ order.amount | number:'1.2-2' }}</td>
+              <td class="amount">\${{ order.total | number:'1.2-2' }}</td>
               <td>
                 <span class="status-badge" [ngClass]="getStatusClass(order.status)">
                   {{ getStatusText(order.status) }}
                 </span>
               </td>
+              <td>{{ order.createdAt | date:'short' }}</td>
               <td>
                 <div class="action-buttons">
                   <button class="icon-btn" title="Ver detalles">
@@ -84,6 +85,12 @@
             </tr>
           </tbody>
         </table>
+        
+        <!-- Mensaje si no hay órdenes -->
+        <div *ngIf="recentOrders.length === 0" class="no-data">
+          <span class="material-icons">inbox</span>
+          <p>No hay órdenes recientes</p>
+        </div>
       </div>
     </div>
 
@@ -102,15 +109,21 @@
           <div class="product-info">
             <h4 class="product-name">{{ product.name }}</h4>
             <div class="product-stats">
-              <span class="product-sales">{{ product.sales }} ventas</span>
-              <span class="product-revenue">\${{ product.revenue | number:'1.0-0' }}</span>
+              <span class="product-sales">{{ product.salesCount || 0 }} ventas</span>
+              <span class="product-revenue">\${{ (product.price * (product.salesCount || 0)) | number:'1.0-0' }}</span>
             </div>
           </div>
           <div class="product-progress">
             <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="(product.sales / 150) * 100"></div>
+              <div class="progress-fill" [style.width.%]="((product.salesCount || 0) / 150) * 100"></div>
             </div>
           </div>
+        </div>
+        
+        <!-- Mensaje si no hay productos -->
+        <div *ngIf="topProducts.length === 0" class="no-data">
+          <span class="material-icons">inventory</span>
+          <p>No hay productos disponibles</p>
         </div>
       </div>
     </div>

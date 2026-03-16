@@ -1,0 +1,649 @@
+<!-- MODAL PROFESIONAL CON SISTEMA DE TABS/PESTAÑAS -->
+<div class="modal-overlay" *ngIf="showCreateModal || showEditModal" (click)="closeModal()">
+  <div class="modal-content modal-large-tabs" (click)="$event.stopPropagation()">
+    
+    <!-- Header del Modal -->
+    <div class="modal-header">
+      <div class="modal-header-content">
+        <span class="material-icons modal-icon">{{ showCreateModal ? 'add_shopping_cart' : 'edit' }}</span>
+        <div>
+          <h2>{{ showCreateModal ? '🆕 Nuevo Producto' : '✏️ Editar Producto' }}</h2>
+          <p class="modal-subtitle">Complete los campos por sección para registrar el producto</p>
+        </div>
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- Sistema de Tabs Profesional -->
+    <div class="tabs-container">
+      <div class="tabs-header">
+        <button 
+          class="tab-btn" 
+          [class.active]="currentTab === 'general'"
+          (click)="setTab('general')">
+          <span class="material-icons">info</span>
+          <span class="tab-label">
+            <span class="tab-title">Información General</span>
+            <span class="tab-subtitle">Datos básicos del producto</span>
+          </span>
+          <span class="tab-indicator"></span>
+        </button>
+        
+        <button 
+          class="tab-btn" 
+          [class.active]="currentTab === 'pricing'"
+          (click)="setTab('pricing')">
+          <span class="material-icons">attach_money</span>
+          <span class="tab-label">
+            <span class="tab-title">Precios e Inventario</span>
+            <span class="tab-subtitle">Precio y stock</span>
+          </span>
+          <span class="tab-indicator"></span>
+        </button>
+        
+        <button 
+          class="tab-btn" 
+          [class.active]="currentTab === 'media'"
+          (click)="setTab('media')">
+          <span class="material-icons">image</span>
+          <span class="tab-label">
+            <span class="tab-title">Multimedia</span>
+            <span class="tab-subtitle">Imágenes del producto</span>
+          </span>
+          <span class="tab-indicator"></span>
+        </button>
+        
+        <button 
+          class="tab-btn" 
+          [class.active]="currentTab === 'details'"
+          (click)="setTab('details')">
+          <span class="material-icons">description</span>
+          <span class="tab-label">
+            <span class="tab-title">Especificaciones</span>
+            <span class="tab-subtitle">Detalles y descripción</span>
+          </span>
+          <span class="tab-indicator"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mensajes de Error Global -->
+    <div *ngIf="errorMessage" class="alert alert-error-modal">
+      <span class="material-icons">error</span>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <!-- Body del Modal con Contenido por Tabs -->
+    <div class="modal-body">
+      <form class="product-form-professional">
+        
+        <!-- ============================================
+             TAB 1: INFORMACIÓN GENERAL
+             ============================================ -->
+        <div class="tab-content" *ngIf="currentTab === 'general'">
+          <div class="form-section-tab">
+            <div class="section-intro">
+              <span class="material-icons intro-icon">info</span>
+              <div>
+                <h3>Información General del Producto</h3>
+                <p>Ingrese los datos básicos y esenciales del producto</p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <!-- Nombre -->
+              <div class="form-group full-width">
+                <label class="form-label">
+                  Nombre del Producto <span class="required">*</span>
+                  <span class="help-icon" [title]="fieldHelp.name">
+                    <span class="material-icons">help_outline</span>
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  class="form-input"
+                  [(ngModel)]="productForm.name"
+                  name="name"
+                  placeholder="Ej: Guitarra Eléctrica Fender Stratocaster American Professional II"
+                  [class.input-error]="formErrors.name"
+                  (blur)="validateForm()"
+                  maxlength="200"
+                  required
+                />
+                <div class="input-help">{{ fieldHelp.name }}</div>
+                <div *ngIf="formErrors.name" class="error-message">
+                  <span class="material-icons">error</span>
+                  {{ formErrors.name }}
+                </div>
+              </div>
+
+              <!-- SKU -->
+              <div class="form-group">
+                <label class="form-label">
+                  SKU (Código) <span class="required">*</span>
+                  <span class="help-icon" [title]="fieldHelp.sku">
+                    <span class="material-icons">help_outline</span>
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  class="form-input input-uppercase"
+                  [(ngModel)]="productForm.sku"
+                  name="sku"
+                  placeholder="GUIT-STRAT-001"
+                  [class.input-error]="formErrors.sku"
+                  (blur)="validateSKU()"
+                  (input)="validateSKU()"
+                  maxlength="50"
+                  required
+                />
+                <div class="input-help">{{ fieldHelp.sku }}</div>
+                <div *ngIf="formErrors.sku" class="error-message">
+                  <span class="material-icons">error</span>
+                  {{ formErrors.sku }}
+                </div>
+              </div>
+
+              <!-- Categoría -->
+              <div class="form-group">
+                <label class="form-label">
+                  Categoría <span class="required">*</span>
+                  <span class="help-icon" [title]="fieldHelp.categoryId">
+                    <span class="material-icons">help_outline</span>
+                  </span>
+                </label>
+                <select 
+                  class="form-select" 
+                  [(ngModel)]="productForm.categoryId" 
+                  name="categoryId"
+                  [class.input-error]="formErrors.categoryId"
+                  required
+                >
+                  <option [value]="null">-- Seleccionar Categoría --</option>
+                  <option *ngFor="let category of categories" [value]="category.id">
+                    {{ category.name }}
+                  </option>
+                </select>
+                <div class="input-help">{{ fieldHelp.categoryId }}</div>
+                <div *ngIf="formErrors.categoryId" class="error-message">
+                  <span class="material-icons">error</span>
+                  {{ formErrors.categoryId }}
+                </div>
+              </div>
+
+              <!-- Marca -->
+              <div class="form-group">
+                <label class="form-label">
+                  Marca
+                  <span class="help-icon" [title]="fieldHelp.brandId">
+                    <span class="material-icons">help_outline</span>
+                  </span>
+                </label>
+                <select class="form-select" [(ngModel)]="productForm.brandId" name="brandId">
+                  <option [value]="null">-- Sin Marca --</option>
+                  <option *ngFor="let brand of brands" [value]="brand.id">
+                    {{ brand.name }}
+                  </option>
+                </select>
+                <div class="input-help">{{ fieldHelp.brandId }}</div>
+              </div>
+            </div>
+
+            <!-- Navegación Tab -->
+            <div class="tab-navigation">
+              <button type="button" class="btn btn-secondary" (click)="closeModal()">
+                <span class="material-icons">close</span>
+                Cancelar
+              </button>
+              <button type="button" class="btn btn-primary" (click)="setTab('pricing')">
+                Siguiente: Precios
+                <span class="material-icons">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================
+             TAB 2: PRECIOS E INVENTARIO
+             ============================================ -->
+        <div class="tab-content" *ngIf="currentTab === 'pricing'">
+          <div class="form-section-tab">
+            <div class="section-intro">
+              <span class="material-icons intro-icon">attach_money</span>
+              <div>
+                <h3>Precios e Inventario</h3>
+                <p>Configure los precios de venta y control de stock</p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <!-- Precio Regular -->
+              <div class="form-group">
+                <label class="form-label">
+                  Precio Regular <span class="required">*</span>
+                  <span class="help-icon" [title]="fieldHelp.price">
+                    <span class="material-icons">help_outline</span>
+                  </span>
+                </label>
+                <div class="input-with-icon">
+                  <span class="input-icon">$</span>
+                  <input
+                    type="number"
+                    class="form-input input-with-left-icon"
+                    [(ngModel)]="productForm.price"
+                    name="price"
+                    placeholder="5000.00"
+                    min="0"
+                    step="0.01"
+                    [class.input-error]="formErrors.price"
+                    (input)="onNumberInput($event, 'price')"
+                    (blur)="validateDiscountPrice()"
+                    required
+                  />
+                </div>
+                <div class="input-help">{{ fieldHelp.price }}</div>
+                <div *ngIf="formErrors.price" class="error-message">
+                  <span class="material-icons">error</span>
+                  {{ formErrors.price }}
+                </div>
+              </div>
+
+              <!-- Precio con Descuento -->
+              <div class="form-group">
+                <label class="form-label">
+                  Precio con Descuento
+                  <span class="help-icon" [title]="fieldHelp.discountPrice">
+                    <span class="material-icons">help_outline</span>
+                  </span>
+                </label>
+                <div class="input-with-icon">
+                  <span class="input-icon">$</span>
+                  <input
+                    type="number"
+                    class="form-input input-with-left-icon"
+                    [(ngModel)]="productForm.discountPrice"
+                    name="discountPrice"
+                    placeholder="4500.00"
+                    min="0"
+                    step="0.01"
+                    [class.input-error]="formErrors.discountPrice"
+                    (input)="onNumberInput($event, 'discountPrice')"
+                    (blur)="validateDiscountPrice()"
+                  />
+                </div>
+                <div class="input-help">{{ fieldHelp.discountPrice }}</div>
+                <div *ngIf="formErrors.discountPrice" class="error-message">
+                  <span class="material-icons">error</span>
+                  {{ formErrors.discountPrice }}
+                </div>
+                <!-- Badge de descuento -->
+                <div *ngIf="productForm.price && productForm.discountPrice && productForm.discountPrice < productForm.price" 
+                     class="discount-badge">
+                  <span class="material-icons">local_offer</span>
+                  {{ ((1 - productForm.discountPrice / productForm.price) * 100).toFixed(0) }}% OFF
+                </div>
+              </div>
+
+              <!-- Stock -->
+              <div class="form-group">
+                <label class="form-label">
+                  Stock Disponible <span class="required">*</span>
+                  <span class="help-icon" [title]="fieldHelp.stock">
+                    <span class="material-icons">help_outline</span>
+                  </span>
+                </label>
+                <div class="input-with-icon">
+                  <span class="input-icon">
+                    <span class="material-icons">inventory</span>
+                  </span>
+                  <input
+                    type="number"
+                    class="form-input input-with-left-icon"
+                    [(ngModel)]="productForm.stock"
+                    name="stock"
+                    placeholder="10"
+                    min="0"
+                    [class.input-error]="formErrors.stock"
+                    (input)="onNumberInput($event, 'stock')"
+                    required
+                  />
+                </div>
+                <div class="input-help">{{ fieldHelp.stock }}</div>
+                <div *ngIf="formErrors.stock" class="error-message">
+                  <span class="material-icons">error</span>
+                  {{ formErrors.stock }}
+                </div>
+              </div>
+
+              <!-- Estado -->
+              <div class="form-group">
+                <label class="form-label">Estado del Producto</label>
+                <div class="toggle-switch-modern">
+                  <input
+                    type="checkbox"
+                    id="activeToggle"
+                    [(ngModel)]="productForm.active"
+                    name="active"
+                  />
+                  <label for="activeToggle" class="toggle-label-modern">
+                    <span class="toggle-slider-modern"></span>
+                    <span class="toggle-text-modern">
+                      <span class="material-icons">{{ productForm.active ? 'visibility' : 'visibility_off' }}</span>
+                      {{ productForm.active ? 'Visible en tienda' : 'Oculto' }}
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Destacado -->
+              <div class="form-group">
+                <label class="form-label">Producto Destacado</label>
+                <div class="toggle-switch-modern">
+                  <input
+                    type="checkbox"
+                    id="featuredToggle"
+                    [(ngModel)]="productForm.featured"
+                    name="featured"
+                  />
+                  <label for="featuredToggle" class="toggle-label-modern">
+                    <span class="toggle-slider-modern"></span>
+                    <span class="toggle-text-modern">
+                      <span class="material-icons">{{ productForm.featured ? 'star' : 'star_border' }}</span>
+                      {{ productForm.featured ? 'Sí' : 'No' }}
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Navegación Tab -->
+            <div class="tab-navigation">
+              <button type="button" class="btn btn-secondary" (click)="setTab('general')">
+                <span class="material-icons">arrow_back</span>
+                Anterior
+              </button>
+              <button type="button" class="btn btn-primary" (click)="setTab('media')">
+                Siguiente: Multimedia
+                <span class="material-icons">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================
+             TAB 3: MULTIMEDIA (IMÁGENES)
+             ============================================ -->
+        <div class="tab-content" *ngIf="currentTab === 'media'">
+          <div class="form-section-tab">
+            <div class="section-intro">
+              <span class="material-icons intro-icon">image</span>
+              <div>
+                <h3>Multimedia del Producto</h3>
+                <p>Sube la imagen principal del producto</p>
+              </div>
+            </div>
+
+            <!-- Selector de Modo de Imagen -->
+            <div class="image-mode-selector">
+              <button 
+                type="button"
+                class="mode-btn"
+                [class.active]="imageUploadMode === 'file'"
+                (click)="setImageUploadMode('file')">
+                <span class="material-icons">cloud_upload</span>
+                <div class="mode-info">
+                  <span class="mode-title">Subir desde mi dispositivo</span>
+                  <span class="mode-desc">Selecciona un archivo JPG, PNG o WebP</span>
+                </div>
+              </button>
+
+              <button 
+                type="button"
+                class="mode-btn"
+                [class.active]="imageUploadMode === 'url'"
+                (click)="setImageUploadMode('url')">
+                <span class="material-icons">link</span>
+                <div class="mode-info">
+                  <span class="mode-title">Usar URL de imagen</span>
+                  <span class="mode-desc">Pega la URL de una imagen externa</span>
+                </div>
+              </button>
+            </div>
+
+            <!-- Contenido según el modo -->
+            <div class="image-upload-area">
+              
+              <!-- Modo: Archivo Local -->
+              <div *ngIf="imageUploadMode === 'file'" class="upload-file-section">
+                <div class="upload-zone" (click)="fileInput.click()">
+                  <input
+                    type="file"
+                    #fileInput
+                    accept="image/*"
+                    (change)="onImageFileSelected($event)"
+                    style="display: none"
+                  />
+                  <div class="upload-icon">
+                    <span class="material-icons">add_photo_alternate</span>
+                  </div>
+                  <p class="upload-title">Haz clic para seleccionar una imagen</p>
+                  <p class="upload-hint">o arrastra y suelta aquí</p>
+                  <span class="upload-specs">Máximo 5MB - JPG, PNG, WebP</span>
+                </div>
+
+                <!-- Vista Previa Archivo Local -->
+                <div *ngIf="imagePreview" class="image-preview-card">
+                  <div class="preview-header">
+                    <span class="material-icons">check_circle</span>
+                    <span>Imagen seleccionada</span>
+                  </div>
+                  <div class="preview-image-container">
+                    <img [src]="imagePreview" alt="Preview">
+                    <button type="button" class="btn-remove-preview" (click)="clearImage()">
+                      <span class="material-icons">close</span>
+                    </button>
+                  </div>
+                  <div *ngIf="selectedImageFile" class="preview-info">
+                    <span class="material-icons">description</span>
+                    {{ selectedImageFile.name }} ({{ (selectedImageFile.size / 1024 / 1024).toFixed(2) }} MB)
+                  </div>
+                </div>
+              </div>
+
+              <!-- Modo: URL -->
+              <div *ngIf="imageUploadMode === 'url'" class="upload-url-section">
+                <div class="url-input-group">
+                  <label class="form-label">
+                    <span class="material-icons">link</span>
+                    URL de la Imagen
+                  </label>
+                  <input
+                    type="url"
+                    class="form-input input-url"
+                    [(ngModel)]="productForm.imageUrl"
+                    name="imageUrl"
+                    placeholder="https://ejemplo.com/imagen-producto.jpg"
+                  />
+                  <div class="input-help">
+                    <span class="material-icons">info</span>
+                    Asegúrate de que la URL sea accesible públicamente
+                  </div>
+                </div>
+
+                <!-- Vista Previa URL -->
+                <div *ngIf="productForm.imageUrl" class="image-preview-card">
+                  <div class="preview-header">
+                    <span class="material-icons">check_circle</span>
+                    <span>Vista previa de la imagen</span>
+                  </div>
+                  <div class="preview-image-container">
+                    <img [src]="productForm.imageUrl" alt="Preview" (error)="onImageError($event)">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Navegación Tab -->
+            <div class="tab-navigation">
+              <button type="button" class="btn btn-secondary" (click)="setTab('pricing')">
+                <span class="material-icons">arrow_back</span>
+                Anterior
+              </button>
+              <button type="button" class="btn btn-primary" (click)="setTab('details')">
+                Siguiente: Especificaciones
+                <span class="material-icons">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================
+             TAB 4: ESPECIFICACIONES Y DETALLES
+             ============================================ -->
+        <div class="tab-content" *ngIf="currentTab === 'details'">
+          <div class="form-section-tab">
+            <div class="section-intro">
+              <span class="material-icons intro-icon">description</span>
+              <div>
+                <h3>Especificaciones y Detalles</h3>
+                <p>Información técnica y descripción del producto</p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <!-- Modelo -->
+              <div class="form-group">
+                <label class="form-label">
+                  Modelo
+                  <span class="help-icon" [title]="fieldHelp.model">
+                    <span class="material-icons">help_outline</span>
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  class="form-input"
+                  [(ngModel)]="productForm.model"
+                  name="model"
+                  placeholder="Stratocaster Professional II"
+                  maxlength="100"
+                />
+                <div class="input-help">{{ fieldHelp.model }}</div>
+              </div>
+
+              <!-- Peso -->
+              <div class="form-group">
+                <label class="form-label">
+                  Peso (kg)
+                  <span class="help-icon" [title]="fieldHelp.weight">
+                    <span class="material-icons">help_outline</span>
+                  </span>
+                </label>
+                <div class="input-with-icon">
+                  <input
+                    type="number"
+                    class="form-input input-with-right-icon"
+                    [(ngModel)]="productForm.weight"
+                    name="weight"
+                    placeholder="3.5"
+                    min="0"
+                    step="0.1"
+                    (input)="onNumberInput($event, 'weight')"
+                  />
+                  <span class="input-icon-right">kg</span>
+                </div>
+                <div class="input-help">{{ fieldHelp.weight }}</div>
+              </div>
+            </div>
+
+            <!-- Editor de Descripción Rico -->
+            <div class="description-section">
+              <label class="form-label">
+                <span class="material-icons">description</span>
+                Descripción Detallada del Producto
+                <span class="section-badge">Editor de Texto Enriquecido</span>
+              </label>
+
+              <div class="rich-text-editor-container">
+                <!-- Barra de Herramientas -->
+                <div class="editor-toolbar">
+                  <div class="toolbar-group">
+                    <button type="button" class="toolbar-btn" (click)="applyTextFormat('bold')" title="Negrita">
+                      <span class="material-icons">format_bold</span>
+                    </button>
+                    <button type="button" class="toolbar-btn" (click)="applyTextFormat('italic')" title="Cursiva">
+                      <span class="material-icons">format_italic</span>
+                    </button>
+                    <button type="button" class="toolbar-btn" (click)="applyTextFormat('underline')" title="Subrayado">
+                      <span class="material-icons">format_underlined</span>
+                    </button>
+                  </div>
+
+                  <div class="toolbar-separator"></div>
+
+                  <div class="toolbar-group">
+                    <button type="button" class="toolbar-btn" (click)="insertList('ul')" title="Lista con viñetas">
+                      <span class="material-icons">format_list_bulleted</span>
+                    </button>
+                    <button type="button" class="toolbar-btn" (click)="insertList('ol')" title="Lista numerada">
+                      <span class="material-icons">format_list_numbered</span>
+                    </button>
+                  </div>
+
+                  <div class="toolbar-separator"></div>
+
+                  <div class="toolbar-group">
+                    <button type="button" class="toolbar-btn" (click)="applyTextFormat('formatBlock', '<h3>')" title="Título">
+                      <span class="material-icons">title</span>
+                    </button>
+                    <button type="button" class="toolbar-btn" (click)="clearFormatting()" title="Limpiar formato">
+                      <span class="material-icons">format_clear</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Área de Edición -->
+                <div 
+                  class="rich-text-editor"
+                  contenteditable="true"
+                  (input)="onDescriptionInput($event)"
+                  placeholder="Escribe una descripción profesional y atractiva...
+
+📋 Sugerencias:
+• Características principales
+• Especificaciones técnicas (materiales, dimensiones)
+• Beneficios y ventajas
+• Contenido incluido
+• Garantía
+
+💡 Usa el formato para resaltar información importante"
+                ></div>
+
+                <!-- Ayuda -->
+                <div class="editor-help">
+                  <span class="material-icons">info</span>
+                  <span>Las descripciones detalladas con formato aumentan la confianza del cliente</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Navegación Tab -->
+            <div class="tab-navigation">
+              <button type="button" class="btn btn-secondary" (click)="setTab('media')">
+                <span class="material-icons">arrow_back</span>
+                Anterior
+              </button>
+              <button type="button" class="btn btn-primary" (click)="saveProduct()" [disabled]="loading">
+                <span class="material-icons">{{ loading ? 'hourglass_empty' : 'save' }}</span>
+                {{ loading ? 'Guardando...' : (showCreateModal ? 'Crear Producto' : 'Guardar Cambios') }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

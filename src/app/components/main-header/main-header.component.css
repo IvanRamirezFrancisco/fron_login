@@ -261,22 +261,6 @@
   color: #800020;
 }
 
-/* Estilo especial para el botón de admin */
-.admin-item {
-  background: linear-gradient(135deg, rgba(197, 160, 89, 0.1) 0%, rgba(197, 160, 89, 0.05) 100%);
-  border-left: 3px solid #C5A059;
-  font-weight: 600;
-}
-
-.admin-item:hover {
-  background: linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(197, 160, 89, 0.1) 100%);
-}
-
-.admin-item .material-icons {
-  color: #C5A059;
-  font-size: 22px;
-}
-
 .logout-item {
   color: #e74c3c;
   border-radius: 0 0 12px 12px;

@@ -10,6 +10,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   // Rutas públicas que NO deben redirigir a login en caso de 401
   const publicUrls = [
+    '/api/public/',                // ← STOREFRONT: todas las rutas públicas del catálogo
     '/auth/check-username',        // Validación username - variante 1
     '/api/auth/check-username',    // Validación username - variante 2
     '/login',                      // Login de usuario
@@ -21,7 +22,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/api/auth/validate-reset-token', // Validación (ruta completa) - coincidencia adicional
     '/verify-email',               // Verificación de email
     '/auth/login',                 // Login alternativo
-    '/auth/register'               // Registro alternativo
+    '/auth/register',              // Registro alternativo
+    '/api/coupons/active',         // Cupones activos (público)
+    '/api/coupons/check',          // Verificar disponibilidad de cupón (público)
+    '/api/coupons/validate',       // Validar cupón (público)
+    '/api/reviews/product',        // Ver reseñas de producto (público)
+    '/api/reviews/statistics'      // Estadísticas de reseñas (público)
   ];
   
   const isPublicUrl = publicUrls.some(url => req.url.includes(url));

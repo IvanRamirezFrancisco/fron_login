@@ -1,0 +1,350 @@
+<!-- BOTON DISPARADOR -->
+<button
+  (click)="isCsvModalOpen = true"
+  class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold
+         bg-white text-gray-600 border border-gray-200 rounded-xl
+         shadow-sm transition-all duration-200
+         hover:border-[#C5A059] hover:text-[#C5A059] hover:shadow-md
+         focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C5A059]">
+  <i class="fa-solid fa-file-csv text-[#C5A059]"></i>
+  Importar / Exportar
+</button>
+
+<!-- MODAL -->
+@if (isCsvModalOpen) {
+
+  <div
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+    (click)="closeModal()">
+
+    <div
+      class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+      (click)="$event.stopPropagation()">
+
+      <!-- CABECERA -->
+      <div class="flex items-center justify-between px-6 py-4 bg-gray-800 rounded-t-2xl flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid fa-file-csv text-[#C5A059] text-sm"></i>
+          </div>
+          <div>
+            <p class="text-sm font-bold text-white leading-tight">Importar / Exportar</p>
+            <p class="text-xs text-gray-300 leading-tight mt-px">{{ moduleLabel }}</p>
+          </div>
+        </div>
+        <button
+          (click)="closeModal()"
+          class="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- CUERPO -->
+      <div class="flex-1 overflow-y-auto">
+
+        <!-- ============================================================
+             ESTADO: upload — Seleccion de accion
+             ============================================================ -->
+        @if (importState === 'upload') {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 p-6">
+
+            <!-- Tarjeta Exportar -->
+            <div class="flex flex-col items-center text-center p-6 border border-gray-200 rounded-xl hover:border-[#800020] hover:shadow-md transition-all duration-200">
+              <div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
+                <i class="fa-solid fa-file-arrow-down text-[#800020] text-2xl"></i>
+              </div>
+              <h3 class="text-base font-bold text-gray-800 mb-2">Exportar Datos</h3>
+              <p class="text-xs text-gray-500 leading-relaxed mb-5">
+                Descarga todos los {{ moduleLabel | lowercase }} como un archivo CSV compatible con Excel y LibreOffice.
+              </p>
+              <button
+                (click)="onExport()"
+                [disabled]="isExporting"
+                class="w-full py-2.5 rounded-xl font-bold text-sm border-2 border-[#800020] text-[#800020] hover:bg-[#800020] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200">
+                @if (isExporting) {
+                  <i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Generando...
+                } @else {
+                  <i class="fa-solid fa-download mr-2"></i>Descargar CSV
+                }
+              </button>
+            </div>
+
+            <!-- Tarjeta Importar -->
+            <div class="flex flex-col items-center text-center p-6 border border-gray-200 rounded-xl hover:border-green-400 hover:shadow-md transition-all duration-200">
+              <div class="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mb-4">
+                <i class="fa-solid fa-file-arrow-up text-green-600 text-2xl"></i>
+              </div>
+              <h3 class="text-base font-bold text-gray-800 mb-2">Importar Registros</h3>
+              <p class="text-xs text-gray-500 leading-relaxed mb-5">
+                Sube un CSV para insertar o actualizar {{ moduleLabel | lowercase }}.
+                Los registros existentes por {{ moduleType === 'products' ? 'SKU' : 'correo electronico' }} se procesaran segun la regla elegida.
+              </p>
+              <label
+                class="w-full py-2.5 rounded-xl font-bold text-sm text-center block bg-green-600 text-white hover:bg-green-700 cursor-pointer transition-all duration-200 select-none">
+                <i class="fa-solid fa-folder-open mr-2"></i>Seleccionar Archivo
+                <input type="file" accept=".csv" class="hidden" (change)="onFileSelected($event)">
+              </label>
+            </div>
+
+          </div>
+        }
+
+        <!-- ============================================================
+             ESTADO: preview — Vista previa + Selector de regla de colision
+             ============================================================ -->
+        @if (importState === 'preview') {
+          <div class="p-6 flex flex-col gap-4">
+
+            <!-- Archivo seleccionado -->
+            <div class="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+              <i class="fa-solid fa-file-lines text-gray-400 text-sm shrink-0"></i>
+              <span class="text-sm font-medium text-gray-700 truncate">{{ selectedFile?.name }}</span>
+              <span class="ml-auto text-xs text-gray-400 shrink-0 whitespace-nowrap">{{ ((selectedFile?.size ?? 0) / 1024).toFixed(1) }} KB</span>
+            </div>
+
+            <!-- Selector de regla de colision (solo para products) -->
+            @if (moduleType === 'products' && !previewError) {
+              <div class="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <p class="text-xs font-bold text-amber-700 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                  <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                  Que hacer con SKUs existentes?
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3">
+
+                  <!-- Opcion UPDATE -->
+                  <label class="flex-1 flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all duration-150"
+                    [class.border-[#800020]]="selectedRule === 'UPDATE'"
+                    [class.bg-red-50]="selectedRule === 'UPDATE'"
+                    [class.border-gray-200]="selectedRule !== 'UPDATE'"
+                    [class.bg-white]="selectedRule !== 'UPDATE'">
+                    <input type="radio" name="collisionRule" value="UPDATE" [(ngModel)]="selectedRule" class="mt-0.5 accent-[#800020]">
+                    <div>
+                      <p class="text-sm font-bold text-gray-800">Actualizar</p>
+                      <p class="text-xs text-gray-500 mt-0.5">Sobreescribe precio, stock y datos del producto existente.</p>
+                    </div>
+                  </label>
+
+                  <!-- Opcion SKIP -->
+                  <label class="flex-1 flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all duration-150"
+                    [class.border-[#800020]]="selectedRule === 'SKIP'"
+                    [class.bg-red-50]="selectedRule === 'SKIP'"
+                    [class.border-gray-200]="selectedRule !== 'SKIP'"
+                    [class.bg-white]="selectedRule !== 'SKIP'">
+                    <input type="radio" name="collisionRule" value="SKIP" [(ngModel)]="selectedRule" class="mt-0.5 accent-[#800020]">
+                    <div>
+                      <p class="text-sm font-bold text-gray-800">Ignorar</p>
+                      <p class="text-xs text-gray-500 mt-0.5">Mantiene los datos actuales sin modificar. Solo inserta nuevos.</p>
+                    </div>
+                  </label>
+
+                </div>
+              </div>
+            }
+
+            <!-- Error de parseo -->
+            @if (previewError) {
+              <div class="flex items-start gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-xl">
+                <i class="fa-solid fa-circle-exclamation text-red-500 mt-0.5 shrink-0"></i>
+                <p class="text-sm text-red-700">{{ previewError }}</p>
+              </div>
+            }
+
+            <!-- Tabla de vista previa -->
+            @if (preview) {
+              <div>
+                <p class="text-sm font-semibold text-gray-700 mb-2">
+                  Vista previa &mdash; primeros {{ preview.rows.length }} registros
+                </p>
+                <div class="overflow-x-auto rounded-xl border border-gray-200">
+                  <table class="w-full text-xs whitespace-nowrap border-collapse">
+                    <thead>
+                      <tr class="bg-gray-50 border-b border-gray-200">
+                        @for (h of preview.headers; track $index) {
+                          <th class="px-4 py-2.5 text-left font-semibold text-gray-600 uppercase tracking-wider text-[11px]">{{ h }}</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                      @for (row of preview.rows; track $index) {
+                        <tr class="hover:bg-gray-50 transition-colors">
+                          @for (cell of row; track $index) {
+                            <td class="px-4 py-2.5 text-gray-700">{{ cell }}</td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+
+            <!-- Acciones -->
+            <div class="flex justify-end gap-3 pt-2">
+              <button
+                (click)="onReset()"
+                class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                <i class="fa-solid fa-arrow-left text-xs"></i>
+                Cancelar
+              </button>
+              @if (!previewError && preview) {
+                <button
+                  (click)="onConfirmImport()"
+                  class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-[#800020] rounded-xl hover:bg-[#6a001a] transition-colors shadow-sm">
+                  <i class="fa-solid fa-upload text-xs"></i>
+                  Confirmar e Importar
+                </button>
+              }
+            </div>
+
+          </div>
+        }
+
+        <!-- ============================================================
+             ESTADO: processing — Shimmer / Spinner minimalista
+             ============================================================ -->
+        @if (importState === 'processing') {
+          <div class="flex flex-col items-center justify-center py-14 px-8 gap-6">
+
+            <!-- Icono animado -->
+            <div class="relative w-20 h-20">
+              <div class="absolute inset-0 rounded-full bg-red-100 animate-ping opacity-40"></div>
+              <div class="relative w-20 h-20 rounded-full bg-red-50 flex items-center justify-center">
+                <i class="fa-solid fa-circle-notch fa-spin text-[#800020] text-3xl"></i>
+              </div>
+            </div>
+
+            <!-- Texto -->
+            <div class="text-center">
+              <p class="text-base font-bold text-gray-800">Procesando catalogo en el servidor...</p>
+              <p class="text-sm text-gray-400 mt-1">No cierres esta ventana. Este proceso puede tardar unos segundos.</p>
+            </div>
+
+            <!-- Skeleton shimmer lines -->
+            <div class="w-full max-w-sm space-y-2.5">
+              <div class="h-3 bg-gray-200 rounded-full animate-pulse w-full"></div>
+              <div class="h-3 bg-gray-200 rounded-full animate-pulse w-4/5"></div>
+              <div class="h-3 bg-gray-200 rounded-full animate-pulse w-3/5"></div>
+            </div>
+
+          </div>
+        }
+
+        <!-- ============================================================
+             ESTADO: result — Panel de exito / error con resumen del backend
+             ============================================================ -->
+        @if (importState === 'result') {
+          <div class="p-6 flex flex-col gap-5">
+
+            <!-- Error HTTP -->
+            @if (importError) {
+              <div class="flex items-start gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-xl">
+                <i class="fa-solid fa-circle-xmark text-red-500 mt-0.5 shrink-0"></i>
+                <p class="text-sm text-red-700">{{ importError }}</p>
+              </div>
+            }
+
+            @if (importResult) {
+
+              <!-- Panel de exito -->
+              <div class="rounded-xl border border-green-200 bg-green-50 px-5 py-4 flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <i class="fa-solid fa-circle-check text-green-600 text-lg"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-green-800">Importacion completada exitosamente</p>
+                  <p class="text-xs text-green-600 mt-0.5">
+                    {{ importResult.insertedCount }} creados &nbsp;&bull;&nbsp;
+                    {{ importResult.updatedCount }} actualizados &nbsp;&bull;&nbsp;
+                    {{ importResult.totalRows - importResult.successCount - importResult.errorCount }} ignorados
+                  </p>
+                </div>
+              </div>
+
+              <!-- Tarjetas de estadisticas -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="flex flex-col items-center p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                  <span class="text-3xl font-extrabold text-gray-700 leading-none">{{ importResult.totalRows }}</span>
+                  <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-2">Leidas</span>
+                </div>
+                <div class="flex flex-col items-center p-4 bg-green-50 border border-green-200 rounded-xl">
+                  <span class="text-3xl font-extrabold text-green-700 leading-none">{{ importResult.insertedCount }}</span>
+                  <span class="text-[10px] font-bold text-green-500 uppercase tracking-wider mt-2">Creadas</span>
+                </div>
+                <div class="flex flex-col items-center p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <span class="text-3xl font-extrabold text-blue-700 leading-none">{{ importResult.updatedCount }}</span>
+                  <span class="text-[10px] font-bold text-blue-500 uppercase tracking-wider mt-2">Actualizadas</span>
+                </div>
+                <div class="flex flex-col items-center p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <span class="text-3xl font-extrabold text-amber-700 leading-none">{{ importResult.totalRows - importResult.successCount - importResult.errorCount }}</span>
+                  <span class="text-[10px] font-bold text-amber-500 uppercase tracking-wider mt-2">Ignoradas</span>
+                </div>
+                @if (importResult.errorCount > 0) {
+                  <div class="col-span-2 sm:col-span-4 flex flex-col items-center p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <span class="text-3xl font-extrabold text-red-700 leading-none">{{ importResult.errorCount }}</span>
+                    <span class="text-[10px] font-bold text-red-400 uppercase tracking-wider mt-2">Con error</span>
+                  </div>
+                }
+              </div>
+
+              <!-- Detalle de errores por fila -->
+              @if (importResult.errors.length > 0) {
+                <details class="rounded-xl border border-red-200 overflow-hidden">
+                  <summary class="flex items-center gap-2 px-4 py-3 bg-red-50 text-sm font-semibold text-red-700 cursor-pointer select-none list-none">
+                    <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+                    {{ importResult.errors.length }} fila(s) con error &mdash; ver detalle
+                    <i class="fa-solid fa-chevron-down text-xs ml-auto"></i>
+                  </summary>
+                  <div class="overflow-x-auto max-h-52 border-t border-red-100">
+                    <table class="w-full text-xs">
+                      <thead class="bg-red-50/70 border-b border-red-100">
+                        <tr>
+                          <th class="px-3 py-2 text-left font-semibold text-red-500 uppercase tracking-wider w-16">Fila</th>
+                          <th class="px-3 py-2 text-left font-semibold text-red-500 uppercase tracking-wider">Motivo</th>
+                          <th class="px-3 py-2 text-left font-semibold text-red-500 uppercase tracking-wider">Valor original</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-red-50">
+                        @for (e of importResult.errors; track e.rowNumber) {
+                          <tr class="hover:bg-red-50/40 transition-colors">
+                            <td class="px-3 py-2 font-bold text-red-600">{{ e.rowNumber }}</td>
+                            <td class="px-3 py-2 text-gray-700">{{ e.reason }}</td>
+                            <td class="px-3 py-2 font-mono text-gray-400 truncate max-w-[200px]">{{ e.rawValue }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
+              }
+
+            }
+
+            <!-- Botones de accion post-importacion -->
+            <div class="flex justify-end gap-3">
+              <button
+                (click)="onReset()"
+                class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                <i class="fa-solid fa-arrow-left text-xs"></i>
+                Nueva importacion
+              </button>
+              <button
+                (click)="onCloseAndReload()"
+                class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gray-800 rounded-xl hover:bg-gray-900 transition-colors shadow-sm">
+                <i class="fa-solid fa-rotate-right text-xs"></i>
+                Cerrar y recargar
+              </button>
+            </div>
+
+          </div>
+        }
+
+      </div>
+      <!-- /cuerpo del modal -->
+
+    </div>
+    <!-- /contenedor del modal -->
+
+  </div>
+  <!-- /fondo oscuro -->
+
+}

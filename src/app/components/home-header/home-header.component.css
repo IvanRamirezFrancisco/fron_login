@@ -126,6 +126,16 @@
   cursor: pointer;
 }
 
+/* Reset para <button> que actúa como nav-link */
+button.nav-link--btn {
+  background: none;
+  border: none;
+  outline: none;
+  margin: 0;
+  width: 100%;
+  text-align: left;
+}
+
 .nav-link:hover {
   color: var(--color-blanco);
   background: rgba(255, 255, 255, 0.1);

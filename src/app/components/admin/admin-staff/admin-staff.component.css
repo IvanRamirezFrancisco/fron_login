@@ -1,0 +1,482 @@
+/* ═══════════════════════════════════════════════════════════════
+   Variables corporativas — declaradas en :host para que los
+   gradientes del avatar resuelvan correctamente en componentes
+   con encapsulación Emulated.
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --wine:      #800020;
+  --wine-dark: #600018;
+  --wine-deep: #4a0012;
+  --gold:      #D4A347;
+  --gold-dark: #B8903D;
+}
+:host {
+  --wine:      #800020;
+  --wine-dark: #600018;
+  --wine-deep: #4a0012;
+  --gold:      #D4A347;
+  --gold-dark: #B8903D;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Utilidades de color
+   ═══════════════════════════════════════════════════════════════ */
+.text-wine  { color: var(--wine)  !important; }
+.text-gold  { color: var(--gold)  !important; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Botones primarios (wine / tinto)
+   ═══════════════════════════════════════════════════════════════ */
+.btn-wine,
+.btn-tinto {
+  background: linear-gradient(135deg, var(--wine) 0%, var(--wine-dark) 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(128, 0, 32, 0.25);
+  transition: all 0.25s ease;
+  text-decoration: none !important;
+}
+:host .btn-wine,
+:host .btn-tinto,
+button.btn-wine,
+button.btn-tinto {
+  background: linear-gradient(135deg, #800020 0%, #600018 100%) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+.btn-wine:hover,
+.btn-tinto:hover {
+  background: linear-gradient(135deg, var(--wine-dark) 0%, var(--wine-deep) 100%) !important;
+  color: #fff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(128, 0, 32, 0.4);
+}
+.btn-wine:focus,
+.btn-tinto:focus {
+  color: #fff !important;
+  box-shadow: 0 0 0 0.25rem rgba(128, 0, 32, 0.35) !important;
+}
+.btn-wine:active,
+.btn-tinto:active {
+  transform: translateY(0);
+  color: #fff !important;
+}
+.btn-wine:disabled,
+.btn-tinto:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  color: #fff !important;
+}
+
+/* Outline wine */
+.btn-outline-wine {
+  color: var(--wine);
+  border-color: var(--wine);
+  transition: all 0.25s ease;
+}
+.btn-outline-wine:hover {
+  background-color: var(--wine);
+  border-color: var(--wine);
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Tarjetas globales
+   ═══════════════════════════════════════════════════════════════ */
+.card {
+  border: none;
+  border-radius: 12px;
+}
+.shadow-sm {
+  box-shadow: 0 0.125rem 0.5rem rgba(128, 0, 32, 0.08) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Inputs / Selects
+   ═══════════════════════════════════════════════════════════════ */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--wine);
+  box-shadow: 0 0 0 0.2rem rgba(128, 0, 32, 0.15);
+}
+.input-group-text {
+  border-right: none;
+}
+.input-group .form-control {
+  border-left: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TARJETA + TABLA DE STAFF
+   ═══════════════════════════════════════════════════════════════ */
+.staff-table-card {
+  overflow: hidden;
+}
+
+/* ── Encabezado ── */
+.thead-staff {
+  background-color: #f4f6f8;
+  border-bottom: 2px solid #dee2e6;
+}
+.thead-staff th {
+  color: #495057;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 0.55rem 0.7rem;
+  white-space: nowrap;
+  vertical-align: middle;
+  border: none;
+}
+
+/* ── Cuerpo ── */
+.table tbody tr {
+  transition: background-color 0.12s ease;
+}
+.table tbody tr:hover {
+  background-color: rgba(128, 0, 32, 0.035);
+}
+.table tbody td {
+  padding: 0.45rem 0.7rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #f0f0f0;
+}
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Jerarquía tipográfica ── */
+.cell-text  { font-size: 0.88rem; color: #212529; }
+.cell-sub   { font-size: 0.74rem; color: #6c757d; }
+.fs-badge   { font-size: 0.75rem; }
+
+/* ── Avatar ── */
+.avatar-circle {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #800020 0%, #D4A347 100%);
+  color: #ffffff !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.73rem;
+  font-family: inherit;
+  line-height: 1;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(128, 0, 32, 0.2);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* ── Badges de roles ── */
+.role-badge {
+  background-color: rgba(212, 163, 71, 0.15);
+  border: 1px solid var(--gold);
+  color: #5a4820;
+  font-weight: 600;
+  font-size: 0.68rem;
+  padding: 0.25em 0.55em;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* ── Badge Estado ── */
+.badge-activo {
+  background-color: #d1e7dd;
+  color: #0a3622;
+  border: 1px solid #a3cfbb;
+}
+.badge-inactivo {
+  background-color: #e2e3e5;
+  color: #41464b;
+  border: 1px solid #c4c8cb;
+}
+
+/* ── Badge Cuenta ── */
+.badge-ok {
+  background-color: #d1e7dd;
+  color: #0a3622;
+  border: 1px solid #a3cfbb;
+  user-select: none;
+  transition: filter 0.15s;
+}
+.badge-ok:hover     { filter: brightness(0.93); }
+.badge-bloqueado {
+  background-color: #f8d7da;
+  color: #58151c;
+  border: 1px solid #f1aeb5;
+  user-select: none;
+  transition: filter 0.15s;
+}
+.badge-bloqueado:hover { filter: brightness(0.93); }
+
+/* ── Switch ── */
+.staff-switch {
+  width: 2.4em;
+  height: 1.3em;
+  cursor: pointer;
+}
+.staff-switch:checked {
+  background-color: #198754;
+  border-color: #198754;
+}
+.staff-switch:focus {
+  box-shadow: 0 0 0 0.18rem rgba(25, 135, 84, 0.25);
+}
+
+/* ── Botones de acción (íconos puros, sin .btn de Bootstrap) ── */
+.accion-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid;
+  background: transparent;
+  font-size: 0.82rem;
+  /* Garantizar que los íconos Bootstrap sean visibles */
+  font-family: "bootstrap-icons", sans-serif;
+  cursor: pointer;
+  transition: background-color 0.18s, color 0.18s, transform 0.15s, box-shadow 0.15s;
+  padding: 0;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+}
+.accion-btn .bi {
+  font-size: 0.82rem;
+  line-height: 1;
+}
+.accion-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+}
+.accion-edit {
+  color: #800020;
+  border-color: #800020;
+}
+.accion-edit:hover {
+  background-color: #800020;
+  color: #fff;
+}
+.accion-delete {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+.accion-delete:hover {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+/* ── Botón reset intentos (link pequeño) ── */
+.btn-reset-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--wine);
+  font-size: 0.8rem;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+.btn-reset-link:hover { opacity: 1; }
+
+/* ── Pie de tabla ── */
+.staff-table-footer {
+  padding: 1rem 1.25rem;
+  background: linear-gradient(to right, #f8f9fa, #ffffff);
+  border-top: 1px solid #e9ecef;
+}
+
+/* ── Info de registros ── */
+.footer-info {
+  display: flex;
+  align-items: center;
+}
+.footer-count {
+  font-size: 0.82rem;
+  color: #6c757d;
+  letter-spacing: 0.2px;
+}
+.footer-count strong {
+  color: #800020;
+  font-weight: 700;
+}
+
+/* ── Paginación profesional ── */
+.pagination-nav {
+  display: flex;
+  align-items: center;
+}
+.pagination-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(128, 0, 32, 0.07);
+}
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #495057;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.18s, color 0.18s, box-shadow 0.15s, transform 0.12s;
+  line-height: 1;
+  white-space: nowrap;
+}
+.page-btn:hover:not(:disabled) {
+  background-color: rgba(128, 0, 32, 0.08);
+  color: #800020;
+  transform: translateY(-1px);
+}
+.page-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+.page-btn-active {
+  background: linear-gradient(135deg, #800020 0%, #600018 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 10px rgba(128, 0, 32, 0.35);
+}
+.page-btn-active:hover {
+  background: linear-gradient(135deg, #600018 0%, #4a0012 100%) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+.page-btn-nav {
+  color: #800020;
+}
+.page-btn-nav:disabled {
+  color: #ced4da;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Spinner ── */
+.spinner-border.text-wine {
+  color: var(--wine) !important;
+  width: 3rem;
+  height: 3rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 992px) {
+  .thead-staff th,
+  .table tbody td {
+    font-size: 0.73rem;
+    padding: 0.3rem 0.45rem;
+  }
+  .cell-text { font-size: 0.8rem; }
+  .avatar-circle {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    font-size: 0.65rem;
+  }
+  .accion-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 0.72rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Modal Staff — brand-modal-* overlay + panel personalizado
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Overlay con blur (mismo patrón que admin-brands) */
+.brand-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: staffOverlayIn 0.2s ease;
+}
+
+@keyframes staffOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Panel del formulario de staff (más ancho por el contenido) */
+.staff-modal-panel {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: staffPanelIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes staffPanelIn {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+/* El componente app-staff-form-modal ocupa el espacio del panel */
+.staff-modal-panel app-staff-form-modal {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Clases legacy mantenidas por compatibilidad (ya no se usan en el HTML) */
+.staff-modal-dialog {
+  height: 90vh;
+  max-height: 90vh;
+  margin: 5vh auto;
+  display: flex;
+  flex-direction: column;
+}
+.staff-modal-content {
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+}
+.staff-modal-content app-staff-form-modal {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}

@@ -1,0 +1,375 @@
+<div class="admin-reviews-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Moderación de Reseñas</h1>
+      <p class="subtitle">Gestiona y modera las reseñas de productos</p>
+    </div>
+    <div class="header-actions">
+      <span class="pending-badge" *ngIf="statusFilter === ReviewStatus.PENDING && totalElements > 0">
+        <i class="icon-bell"></i>
+        {{ totalElements }} pendientes
+      </span>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <label for="statusFilter">Estado:</label>
+      <select id="statusFilter" [(ngModel)]="statusFilter" class="filter-select">
+        <option value="ALL">Todos</option>
+        <option [value]="ReviewStatus.PENDING">Pendientes</option>
+        <option [value]="ReviewStatus.APPROVED">Aprobadas</option>
+        <option [value]="ReviewStatus.REJECTED">Rechazadas</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="ratingFilter">Calificación:</label>
+      <select id="ratingFilter" [(ngModel)]="ratingFilter" class="filter-select">
+        <option value="ALL">Todas</option>
+        <option [value]="5">5 estrellas</option>
+        <option [value]="4">4 estrellas</option>
+        <option [value]="3">3 estrellas</option>
+        <option [value]="2">2 estrellas</option>
+        <option [value]="1">1 estrella</option>
+      </select>
+    </div>
+
+    <button class="btn-filter" (click)="applyFilters()">Aplicar Filtros</button>
+    <button class="btn-reset" (click)="resetFilters()">Limpiar</button>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando reseñas...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="error-message">
+    <i class="icon-error"></i>
+    {{ error }}
+    <button class="btn-close-error" (click)="error = null">✕</button>
+  </div>
+
+  <!-- Reviews Table -->
+  <div class="table-container" *ngIf="!isLoading && reviews.length > 0">
+    <table class="reviews-table">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Usuario</th>
+          <th>Calificación</th>
+          <th>Comentario</th>
+          <th>Fecha</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let review of reviews">
+          <td>
+            <div class="product-info">
+              <span class="product-name">{{ review.productName }}</span>
+              <span class="product-id">ID: {{ review.productId }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="user-info">
+              <span class="user-name">{{ review.userName }}</span>
+              <span class="user-id">ID: {{ review.userId }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="rating">
+              <span class="stars">{{ getRatingStars(review.rating) }}</span>
+              <span class="rating-number">{{ review.rating }}/5</span>
+            </div>
+          </td>
+          <td>
+            <div class="comment-cell">
+              <p class="comment-text">{{ truncateText(review.comment, 80) }}</p>
+              <div class="review-meta">
+                <span *ngIf="hasImages(review)" class="has-images">
+                  <i class="icon-image"></i> {{ review.images?.length }} fotos
+                </span>
+                <span *ngIf="hasSellerResponse(review)" class="has-response">
+                  <i class="icon-reply"></i> Con respuesta
+                </span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="date-text">{{ formatDate(review.createdAt) }}</span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(review.status)">
+              {{ getStatusLabel(review.status) }}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <!-- View Details -->
+              <button 
+                class="btn-icon btn-view" 
+                (click)="openDetailsModal(review)"
+                title="Ver detalles">
+                <i class="icon-eye"></i>
+              </button>
+
+              <!-- Approve (only for pending) -->
+              <button 
+                *ngIf="canModerate(review)"
+                class="btn-icon btn-approve" 
+                (click)="approveReview(review.id)"
+                title="Aprobar">
+                <i class="icon-check"></i>
+              </button>
+
+              <!-- Reject (only for pending) -->
+              <button 
+                *ngIf="canModerate(review)"
+                class="btn-icon btn-reject" 
+                (click)="openRejectModal(review)"
+                title="Rechazar">
+                <i class="icon-times"></i>
+              </button>
+
+              <!-- Seller Response (only for approved without response) -->
+              <button 
+                *ngIf="canAddResponse(review)"
+                class="btn-icon btn-response" 
+                (click)="openResponseModal(review)"
+                title="Responder">
+                <i class="icon-comment"></i>
+              </button>
+
+              <!-- Edit Response (only for approved with response) -->
+              <button 
+                *ngIf="canEditResponse(review)"
+                class="btn-icon btn-edit-response" 
+                (click)="openResponseModal(review)"
+                title="Editar respuesta">
+                <i class="icon-edit"></i>
+              </button>
+
+              <!-- Delete -->
+              <button 
+                class="btn-icon btn-delete" 
+                (click)="deleteReview(review.id)"
+                title="Eliminar">
+                <i class="icon-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button 
+        class="btn-pagination" 
+        (click)="previousPage()" 
+        [disabled]="currentPage === 0">
+        Anterior
+      </button>
+      <span class="page-info">
+        Página {{ currentPage + 1 }} de {{ totalPages }} 
+        ({{ totalElements }} reseñas)
+      </span>
+      <button 
+        class="btn-pagination" 
+        (click)="nextPage()" 
+        [disabled]="currentPage >= totalPages - 1">
+        Siguiente
+      </button>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && reviews.length === 0">
+    <div class="empty-icon">📝</div>
+    <h3>No hay reseñas para mostrar</h3>
+    <p>No se encontraron reseñas con los filtros seleccionados.</p>
+    <button class="btn-primary" (click)="resetFilters()">Limpiar Filtros</button>
+  </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
+  <div class="modal-content details-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Detalles de la Reseña</h2>
+      <button class="btn-close" (click)="closeDetailsModal()">✕</button>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedReview">
+      <!-- Product Info -->
+      <div class="detail-section">
+        <h3>Producto</h3>
+        <p><strong>Nombre:</strong> {{ selectedReview.productName }}</p>
+        <p><strong>ID:</strong> {{ selectedReview.productId }}</p>
+      </div>
+
+      <!-- User Info -->
+      <div class="detail-section">
+        <h3>Usuario</h3>
+        <p><strong>Nombre:</strong> {{ selectedReview.userName }}</p>
+        <p><strong>ID:</strong> {{ selectedReview.userId }}</p>
+      </div>
+
+      <!-- Review Info -->
+      <div class="detail-section">
+        <h3>Reseña</h3>
+        <div class="rating-display">
+          <span class="stars-large">{{ getRatingStars(selectedReview.rating) }}</span>
+          <span class="rating-number">{{ selectedReview.rating }}/5</span>
+        </div>
+        <p class="comment-full">{{ selectedReview.comment }}</p>
+        <p><strong>Fecha:</strong> {{ formatDate(selectedReview.createdAt) }}</p>
+        <p>
+          <strong>Estado:</strong> 
+          <span class="status-badge" [ngClass]="getStatusClass(selectedReview.status)">
+            {{ getStatusLabel(selectedReview.status) }}
+          </span>
+        </p>
+      </div>
+
+      <!-- Images -->
+      <div class="detail-section" *ngIf="hasImages(selectedReview)">
+        <h3>Imágenes ({{ selectedReview.images?.length }})</h3>
+        <div class="images-grid">
+          <img *ngFor="let image of selectedReview.images" 
+               [src]="image" 
+               alt="Review image" 
+               class="review-image">
+        </div>
+      </div>
+
+      <!-- Seller Response -->
+      <div class="detail-section" *ngIf="hasSellerResponse(selectedReview)">
+        <h3>Respuesta del Vendedor</h3>
+        <div class="seller-response-display">
+          <p>{{ selectedReview.sellerResponse }}</p>
+          <small *ngIf="selectedReview.sellerResponseDate">
+            {{ formatDate(selectedReview.sellerResponseDate) }}
+          </small>
+        </div>
+      </div>
+
+      <!-- Votes -->
+      <div class="detail-section">
+        <h3>Votos de Utilidad</h3>
+        <div class="votes-display">
+          <div class="vote-item">
+            <span class="vote-icon helpful">👍</span>
+            <span class="vote-count">{{ selectedReview.helpfulCount || 0 }} útiles</span>
+          </div>
+          <div class="vote-item">
+            <span class="vote-icon not-helpful">👎</span>
+            <span class="vote-count">{{ selectedReview.notHelpfulCount || 0 }} no útiles</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeDetailsModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Seller Response Modal -->
+<div class="modal-overlay" *ngIf="showResponseModal" (click)="closeResponseModal()">
+  <div class="modal-content response-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ hasSellerResponse(selectedReview!) ? 'Editar Respuesta' : 'Agregar Respuesta' }}</h2>
+      <button class="btn-close" (click)="closeResponseModal()">✕</button>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedReview">
+      <!-- Original Review -->
+      <div class="original-review">
+        <h4>Reseña Original</h4>
+        <div class="rating-display">
+          <span class="stars">{{ getRatingStars(selectedReview.rating) }}</span>
+        </div>
+        <p class="comment-text">{{ selectedReview.comment }}</p>
+        <small>Por {{ selectedReview.userName }} - {{ formatDate(selectedReview.createdAt) }}</small>
+      </div>
+
+      <!-- Response Form -->
+      <div class="form-group">
+        <label for="responseText">Tu Respuesta <span class="required">*</span></label>
+        <textarea 
+          id="responseText"
+          [(ngModel)]="sellerResponse.response"
+          class="form-control"
+          rows="6"
+          placeholder="Escribe una respuesta profesional y útil..."
+          maxlength="1000">
+        </textarea>
+        <small class="char-count">
+          {{ sellerResponse.response.length }}/1000 caracteres
+        </small>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeResponseModal()">Cancelar</button>
+      <button 
+        class="btn-primary" 
+        (click)="saveSellerResponse()"
+        [disabled]="isLoading || !sellerResponse.response.trim()">
+        {{ isLoading ? 'Guardando...' : 'Guardar Respuesta' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" *ngIf="showRejectModal" (click)="closeRejectModal()">
+  <div class="modal-content reject-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Rechazar Reseña</h2>
+      <button class="btn-close" (click)="closeRejectModal()">✕</button>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedReview">
+      <div class="warning-box">
+        <i class="icon-warning"></i>
+        <p>Estás a punto de rechazar esta reseña. Por favor, proporciona un motivo claro.</p>
+      </div>
+
+      <div class="review-summary">
+        <p><strong>Producto:</strong> {{ selectedReview.productName }}</p>
+        <p><strong>Usuario:</strong> {{ selectedReview.userName }}</p>
+        <p><strong>Calificación:</strong> {{ selectedReview.rating }}/5</p>
+      </div>
+
+      <div class="form-group">
+        <label for="rejectReason">Motivo del Rechazo <span class="required">*</span></label>
+        <textarea 
+          id="rejectReason"
+          [(ngModel)]="rejectReason"
+          class="form-control"
+          rows="4"
+          placeholder="Explica por qué esta reseña no cumple con las políticas...">
+        </textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeRejectModal()">Cancelar</button>
+      <button 
+        class="btn-danger" 
+        (click)="rejectReview()"
+        [disabled]="isLoading || !rejectReason.trim()">
+        {{ isLoading ? 'Rechazando...' : 'Rechazar Reseña' }}
+      </button>
+    </div>
+  </div>
+</div>

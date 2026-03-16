@@ -1,12 +1,17 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { Product, ProductCategory, ProductFilter, ProductSort, ProductSearchResponse, ProductReview, ProductQuestion } from '../models/product.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
+  private http = inject(HttpClient);
+  private readonly ADMIN_API_URL = `${environment.apiUrl}/admin/products`;
+  
   private products: Product[] = [
     // Guitarras
     {
@@ -638,5 +643,92 @@ export class ProductService {
   getDiscountedProducts(): Observable<Product[]> {
     const discounted = this.products.filter(p => p.discount && p.discount > 0);
     return of(discounted).pipe(delay(400));
+  }
+
+  // ==================== MÉTODOS CRUD PARA ADMIN ====================
+
+  /**
+   * 🔍 Obtener todos los productos con búsqueda, filtros y paginación (SERVER-SIDE)
+   * GET /api/admin/products?page=0&size=20&search=guitarra&brandId=1&categoryId=2&active=true&sortBy=name&sortDir=ASC
+   */
+  getAllProducts(
+    page: number = 0, 
+    size: number = 20,
+    search?: string,
+    brandId?: number | null,
+    categoryId?: number | null,
+    active?: boolean | null,
+    sortBy: string = 'id',
+    sortDir: string = 'DESC'
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sortBy', sortBy)
+      .set('sortDir', sortDir);
+    
+    // Agregar parámetros opcionales solo si tienen valor
+    if (search && search.trim() !== '') {
+      params = params.set('search', search.trim());
+    }
+    if (brandId !== null && brandId !== undefined) {
+      params = params.set('brandId', brandId.toString());
+    }
+    if (categoryId !== null && categoryId !== undefined) {
+      params = params.set('categoryId', categoryId.toString());
+    }
+    if (active !== null && active !== undefined) {
+      params = params.set('active', active.toString());
+    }
+    
+    return this.http.get<any>(this.ADMIN_API_URL, { params });
+  }
+
+  /**
+   * Obtener producto por ID (admin)
+   * GET /api/admin/products/{id}
+   */
+  getProductById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.ADMIN_API_URL}/${id}`);
+  }
+
+  /**
+   * Crear nuevo producto (admin)
+   * POST /api/admin/products
+   */
+  createProduct(product: any): Observable<any> {
+    return this.http.post<any>(this.ADMIN_API_URL, product);
+  }
+
+  /**
+   * Actualizar producto existente (admin)
+   * PUT /api/admin/products/{id}
+   */
+  updateProduct(id: number, product: any): Observable<any> {
+    return this.http.put<any>(`${this.ADMIN_API_URL}/${id}`, product);
+  }
+
+  /**
+   * Eliminar producto (admin)
+   * DELETE /api/admin/products/{id}
+   */
+  deleteProduct(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.ADMIN_API_URL}/${id}`);
+  }
+
+  /**
+   * Buscar productos con filtros (admin)
+   * GET /api/admin/products/search?keyword=guitar&categoryId=1
+   */
+  searchProductsAdmin(keyword?: string, categoryId?: number, brandId?: number, page: number = 0, size: number = 20): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    if (keyword) params = params.set('keyword', keyword);
+    if (categoryId) params = params.set('categoryId', categoryId.toString());
+    if (brandId) params = params.set('brandId', brandId.toString());
+
+    return this.http.get<any>(`${this.ADMIN_API_URL}/search`, { params });
   }
 }

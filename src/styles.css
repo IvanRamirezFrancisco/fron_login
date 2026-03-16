@@ -1,6 +1,12 @@
-﻿/* Estilos Globales - Casa de Música Castillo */
+﻿/* ── Importaciones externas (deben ser siempre las primeras) ── */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;600;700&display=swap');
 
+/* ── Tailwind CSS (used only by csv-import-export modal component) ── */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos Globales - Casa de Música Castillo */
 :root {
   /* Colores Principales */
   --primary-color: #800020;    /* Vino Tinto/Bordó - Navegación, botones principales */
@@ -478,6 +484,7 @@ a:hover {
 
 /* ===== UTILIDADES ADICIONALES ===== */
 
+
 .text-gold { color: var(--secondary-color); }
 .bg-primary { background-color: var(--primary-color); }
 .bg-secondary { background-color: var(--secondary-color); }
@@ -508,4 +515,161 @@ a:hover {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ==================== GOOGLE MATERIAL ICONS ==================== */
+.material-icons,
+.material-symbols-outlined {
+  font-family: 'Material Icons', 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  vertical-align: middle;
+}
+
+/* Tamaños de iconos */
+.material-icons.md-18,
+.material-symbols-outlined.md-18 { font-size: 18px; }
+
+.material-icons.md-20,
+.material-symbols-outlined.md-20 { font-size: 20px; }
+
+.material-icons.md-24,
+.material-symbols-outlined.md-24 { font-size: 24px; }
+
+.material-icons.md-36,
+.material-symbols-outlined.md-36 { font-size: 36px; }
+
+.material-icons.md-48,
+.material-symbols-outlined.md-48 { font-size: 48px; }
+
+/* Colores de iconos */
+.material-icons.md-dark,
+.material-symbols-outlined.md-dark { color: rgba(0, 0, 0, 0.54); }
+
+.material-icons.md-light,
+.material-symbols-outlined.md-light { color: rgba(255, 255, 255, 1); }
+
+.material-icons.md-inactive,
+.material-symbols-outlined.md-inactive { color: rgba(0, 0, 0, 0.26); }
+
+/* Iconos dentro de botones */
+button .material-icons,
+button .material-symbols-outlined,
+.btn .material-icons,
+.btn .material-symbols-outlined {
+  font-size: 20px;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+button .material-icons:last-child,
+button .material-symbols-outlined:last-child,
+.btn .material-icons:last-child,
+.btn .material-symbols-outlined:last-child {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
+/* SVG a Material Icons en tablas */
+.btn-action .material-icons,
+.btn-icon .material-icons {
+  font-size: 18px;
+  margin: 0;
+}
+
+.stat-icon .material-icons {
+  font-size: 32px;
+}
+
+.icon-wrapper .material-icons {
+  font-size: 28px;
+}
+
+/* ==================== FIN MATERIAL ICONS ==================== */
+
+
+/* ══════════════════════════════════════════════════════════════
+   SWEETALERT2 — Restaurar estilos pisados por Tailwind Preflight
+   @tailwind base incluye button { background: transparent; color: inherit }
+   que sobrescribe los colores de Swal. Estos overrides los restauran.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Contenedor de acciones */
+div.swal2-actions {
+  display: flex !important;
+  gap: 12px;
+}
+
+/* Botón confirmar */
+button.swal2-confirm {
+  color: #fff !important;
+  border: 0 !important;
+  border-radius: 0.25em !important;
+  padding: 0.625em 1.1em !important;
+  font-size: 1em !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  /* El color de fondo es inyectado inline por Swal vía confirmButtonColor,
+     pero si no hay color inline lo ponemos como fallback */
+  background-color: #3085d6 !important;
+}
+
+/* Cuando Swal inyecta el color inline (confirmButtonColor), no pisarlo */
+button.swal2-confirm[style*="background"] {
+  /* Deja que el inline style gane — solo aseguramos text-color y cursor */
+  color: #fff !important;
+  cursor: pointer !important;
+}
+
+/* Botón cancelar */
+button.swal2-cancel {
+  color: #fff !important;
+  border: 0 !important;
+  border-radius: 0.25em !important;
+  padding: 0.625em 1.1em !important;
+  font-size: 1em !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  background-color: #6c757d !important;
+}
+
+button.swal2-cancel[style*="background"] {
+  color: #fff !important;
+  cursor: pointer !important;
+}
+
+/* Botón "deny" (por si se usa) */
+button.swal2-deny {
+  color: #fff !important;
+  cursor: pointer !important;
+}
+
+/* Hover genérico para todos los botones Swal */
+button.swal2-confirm:hover,
+button.swal2-cancel:hover,
+button.swal2-deny:hover {
+  filter: brightness(0.9);
+}
+
+/* Popup base — asegurar que no herede colores extraños */
+div.swal2-popup {
+  font-family: var(--font-body, 'Roboto', sans-serif);
+}
+
+/* ── Bloquear scroll del fondo cuando un modal está abierto ──
+   Se activa automáticamente cuando .brand-modal-overlay existe en el DOM,
+   sin necesitar ningún código JS manual (add/remove class).
+   :has() tiene soporte en todos los navegadores modernos (Chrome 105+, Firefox 121+, Safari 15.4+).
+   La clase .modal-open se mantiene como fallback para navegadores antiguos. ── */
+body:has(.brand-modal-overlay),
+body.modal-open {
+  overflow: hidden;
 }
