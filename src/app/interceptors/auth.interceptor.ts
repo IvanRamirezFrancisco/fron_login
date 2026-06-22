@@ -33,14 +33,26 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const isPublicUrl = publicUrls.some(url => req.url.includes(url));
 
+  // Rutas explícitamente públicas donde un 401 no debe forzar login si no hay token
+  const publicEndpoints = [
+    '/api/products',
+    '/api/categories',
+    '/api/brands',
+    '/api/public',
+    '/api/alexa',
+    '/actuator/health'
+  ];
+  const isPublicEndpoint = publicEndpoints.some(url => req.url.includes(url));
+
   // También detectar peticiones marcadas como públicas por headers
   const isMarkedAsPublic = req.headers.has('X-Public-Request');
 
-  const isPublicRequest = isPublicUrl || isMarkedAsPublic;
+  const isPublicRequest = isPublicUrl || isMarkedAsPublic || isPublicEndpoint;
 
-  if (isPublicRequest) {
-    return next(req);
-  }
+  // Rutas del frontend (UI) donde no se debe interrumpir la navegación por un 401 sin token
+  const publicFrontendRoutes = ['/catalogo', '/producto', '/inicio', '/login', '/register', '/'];
+  const isPublicFrontendRoute = publicFrontendRoutes.some(route => router.url.startsWith(route) && router.url !== '/');
+  const isRootRoute = router.url === '/';
 
   const token = localStorage.getItem('token');
 
@@ -55,12 +67,19 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError(error => {
-      if (error.status === 401 && !isPublicRequest) {
-        // Sesión expirada: limpiar estado y redirigir con motivo
-        authService.logout();
-        router.navigate(['/login'], {
-          queryParams: { reason: 'session_expired' }
-        });
+      if (error.status === 401) {
+        // Condiciones para redirigir a login:
+        // 1. Había un token (sesión expirada real)
+        // 2. O el endpoint solicitado es claramente privado (no está en publicEndpoints)
+        // 3. Y no estamos ya en una ruta pública del frontend sin token
+        const shouldRedirect = token || (!isPublicEndpoint && !(isPublicFrontendRoute || isRootRoute));
+
+        if (shouldRedirect) {
+          authService.logout();
+          router.navigate(['/login'], {
+            queryParams: { reason: 'session_expired' }
+          });
+        }
       }
 
       if (error.status === 403 && !isPublicRequest) {
