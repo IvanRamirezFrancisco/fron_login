@@ -1,6 +1,26 @@
 <!-- ==================== GESTION DE ORDENES ==================== -->
 <div class="min-h-screen bg-gray-50 p-5">
 
+  <!-- ==================== ALERTAS Y ACCIONES DE PAGO ==================== -->
+  <div *ngIf="!hasBankSettings" class="mb-5 bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div class="flex items-start gap-3">
+      <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1"></i>
+      <div>
+        <h3 class="text-sm font-semibold text-amber-800">Datos bancarios no configurados</h3>
+        <p class="text-sm text-amber-700 mt-0.5">Tus clientes no podrán realizar pagos por transferencia hasta que configures los datos bancarios.</p>
+      </div>
+    </div>
+    <button [routerLink]="['/admin/payment-settings']" class="whitespace-nowrap px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-lg transition-colors">
+      Configurar datos bancarios
+    </button>
+  </div>
+
+  <div *ngIf="hasBankSettings" class="mb-5 flex justify-end">
+    <button [routerLink]="['/admin/payment-settings']" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg shadow-sm transition-colors">
+      <i class="fa-solid fa-building-columns text-gray-500"></i> Configurar transferencia
+    </button>
+  </div>
+
   <!-- ==================== TARJETAS DE ESTADISTICAS ==================== -->
   <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-5" *ngIf="stats">
 

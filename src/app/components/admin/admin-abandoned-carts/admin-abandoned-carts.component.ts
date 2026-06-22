@@ -50,45 +50,23 @@ export class AdminAbandonedCartsComponent implements OnInit {
   constructor(private cartService: ShoppingCartService) {}
 
   ngOnInit(): void {
-    this.loadAbandonedCarts();
+    // FASE 1 - Carrito - 2026-05-15
+    // TODO Fase futura: implementar endpoint backend GET /api/admin/carts/abandoned o equivalente.
+    // El endpoint GET /api/cart/abandoned NO existe en el backend actual.
+    // La carga real está deshabilitada para evitar llamadas a un endpoint inexistente.
+    // Cuando el backend implemente el endpoint, descomentar: this.loadAbandonedCarts();
+    this.isLoading = false;
+    this.error = 'PENDING_BACKEND';
   }
 
   loadAbandonedCarts(): void {
+    // FASE 1 - Carrito - 2026-05-15
+    // TODO Fase futura: habilitar esta llamada cuando exista el endpoint en el backend.
+    // El endpoint GET /api/cart/abandoned actualmente no existe.
+    // Se deja el método completo para una migración futura sencilla.
     this.isLoading = true;
-    this.error = null;
-
-    const hours = (this.minDaysFilter || 1) * 24; // Convert days to hours
-
-    this.cartService.getAbandonedCarts(hours).subscribe({
-      next: (carts: ShoppingCartDTO[]) => {
-        // Transform the response into AbandonedCart objects
-        this.abandonedCarts = carts.map(cart => 
-          this.transformToAbandonedCart(cart)
-        );
-
-        // Apply client-side filters
-        this.abandonedCarts = this.applyClientFilters(this.abandonedCarts);
-
-        // For client-side pagination
-        this.totalElements = this.abandonedCarts.length;
-        this.totalPages = Math.ceil(this.totalElements / this.pageSize);
-
-        // Get page slice
-        const start = this.currentPage * this.pageSize;
-        const end = start + this.pageSize;
-        this.abandonedCarts = this.abandonedCarts.slice(start, end);
-
-        // Calculate stats
-        this.calculateStats();
-
-        this.isLoading = false;
-      },
-      error: (error: any) => {
-        console.error('Error loading abandoned carts:', error);
-        this.error = 'Error al cargar los carritos abandonados. Por favor, intenta de nuevo.';
-        this.isLoading = false;
-      }
-    });
+    this.error = 'PENDING_BACKEND';
+    this.isLoading = false;
   }
 
   transformToAbandonedCart(cart: ShoppingCartDTO): AbandonedCart {

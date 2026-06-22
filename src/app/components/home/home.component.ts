@@ -22,7 +22,6 @@ import { PublicProduct, PublicCategory } from '../../models/product.model';
 export class HomeComponent implements OnInit, OnDestroy {
   searchQuery = '';
   cartItemCount = 3;
-  wishlistCount = 5;
   emailSubscription = '';
 
   // Usuario logueado
@@ -221,10 +220,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.router.navigate(['/catalogo'], { queryParams: { categoryId } });
   }
 
-  navigateToOffers() {
-    this.router.navigate(['/ofertas']);
-  }
-
   navigateToCart() {
     this.router.navigate(['/cart']);
   }
@@ -232,10 +227,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   navigateToService(serviceId: string) {
     this.router.navigate(['/servicios'], { queryParams: { servicio: serviceId } });
   }
-
-  toggleWishlist() {}
-
-  toggleFavorite(productId: number) {}
 
   addToCart(product: any) {
     this.cartItemCount++;

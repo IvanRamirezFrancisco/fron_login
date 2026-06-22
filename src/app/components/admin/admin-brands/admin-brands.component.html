@@ -1,4 +1,4 @@
-﻿<div class="p-6 space-y-6">
+<div class="p-6 space-y-6">
 
   <!-- Toast Messages -->
   <div *ngIf="successMessage"
@@ -142,15 +142,15 @@
           </td>
           <td class="px-6 py-4">
             <div class="flex items-center justify-center gap-1">
-              <button (click)="toggleStatus(brand)" [title]="brand.active ? 'Desactivar' : 'Activar'"
+              <button *ngIf="authService.hasPermission('BRAND_MANAGE')" (click)="toggleStatus(brand)" [title]="brand.active ? 'Desactivar' : 'Activar'"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-amber-500 hover:bg-amber-50 transition-colors">
                 <i class="fas text-sm" [class.fa-eye]="brand.active" [class.fa-eye-slash]="!brand.active"></i>
               </button>
-              <button (click)="openEditModal(brand)" title="Editar"
+              <button *ngIf="authService.hasPermission('BRAND_MANAGE')" (click)="openEditModal(brand)" title="Editar"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors">
                 <i class="fas fa-pen text-sm"></i>
               </button>
-              <button (click)="openDeleteModal(brand)" title="Eliminar"
+              <button *ngIf="authService.hasPermission('BRAND_MANAGE')" (click)="openDeleteModal(brand)" title="Eliminar"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
                 <i class="fas fa-trash text-sm"></i>
               </button>
@@ -168,7 +168,7 @@
       </div>
       <p class="text-base font-semibold text-gray-500 mb-1">No hay marcas registradas</p>
       <p class="text-sm text-gray-400 mb-5">Crea tu primera marca para comenzar a gestionar productos</p>
-      <button (click)="openCreateModal()"
+      <button *ngIf="authService.hasPermission('BRAND_MANAGE')" (click)="openCreateModal()"
         class="flex items-center gap-2 px-4 py-2 bg-[#800020] hover:bg-[#6a001a] text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
         <i class="fas fa-plus text-xs"></i>Crear Primera Marca
       </button>
@@ -215,6 +215,25 @@
   </div>
 </div>
 
+<!-- ============================================
+     LIGHTBOX (VISTA AMPLIADA)
+     ============================================ -->
+<div *ngIf="showLightbox && lightboxImage" class="lightbox-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 40px;" (click)="closeLightbox()">
+  
+  <button type="button" class="btn-close-lightbox" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center;" (click)="closeLightbox(); $event.stopPropagation()">
+    <span class="material-symbols-outlined" style="font-size: 32px;">close</span>
+  </button>
+
+  <img [src]="lightboxImage.url" [alt]="lightboxImage.name" style="max-width: 90%; max-height: 80vh; object-fit: contain; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border-radius: 8px; background: transparent;" (click)="$event.stopPropagation()">
+  
+  <div style="margin-top: 20px; color: white; text-align: center;" (click)="$event.stopPropagation()">
+    <h3 style="margin: 0 0 8px 0; font-size: 1.2rem;">{{ lightboxImage.name }}</h3>
+    <p style="margin: 0; color: #cbd5e1; font-size: 0.9rem;" *ngIf="lightboxImage.size">
+      Tamaño: {{ (lightboxImage.size / 1024).toFixed(1) }} KB <span *ngIf="lightboxImage.type">| Tipo: {{ lightboxImage.type }}</span>
+    </p>
+  </div>
+</div>
+
 
 <!-- ══════════════════════════════════════════════════════════════
      MODAL CREAR / EDITAR MARCA
@@ -222,10 +241,23 @@
      ══════════════════════════════════════════════════════════════ -->
 <div *ngIf="showCreateModal || showEditModal"
      class="brand-modal-overlay"
-     (click)="closeModal()">
+     (click)="confirmCloseBrandModal()">
 
   <!-- Panel del modal -->
   <div class="brand-modal-panel" (click)="$event.stopPropagation()">
+
+    <!-- OVERLAY DE CARGA PROFESIONAL -->
+    <div class="absolute inset-0 bg-white/80 backdrop-blur-sm z-[12000] flex flex-col items-center justify-center rounded-xl" *ngIf="isProcessingUploads">
+      <svg class="animate-spin h-10 w-10 text-[#800020] mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+      </svg>
+      <h3 class="text-xl font-bold text-gray-800 mb-1">Procesando Marca</h3>
+      <p class="text-gray-600 font-medium">{{ uploadProgressMessage }}</p>
+      <div class="w-64 bg-gray-200 rounded-full h-2.5 mt-4 overflow-hidden">
+        <div class="bg-[#800020] h-2.5 rounded-full transition-all duration-300" style="width: 100%"></div>
+      </div>
+    </div>
 
     <!-- Header -->
     <div class="brand-modal-header">
@@ -240,7 +272,7 @@
           {{ showCreateModal ? 'Completa los datos para registrar una nueva marca' : 'Modifica los datos de la marca' }}
         </p>
       </div>
-      <button class="brand-modal-close" (click)="closeModal()" title="Cerrar">
+      <button class="brand-modal-close" (click)="confirmCloseBrandModal()" [disabled]="loading || isProcessingUploads" title="Cerrar">
         <i class="fas fa-times"></i>
       </button>
     </div>
@@ -252,6 +284,26 @@
       <div *ngIf="errorMessage" class="brand-modal-error">
         <i class="fas fa-exclamation-circle"></i>
         <span>{{ errorMessage }}</span>
+      </div>
+
+      <!-- ESTADO DE ERROR PARCIAL -->
+      <div *ngIf="partialErrorState" class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-md">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <span class="material-icons text-red-500" style="font-size: 1.2rem;">error_outline</span>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">
+              Subida incompleta
+            </h3>
+            <div class="mt-1 text-sm text-red-700">
+              <p>
+                La marca se creó correctamente, pero el logo falló (probablemente excede tamaño o tipo incorrecto).
+                Puedes intentar subirlo nuevamente.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <form class="brand-modal-form" (ngSubmit)="saveBrand()">
@@ -283,19 +335,8 @@
           ></textarea>
         </div>
 
-        <!-- URL del Logo + Estado en 2 columnas -->
+        <!-- Estado en 1 columna -->
         <div class="brand-field-row">
-          <div class="brand-field">
-            <label class="brand-field__label">URL del Logo</label>
-            <input
-              type="url"
-              [(ngModel)]="brandForm.logoUrl"
-              name="logoUrl"
-              placeholder="https://..."
-              class="brand-field__input"
-            />
-            <span class="brand-field__hint">O sube un archivo abajo.</span>
-          </div>
           <div class="brand-field">
             <label class="brand-field__label">Estado</label>
             <label class="brand-toggle">
@@ -312,25 +353,89 @@
         </div>
 
         <!-- Subir Logo -->
-        <div class="brand-field">
+        <div class="brand-field" style="margin-top: 16px;">
           <label class="brand-field__label">Subir Logo (PNG / JPG / WEBP)</label>
-          <label class="brand-upload-zone">
-            <i class="fas fa-cloud-upload-alt brand-upload-zone__icon"></i>
-            <span class="brand-upload-zone__text">Seleccionar archivo...</span>
-            <input type="file" accept=".png,.jpg,.jpeg,.webp" class="brand-upload-zone__input" (change)="onLogoFileSelected($event)" />
-          </label>
-          <span class="brand-field__hint">Solo PNG, JPG o WEBP. Tamaño máximo 10 MB.</span>
-          <div *ngIf="logoUploadInProgress" class="brand-upload-progress">
-            <div class="brand-upload-progress__spinner"></div>
-            <span>Subiendo logo...</span>
-          </div>
-        </div>
+          <p *ngIf="!selectedBrand" style="font-size: 0.85rem; color: #64748b; margin-bottom: 8px;">
+            Puedes seleccionar el logo ahora. Se subirá automáticamente cuando guardes la marca.
+          </p>
+          
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <!-- Opciones de archivo -->
+            <label class="brand-upload-zone" *ngIf="!pendingBrandLogo">
+              <i class="fas fa-cloud-upload-alt brand-upload-zone__icon"></i>
+              <span class="brand-upload-zone__text">Seleccionar archivo...</span>
+              <input type="file" accept=".png,.jpg,.jpeg,.webp" class="brand-upload-zone__input" (change)="onLogoFileSelected($event)" />
+            </label>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center;" *ngIf="!pendingBrandLogo">
+              <span class="brand-field__hint">Solo PNG, JPG o WEBP. Tamaño máximo 5 MB.</span>
+            </div>
 
-        <!-- Vista previa -->
-        <div *ngIf="logoPreviewUrl || brandForm.logoUrl" class="brand-field">
-          <label class="brand-field__label">Vista Previa</label>
-          <div class="brand-logo-preview">
-            <img [src]="logoPreviewUrl || brandForm.logoUrl" alt="Preview logo" />
+            <!-- Previsualización Pendiente -->
+            <div *ngIf="pendingBrandLogo" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #fff; display: flex; align-items: center; gap: 16px;">
+              <div class="brand-logo-preview" style="width: 80px; height: 80px; background: #f8fafc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative;">
+                <img [src]="pendingBrandLogo.previewUrl" alt="Preview logo" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                
+                <div style="position: absolute; top: -8px; right: -8px; display: flex; flex-direction: column; gap: 2px;">
+                  <span *ngIf="pendingBrandLogo.uploadStatus === 'PENDING'" style="background: #f59e0b; color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 999px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    Pendiente
+                  </span>
+                  <span *ngIf="pendingBrandLogo.uploadStatus === 'UPLOADING'" style="background: #3b82f6; color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 999px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    Subiendo...
+                  </span>
+                  <span *ngIf="pendingBrandLogo.uploadStatus === 'FAILED'" style="background: #ef4444; color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 999px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    Error
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Botones de Acción -->
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; gap: 4px; justify-content: flex-end;">
+                  <button type="button" (click)="openPendingLightbox()" style="background: #f1f5f9; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; color: #475569;" title="Ver imagen">
+                    <span class="material-symbols-outlined" style="font-size: 1rem;">visibility</span>
+                  </button>
+                </div>
+
+                <!-- Si ya existe la marca, subida explícita -->
+                <ng-container *ngIf="selectedBrand">
+                  <button type="button" class="brand-btn brand-btn--primary" style="padding: 6px 12px; font-size: 0.85rem; width: 100%; justify-content: center;" (click)="uploadSelectedLogo()" [disabled]="pendingBrandLogo.uploadStatus === 'UPLOADING'">
+                    <span *ngIf="pendingBrandLogo.uploadStatus === 'UPLOADING'" class="brand-btn__spinner"></span>
+                    <i *ngIf="pendingBrandLogo.uploadStatus !== 'UPLOADING'" class="fas fa-cloud-upload-alt"></i>
+                    {{ pendingBrandLogo.uploadStatus === 'UPLOADING' ? 'Subiendo...' : (pendingBrandLogo.uploadStatus === 'FAILED' ? 'Reintentar subida' : 'Subir Logo') }}
+                  </button>
+                </ng-container>
+                
+                <button type="button" class="brand-btn brand-btn--ghost" style="padding: 6px 12px; font-size: 0.85rem; width: 100%; justify-content: center;" (click)="clearLogoSelection()" [disabled]="pendingBrandLogo.uploadStatus === 'UPLOADING'">
+                  {{ selectedBrand ? 'Cancelar' : 'Quitar logo' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Logo Existente Guardado -->
+            <div *ngIf="!pendingBrandLogo && brandForm.logoUrl" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #fff; display: flex; align-items: center; gap: 16px;">
+              <div class="brand-logo-preview" style="width: 80px; height: 80px; background: #f8fafc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative;">
+                <img [src]="brandForm.logoUrl" alt="Logo actual" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                
+                <!-- Badge de Cloudinary -->
+                <div *ngIf="selectedBrand?.logoProvider === 'CLOUDINARY'" style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: rgba(59, 130, 246, 0.9); color: white; padding: 2px 6px; border-radius: 12px; font-size: 0.6rem; font-weight: 600; display: flex; align-items: center; gap: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); white-space: nowrap;">
+                  <span class="material-symbols-outlined" style="font-size: 0.7rem;">cloud</span>
+                  Cloudinary
+                </div>
+              </div>
+              
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; gap: 4px; justify-content: flex-end;">
+                  <button type="button" (click)="openExistingLightbox(brandForm.logoUrl, brandForm.name)" style="background: #f1f5f9; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; color: #475569;" title="Ver imagen">
+                    <span class="material-symbols-outlined" style="font-size: 1rem;">visibility</span>
+                  </button>
+                </div>
+                <button type="button" class="brand-btn brand-btn--danger" style="padding: 6px 12px; font-size: 0.85rem; width: 100%; justify-content: center;" (click)="removeLogo()" [disabled]="loading">
+                  <i class="fas fa-trash"></i>
+                  Eliminar Logo Actual
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -338,14 +443,14 @@
     </div>
 
     <!-- Footer -->
-    <div class="brand-modal-footer">
-      <button class="brand-btn brand-btn--ghost" (click)="closeModal()" type="button">
+    <div class="brand-modal-footer" *ngIf="!isProcessingUploads">
+      <button class="brand-btn brand-btn--ghost" (click)="confirmCloseBrandModal()" [disabled]="loading || isProcessingUploads" type="button">
         Cancelar
       </button>
-      <button class="brand-btn brand-btn--primary" (click)="saveBrand()" [disabled]="loading" type="button">
+      <button type="button" class="brand-btn brand-btn--primary" [disabled]="loading || (pendingBrandLogo?.uploadStatus === 'UPLOADING')" (click)="saveBrand()">
         <span *ngIf="loading" class="brand-btn__spinner"></span>
         <i *ngIf="!loading" class="fas fa-save"></i>
-        {{ showCreateModal ? 'Crear Marca' : 'Guardar Cambios' }}
+        {{ loading ? 'Guardando...' : (showCreateModal ? (pendingBrandLogo ? 'Guardar Marca y subir logo' : 'Crear Marca') : 'Guardar Cambios') }}
       </button>
     </div>
 

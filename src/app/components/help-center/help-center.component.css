@@ -6,14 +6,14 @@
   margin: 0 auto;
   padding: 0;
   min-height: 100vh;
-  background: #f8f9fa;
+  background: #f5f0eb;
 }
 
 /* ===================================
    BREADCRUMBS
    =================================== */
 .breadcrumbs {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: linear-gradient(135deg, #f5f0eb 0%, #ede8e1 100%);
   padding: 1rem 0;
   border-bottom: 1px solid rgba(128, 0, 32, 0.1);
   font-family: 'Poppins', sans-serif;
@@ -31,7 +31,7 @@
 }
 
 .breadcrumbs a {
-  color: #800020;
+  color: #722f37;
   text-decoration: none;
   transition: all 0.3s ease;
   font-weight: 500;
@@ -67,8 +67,8 @@
   gap: 0.5rem;
   padding: 0.6rem 1.2rem;
   background: transparent;
-  border: 2px solid #800020;
-  color: #800020;
+  border: 2px solid #722f37;
+  color: #722f37;
   border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 600;
@@ -78,7 +78,7 @@
 }
 
 .back-button:hover {
-  background: #800020;
+  background: #722f37;
   color: white;
   transform: translateX(-4px);
 }
@@ -93,20 +93,20 @@
 
 .header-icon {
   font-size: 4rem;
-  color: #800020;
+  color: #722f37;
   margin-bottom: 1rem;
 }
 
 .help-header h1 {
   font-size: 2.5rem;
-  color: #333;
+  color: #2D2A26;
   margin-bottom: 0.5rem;
   font-weight: 700;
 }
 
 .help-header p {
   font-size: 1.1rem;
-  color: #666;
+  color: #6B6560;
 }
 
 /* Search Container */
@@ -118,12 +118,13 @@
 .search-box {
   display: flex;
   align-items: center;
-  background: white;
+  background: #FDFCFB;
   padding: 1rem 1.5rem;
   border-radius: 50px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(45, 42, 38, 0.08);
   gap: 1rem;
   transition: all 0.3s ease;
+  border: 1px solid #E8E2DC;
 }
 
 .search-box:focus-within {
@@ -132,7 +133,7 @@
 }
 
 .search-box .material-symbols-outlined {
-  color: #800020;
+  color: #722f37;
   font-size: 1.5rem;
 }
 
@@ -141,7 +142,8 @@
   border: none;
   outline: none;
   font-size: 1rem;
-  color: #333;
+  color: #2D2A26;
+  background: transparent;
 }
 
 .search-input::placeholder {
@@ -161,7 +163,7 @@
 }
 
 .clear-btn:hover {
-  background: #f0f0f0;
+  background: #ede8e1;
 }
 
 .clear-btn .material-symbols-outlined {
@@ -178,7 +180,7 @@
 
 .section-title {
   font-size: 1.8rem;
-  color: #333;
+  color: #2D2A26;
   margin-bottom: 1.5rem;
   font-weight: 700;
   text-align: center;
@@ -186,7 +188,7 @@
 
 .results-count {
   font-size: 1rem;
-  color: #666;
+  color: #6B6560;
   font-weight: 400;
   margin-left: 0.5rem;
 }
@@ -198,33 +200,34 @@
 }
 
 .category-card {
-  background: white;
+  background: #FDFCFB;
   padding: 1.5rem;
   border-radius: 12px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 2px solid transparent;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 2px solid #E8E2DC;
+  box-shadow: 0 2px 8px rgba(45, 42, 38, 0.06);
 }
 
 .category-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-  border-color: #800020;
+  box-shadow: 0 6px 15px rgba(45, 42, 38, 0.12);
+  border-color: #722f37;
+  background: #FAF8F6;
 }
 
 .category-card.active {
-  background: linear-gradient(135deg, #800020, #a0002a);
+  background: linear-gradient(135deg, #722f37, #a0002a);
   color: white;
-  border-color: #800020;
+  border-color: #722f37;
   box-shadow: 0 6px 20px rgba(128, 0, 32, 0.3);
 }
 
 .category-icon {
   font-size: 2.5rem;
   margin-bottom: 0.8rem;
-  color: #800020;
+  color: #722f37;
 }
 
 .category-card.active .category-icon {
@@ -235,7 +238,7 @@
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  color: #333;
+  color: #2D2A26;
 }
 
 .category-card.active h3 {
@@ -262,25 +265,26 @@
 .no-results {
   text-align: center;
   padding: 3rem 1rem;
-  background: white;
+  background: #FDFCFB;
   border-radius: 12px;
+  border: 1px solid #E8E2DC;
 }
 
 .no-results-icon {
   font-size: 4rem;
-  color: #ccc;
+  color: #c9b99f;
   margin-bottom: 1rem;
 }
 
 .no-results h3 {
   font-size: 1.5rem;
-  color: #333;
+  color: #2D2A26;
   margin-bottom: 0.5rem;
 }
 
 .no-results p {
   font-size: 1rem;
-  color: #666;
+  color: #6B6560;
 }
 
 /* FAQ List */
@@ -291,15 +295,16 @@
 }
 
 .faq-item {
-  background: white;
+  background: #FDFCFB;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(45, 42, 38, 0.06);
+  border: 1px solid #E8E2DC;
   transition: all 0.3s ease;
 }
 
 .faq-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(45, 42, 38, 0.10);
 }
 
 .faq-item.open {
@@ -316,7 +321,7 @@
 }
 
 .faq-header:hover {
-  background: #f8f9fa;
+  background: #FAF8F6;
 }
 
 .faq-question {
@@ -327,20 +332,20 @@
 }
 
 .question-icon {
-  color: #800020;
+  color: #722f37;
   font-size: 1.5rem;
   flex-shrink: 0;
 }
 
 .faq-question h3 {
   font-size: 1.1rem;
-  color: #333;
+  color: #2D2A26;
   font-weight: 600;
   margin: 0;
 }
 
 .toggle-icon {
-  color: #800020;
+  color: #722f37;
   font-size: 1.8rem;
   transition: transform 0.3s ease;
   flex-shrink: 0;
@@ -351,7 +356,7 @@
 }
 
 .faq-answer {
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid #E8E2DC;
   animation: slideDown 0.3s ease-out;
 }
 
@@ -370,7 +375,7 @@
   display: flex;
   gap: 1rem;
   padding: 1.5rem;
-  background: #f8f9fa;
+  background: #FAF8F6;
 }
 
 .answer-icon {
@@ -382,7 +387,7 @@
 
 .answer-content p {
   font-size: 1rem;
-  color: #555;
+  color: #6B6560;
   line-height: 1.6;
   margin: 0;
 }
@@ -395,7 +400,7 @@
 }
 
 .contact-card {
-  background: linear-gradient(135deg, #800020, #a0002a);
+  background: linear-gradient(135deg, #722f37, #a0002a);
   color: white;
   padding: 3rem 2rem;
   border-radius: 16px;
@@ -468,7 +473,7 @@
   gap: 0.5rem;
   padding: 1rem 2rem;
   background: white;
-  color: #800020;
+  color: #722f37;
   border: none;
   border-radius: 50px;
   font-size: 1.1rem;
@@ -479,6 +484,7 @@
 }
 
 .btn-contact:hover {
+  background: #FAF8F6;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
@@ -508,23 +514,25 @@
   align-items: center;
   gap: 0.5rem;
   padding: 1.5rem;
-  background: white;
+  background: #FDFCFB;
   border-radius: 12px;
   text-decoration: none;
-  color: #333;
+  color: #2D2A26;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(45, 42, 38, 0.06);
+  border: 1px solid #E8E2DC;
 }
 
 .quick-link:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-  color: #800020;
+  box-shadow: 0 6px 15px rgba(45, 42, 38, 0.12);
+  color: #722f37;
+  background: #FAF8F6;
 }
 
 .quick-link .material-symbols-outlined {
   font-size: 2rem;
-  color: #800020;
+  color: #722f37;
 }
 
 .quick-link span:last-child {

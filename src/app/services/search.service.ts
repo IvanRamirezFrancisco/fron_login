@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { delay, map } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
 import { SanitizationService } from './sanitization.service';
 import { ValidationService } from './validation.service';
-import { Product } from '../models/product.model';
-import { ProductService } from './product.service';
+import { PublicProduct } from '../models/product.model';
+import { PublicApiService } from './public-api.service';
 
 export interface SearchResult {
-  products: Product[];
+  products: PublicProduct[];
   query: string;
   totalResults: number;
   executionTime: number;
@@ -30,7 +30,7 @@ export class SearchService {
   constructor(
     private sanitizationService: SanitizationService,
     private validationService: ValidationService,
-    private productService: ProductService
+    private publicApiService: PublicApiService
   ) {
     this.loadSearchHistory();
   }
@@ -66,26 +66,36 @@ export class SearchService {
       });
     }
 
-    // Paso 4: Realizar búsqueda segura
-    return this.productService.searchProducts({
-      search: sanitizedQuery
-    }, { field: 'name', direction: 'asc' }, 1, 50).pipe(
+    // Paso 4: Realizar búsqueda contra la API real del backend
+    return this.publicApiService.getCatalog({
+      keyword: sanitizedQuery,
+      page: 0,
+      size: 50,
+      sortBy: 'featured'
+    }).pipe(
       map(response => {
         const executionTime = Date.now() - startTime;
         
         // Guardar en historial si hay resultados
-        if (response.products.length > 0) {
+        if (response.content.length > 0) {
           this.addToSearchHistory(sanitizedQuery);
         }
         
         return {
-          products: response.products,
+          products: response.content,
           query: sanitizedQuery,
-          totalResults: response.total,
+          totalResults: response.totalElements,
           executionTime
         };
       }),
-      delay(300) // Simular latencia de red
+      catchError(() => {
+        return of({
+          products: [] as PublicProduct[],
+          query: sanitizedQuery,
+          totalResults: 0,
+          executionTime: Date.now() - startTime
+        });
+      })
     );
   }
 
@@ -231,7 +241,7 @@ export class SearchService {
   }
 
   /**
-   * Obtener sugerencias de búsqueda
+   * Obtener sugerencias de búsqueda basadas en el historial
    */
   getSearchSuggestions(query: string): Observable<string[]> {
     if (!query || query.length < this.MIN_SEARCH_LENGTH) {
@@ -243,39 +253,12 @@ export class SearchService {
       return of([]);
     }
 
-    // Obtener productos que coincidan y extraer sugerencias
-    return this.productService.getProducts().pipe(
-      map(products => {
-        const suggestions = new Set<string>();
-        const lowerQuery = sanitizedQuery.toLowerCase();
+    // Filtrar historial que coincida con el query
+    const lowerQuery = sanitizedQuery.toLowerCase();
+    const matchingHistory = this.searchHistorySubject.value
+      .filter(h => h.toLowerCase().includes(lowerQuery))
+      .slice(0, 8);
 
-        products.forEach(product => {
-          // Agregar nombre del producto si coincide
-          if (product.name.toLowerCase().includes(lowerQuery)) {
-            suggestions.add(product.name);
-          }
-          
-          // Agregar marca si coincide
-          if (product.brand.toLowerCase().includes(lowerQuery)) {
-            suggestions.add(product.brand);
-          }
-          
-          // Agregar categoría si coincide
-          if (product.category.name.toLowerCase().includes(lowerQuery)) {
-            suggestions.add(product.category.name);
-          }
-          
-          // Agregar tags si coinciden
-          product.tags.forEach(tag => {
-            if (tag.toLowerCase().includes(lowerQuery)) {
-              suggestions.add(tag);
-            }
-          });
-        });
-
-        return Array.from(suggestions).slice(0, 8);
-      }),
-      delay(200)
-    );
+    return of(matchingHistory);
   }
 }

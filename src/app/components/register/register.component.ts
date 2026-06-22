@@ -1028,49 +1028,14 @@ export class RegisterComponent implements OnInit {
       error: (error) => {
         this.isLoading = false;
         
-        if (error.status === 409 || error.error?.message?.includes('ya existe')) {
-          this.errorMessage = '❌ ' + (error.error?.message || 'Este correo o nombre de usuario ya está registrado.');
-        } else if (error.error?.errors) {
-          const errorsArray: string[] = [];
-          const errorsObj = error.error.errors;
-          
-          // Recorrer el objeto de errores y extraer los mensajes
-          if (typeof errorsObj === 'object' && errorsObj !== null) {
-            Object.keys(errorsObj).forEach(key => {
-              const errorValue = errorsObj[key];
-              
-              // Si el error es un string, agregarlo directamente
-              if (typeof errorValue === 'string') {
-                errorsArray.push(errorValue);
-              } 
-              // Si es un array, agregar cada elemento
-              else if (Array.isArray(errorValue)) {
-                errorsArray.push(...errorValue);
-              }
-              // Si es un objeto con mensaje, extraer el mensaje
-              else if (typeof errorValue === 'object' && errorValue.message) {
-                errorsArray.push(errorValue.message);
-              }
-              // Fallback: convertir a string
-              else {
-                errorsArray.push(String(errorValue));
-              }
-            });
-          }
-          
-          // Construir mensaje legible
-          if (errorsArray.length > 0) {
-            this.errorMessage = '❌ Se encontraron los siguientes errores:\n' + 
-              errorsArray.map((err, index) => `${index + 1}. ${err}`).join('\n');
-          } else {
-            this.errorMessage = '❌ Error de validación. Por favor revisa los campos del formulario.';
-          }
-        } else if (error.error?.message) {
-          // Mensaje de error simple del backend
-          this.errorMessage = '❌ ' + error.error.message;
+        // ✅ Mensajes genéricos anti-enumeración: NUNCA revelar si el email/usuario ya existe
+        if (error.status === 0) {
+          this.errorMessage = '❌ No se pudo conectar con el servidor. Verifica tu conexión a internet.';
+        } else if (error.status === 422 || error.status === 400) {
+          // Errores de validación de campos (formato, longitud, etc.)
+          this.errorMessage = '❌ Error de validación. Por favor revisa los campos del formulario.';
         } else {
-          // Error genérico
-          this.errorMessage = '❌ ' + (error.message || 'Ocurrió un error al crear tu cuenta. Por favor intenta nuevamente.');
+          this.errorMessage = '❌ Ocurrió un error al procesar tu solicitud. Por favor intenta nuevamente.';
         }
       },
       complete: () => {

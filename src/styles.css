@@ -1,35 +1,37 @@
-﻿/* ── Importaciones externas (deben ser siempre las primeras) ── */
+﻿/* -- Importaciones externas (deben ser siempre las primeras) -- */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;600;700&display=swap');
 
-/* ── Tailwind CSS (used only by csv-import-export modal component) ── */
+/* -- Tailwind CSS (used only by csv-import-export modal component) -- */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Estilos Globales - Casa de Música Castillo */
+/* Estilos Globales - Casa de Mï¿½sica Castillo */
 :root {
   /* Colores Principales */
-  --primary-color: #800020;    /* Vino Tinto/Bordó - Navegación, botones principales */
+  --primary-color: #722f37;    /* Vino Tinto/Bordï¿½ - Navegaciï¿½n, botones principales */
   --secondary-color: #C5A059;  /* Dorado Antiguo - Detalles, iconos activos */
   --dark-color: #1A1A1A;       /* Negro Noche - Texto principal, footer */
-  --bg-color: #F5F5F5;         /* Blanco Hueso - Fondo general */
-  --card-bg: #FFFFFF;          /* Blanco Puro - Tarjetas */
+  --bg-color: #f5f0eb;         /* Crema cï¿½lida - Fondo general */
+  --card-bg: #FDFCFB;          /* Hueso cï¿½lido - Tarjetas, contenedores */
+  --card-alt: #FAF8F6;         /* Crema suave - Filas alternas, fondos secundarios */
+  --card-hover: #f5f0eb;       /* Hover suave sobre filas/cards */
   --success-color: #27AE60;    /* Verde Bosque - Stock disponible */
   --error-color: #C0392B;      /* Rojo Ladrillo - Alertas, errores */
   --text-light: #ffffff;       /* Texto blanco para botones */
   
-  /* Tipografía */
-  --font-title: 'Montserrat', sans-serif;  /* Títulos y nombres de instrumentos */
+  /* Tipografï¿½a */
+  --font-title: 'Montserrat', sans-serif;  /* Tï¿½tulos y nombres de instrumentos */
   --font-body: 'Roboto', sans-serif;       /* Cuerpo, tablas, formularios */
   
   /* Variaciones de colores para estados */
-  --primary-hover: #66001a;    /* Vino más oscuro para hover */
-  --primary-light: #99002b;    /* Vino más claro */
-  --secondary-hover: #b8934f;  /* Dorado más oscuro */
-  --secondary-light: #d4b066;  /* Dorado más claro */
-  --text-main: var(--dark-color);  /* Texto principal */
-  --text-muted: #666666;       /* Texto secundario */
-  --border-color: #e0e0e0;     /* Bordes suaves */
+  --primary-hover: #66001a;    /* Vino mï¿½s oscuro para hover */
+  --primary-light: #99002b;    /* Vino mï¿½s claro */
+  --secondary-hover: #b8934f;  /* Dorado mï¿½s oscuro */
+  --secondary-light: #d4b066;  /* Dorado mï¿½s claro */
+  --text-main: #2D2A26;        /* Gris carbï¿½n cï¿½lido - Texto principal */
+  --text-muted: #6B6560;       /* Gris cï¿½lido - Texto secundario */
+  --border-color: #E8E2DC;     /* Beige medio - Bordes y separadores */
   
   /* Sombras profesionales */
   --shadow-light: rgba(128, 0, 32, 0.08);
@@ -294,7 +296,7 @@ a:hover {
   font-size: 0.9rem;
 }
 
-/* Retroalimentación de formularios */
+/* Retroalimentaciï¿½n de formularios */
 .valid-feedback {
   display: block;
   color: var(--success-color);
@@ -534,7 +536,7 @@ a:hover {
   vertical-align: middle;
 }
 
-/* Tamaños de iconos */
+/* Tamaï¿½os de iconos */
 .material-icons.md-18,
 .material-symbols-outlined.md-18 { font-size: 18px; }
 
@@ -596,11 +598,11 @@ button .material-symbols-outlined:last-child,
 /* ==================== FIN MATERIAL ICONS ==================== */
 
 
-/* ══════════════════════════════════════════════════════════════
-   SWEETALERT2 — Restaurar estilos pisados por Tailwind Preflight
+/* --------------------------------------------------------------
+   SWEETALERT2 ï¿½ Restaurar estilos pisados por Tailwind Preflight
    @tailwind base incluye button { background: transparent; color: inherit }
    que sobrescribe los colores de Swal. Estos overrides los restauran.
-   ══════════════════════════════════════════════════════════════ */
+   -------------------------------------------------------------- */
 
 /* Contenedor de acciones */
 div.swal2-actions {
@@ -608,7 +610,7 @@ div.swal2-actions {
   gap: 12px;
 }
 
-/* Botón confirmar */
+/* Botï¿½n confirmar */
 button.swal2-confirm {
   color: #fff !important;
   border: 0 !important;
@@ -617,19 +619,19 @@ button.swal2-confirm {
   font-size: 1em !important;
   font-weight: 500 !important;
   cursor: pointer !important;
-  /* El color de fondo es inyectado inline por Swal vía confirmButtonColor,
+  /* El color de fondo es inyectado inline por Swal vï¿½a confirmButtonColor,
      pero si no hay color inline lo ponemos como fallback */
   background-color: #3085d6 !important;
 }
 
 /* Cuando Swal inyecta el color inline (confirmButtonColor), no pisarlo */
 button.swal2-confirm[style*="background"] {
-  /* Deja que el inline style gane — solo aseguramos text-color y cursor */
+  /* Deja que el inline style gane ï¿½ solo aseguramos text-color y cursor */
   color: #fff !important;
   cursor: pointer !important;
 }
 
-/* Botón cancelar */
+/* Botï¿½n cancelar */
 button.swal2-cancel {
   color: #fff !important;
   border: 0 !important;
@@ -646,30 +648,65 @@ button.swal2-cancel[style*="background"] {
   cursor: pointer !important;
 }
 
-/* Botón "deny" (por si se usa) */
+/* Botï¿½n "deny" (por si se usa) */
 button.swal2-deny {
   color: #fff !important;
   cursor: pointer !important;
 }
 
-/* Hover genérico para todos los botones Swal */
+/* Hover genï¿½rico para todos los botones Swal */
 button.swal2-confirm:hover,
 button.swal2-cancel:hover,
 button.swal2-deny:hover {
   filter: brightness(0.9);
 }
 
-/* Popup base — asegurar que no herede colores extraños */
+/* Popup base ï¿½ asegurar que no herede colores extraï¿½os */
 div.swal2-popup {
   font-family: var(--font-body, 'Roboto', sans-serif);
 }
 
-/* ── Bloquear scroll del fondo cuando un modal está abierto ──
-   Se activa automáticamente cuando .brand-modal-overlay existe en el DOM,
-   sin necesitar ningún código JS manual (add/remove class).
+/* -- Bloquear scroll del fondo cuando un modal estï¿½ abierto --
+   Se activa automï¿½ticamente cuando .brand-modal-overlay existe en el DOM,
+   sin necesitar ningï¿½n cï¿½digo JS manual (add/remove class).
    :has() tiene soporte en todos los navegadores modernos (Chrome 105+, Firefox 121+, Safari 15.4+).
-   La clase .modal-open se mantiene como fallback para navegadores antiguos. ── */
+   La clase .modal-open se mantiene como fallback para navegadores antiguos. -- */
 body:has(.brand-modal-overlay),
 body.modal-open {
   overflow: hidden;
 }
+
+/* -- Paleta cï¿½lida: override de clases Tailwind bg-white / bg-slate / bg-gray --
+   Sustituye los fondos frï¿½os blancos/grises por la crema cï¿½lida de la marca.
+   !important asegura prioridad sobre las utilidades de Tailwind generadas. -- */
+.bg-white         { background-color: #FDFCFB !important; }
+.bg-slate-50      { background-color: #f5f0eb !important; }
+.bg-slate-100     { background-color: #FAF8F6 !important; }
+.bg-gray-50       { background-color: #f5f0eb !important; }
+.bg-gray-100      { background-color: #FAF8F6 !important; }
+.bg-stone-50      { background-color: #FAF8F6 !important; }
+.bg-stone-100     { background-color: #f0ece6 !important; }
+
+/* -- Override global de fondos blancos heredados de componentes legacy --
+   Convierte cualquier uso de colores frï¿½os neutros a la paleta cï¿½lida. -- */
+.search-bar,
+.search-box       { background-color: #FDFCFB !important; }
+
+/* Fase 6: Solución global de z-index para alertas sobre modales */
+.toast-container,
+.toast-top-right,
+.app-toast-container,
+
+.swal2-container,
+.toast-container,
+.toast-top-right,
+.ngx-toastr,
+.cdk-overlay-container,
+.app-toast-container,
+.notification-container,
+.custom-toast-container,
+.pm-toast-wrapper {
+  z-index: 50000 !important;
+}
+
+

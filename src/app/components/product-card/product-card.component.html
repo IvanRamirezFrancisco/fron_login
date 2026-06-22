@@ -17,6 +17,21 @@
       (error)="onImageError($event)"
       loading="lazy"
     >
+
+    <!-- Corazón de favoritos fijo en esquina superior derecha -->
+    <button 
+      class="fav-btn"
+      [class.active]="isFavorite"
+      [class.toggling]="togglingFav"
+      title="{{ isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos' }}"
+      (click)="toggleFavorite($event)"
+      [disabled]="togglingFav"
+    >
+      <span class="material-symbols-outlined" *ngIf="!togglingFav">
+        {{ isFavorite ? 'favorite' : 'favorite_border' }}
+      </span>
+      <span class="fav-spinner" *ngIf="togglingFav"></span>
+    </button>
     
     <!-- Overlay con acciones rápidas -->
     <div class="image-overlay">
@@ -27,18 +42,15 @@
       >
         <span class="material-symbols-outlined">visibility</span>
       </button>
-      <button 
-        class="btn-icon" 
-        [class.active]="isFavorite"
-        title="Agregar a favoritos" 
-        (click)="toggleFavorite($event)"
-      >
-        <span class="material-symbols-outlined">
-          {{ isFavorite ? 'favorite' : 'favorite_border' }}
-        </span>
-      </button>
     </div>
   </div>
+
+  <!-- Alerta amigable para usuarios no autenticados -->
+  <div class="fav-alert" *ngIf="showFavAlert">
+    <span class="material-symbols-outlined">info</span>
+    Debes iniciar sesión para guardar favoritos
+  </div>
+
 
   <!-- Información del producto -->
   <div class="product-info">

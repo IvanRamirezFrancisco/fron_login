@@ -212,49 +212,41 @@
         </div>
 
         <!-- Separador -->
-        <hr class="methods-divider" style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--gray-200);">
+        <hr class="methods-divider">
 
         <!-- ===== MÉTODO 1: GOOGLE AUTHENTICATOR ===== -->
-        <div class="twofa-method" style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid var(--gray-200); border-radius: var(--border-radius-lg);">
-          <div class="method-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-            <div class="method-info" style="display: flex; align-items: center; gap: 1rem;">
-              <div class="method-icon" style="width: 48px; height: 48px; background: var(--color-fondo); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                <span class="material-symbols-outlined" style="color: var(--color-primario); font-size: 1.5rem;">smartphone</span>
+        <div class="twofa-method">
+          <div class="method-header">
+            <div class="method-info">
+              <div class="method-icon">
+                <span class="material-symbols-outlined">smartphone</span>
               </div>
               <div>
-                <h4 style="margin: 0; color: var(--color-primario); font-weight: 600;">Google Authenticator</h4>
-                <p style="margin: 0; font-size: 0.85rem; color: var(--color-texto-secundario);">Usa la app para generar códigos de 6 dígitos</p>
+                <h4 class="method-title">Google Authenticator</h4>
+                <p class="method-desc">Usa la app para generar códigos de 6 dígitos</p>
               </div>
             </div>
             <div class="method-status">
-              <span 
-                class="badge" 
-                [style.background]="isGoogleAuthEnabled ? 'var(--success-500)' : 'var(--gray-400)'"
-                style="color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+              <span class="method-badge" [class.active]="isGoogleAuthEnabled">
                 {{ isGoogleAuthEnabled ? 'Activo' : 'Inactivo' }}
               </span>
             </div>
           </div>
 
           <div class="method-actions">
-            <!-- Si NO está activado, mostrar botón para configurar -->
             <button 
               class="btn btn-primary" 
               *ngIf="!isGoogleAuthEnabled"
               (click)="toggle2FASetup()"
-              [disabled]="loading"
-              style="width: 100%;">
+              [disabled]="loading">
               <span class="material-symbols-outlined">add_circle</span>
               Configurar Google Authenticator
             </button>
-            
-            <!-- Si ESTÁ activado, mostrar botón para desactivar -->
             <button 
               class="btn btn-outline btn-danger-outline" 
               *ngIf="isGoogleAuthEnabled"
               (click)="disableGoogleAuth()"
-              [disabled]="loading"
-              style="width: 100%; border-color: var(--color-error); color: var(--color-error);">
+              [disabled]="loading">
               <span class="material-symbols-outlined">cancel</span>
               Desactivar Google Authenticator
             </button>
@@ -262,46 +254,38 @@
         </div>
 
         <!-- ===== MÉTODO 2: VERIFICACIÓN POR EMAIL ===== -->
-        <div class="twofa-method" style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid var(--gray-200); border-radius: var(--border-radius-lg);">
-          <div class="method-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-            <div class="method-info" style="display: flex; align-items: center; gap: 1rem;">
-              <div class="method-icon" style="width: 48px; height: 48px; background: var(--color-fondo); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                <span class="material-symbols-outlined" style="color: var(--color-accion); font-size: 1.5rem;">mail</span>
+        <div class="twofa-method">
+          <div class="method-header">
+            <div class="method-info">
+              <div class="method-icon method-icon--email">
+                <span class="material-symbols-outlined">mail</span>
               </div>
               <div>
-                <h4 style="margin: 0; color: var(--color-primario); font-weight: 600;">Verificación por Email</h4>
-                <p style="margin: 0; font-size: 0.85rem; color: var(--color-texto-secundario);">Recibe un código de verificación en tu correo</p>
+                <h4 class="method-title">Verificación por Email</h4>
+                <p class="method-desc">Recibe un código de verificación en tu correo</p>
               </div>
             </div>
             <div class="method-status">
-              <span 
-                class="badge" 
-                [style.background]="isEmailTwoFactorEnabled ? 'var(--success-500)' : 'var(--gray-400)'"
-                style="color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+              <span class="method-badge" [class.active]="isEmailTwoFactorEnabled">
                 {{ isEmailTwoFactorEnabled ? 'Activo' : 'Inactivo' }}
               </span>
             </div>
           </div>
 
           <div class="method-actions">
-            <!-- Si NO está activado, mostrar botón para activar -->
             <button 
               class="btn btn-primary" 
               *ngIf="!isEmailTwoFactorEnabled"
               (click)="enableEmail2FA()"
-              [disabled]="loading"
-              style="width: 100%; background: var(--color-accion);">
+              [disabled]="loading">
               <span class="material-symbols-outlined">mail</span>
               Activar Verificación por Email
             </button>
-            
-            <!-- Si ESTÁ activado, mostrar botón para desactivar -->
             <button 
               class="btn btn-outline btn-danger-outline" 
               *ngIf="isEmailTwoFactorEnabled"
               (click)="disableEmail2FA()"
-              [disabled]="loading"
-              style="width: 100%; border-color: var(--color-error); color: var(--color-error);">
+              [disabled]="loading">
               <span class="material-symbols-outlined">cancel</span>
               Desactivar Verificación por Email
             </button>
@@ -348,10 +332,10 @@
                   <p>Generando código QR...</p>
                 </div>
                 <!-- Error: QR no disponible -->
-                <div class="qr-error" *ngIf="!twoFactorData.qrCode && !loading" style="text-align: center; padding: 1rem; background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107;">
-                  <span class="material-symbols-outlined" style="font-size: 2rem; color: #856404;">warning</span>
-                  <p style="margin: 0.5rem 0; color: #856404;">No se pudo cargar el código QR.</p>
-                  <button class="btn btn-outline" (click)="generate2FAQRCode()" style="margin-top: 0.5rem;">
+                <div class="qr-error" *ngIf="!twoFactorData.qrCode && !loading">
+                  <span class="material-symbols-outlined">warning</span>
+                  <p>No se pudo cargar el código QR.</p>
+                  <button class="btn btn-outline" (click)="generate2FAQRCode()">
                     <span class="material-symbols-outlined">refresh</span>
                     Reintentar
                   </button>
@@ -429,7 +413,7 @@
         </div>
 
         <!-- Loading mientras se generan los códigos -->
-        <div class="codes-loading" *ngIf="backupCodes.length === 0 && loading" style="text-align: center; padding: 1rem;">
+        <div class="codes-loading" *ngIf="backupCodes.length === 0 && loading">
           <span class="material-symbols-outlined spinning">autorenew</span>
           <p>Generando códigos de respaldo...</p>
         </div>

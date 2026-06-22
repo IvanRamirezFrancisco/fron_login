@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { CartService, CartAnimation } from '../../services/cart.service';
+import { WishlistService } from '../../services/wishlist.service';
 import { User } from '../../models/user.model';
 import { GlobalSearchComponent } from '../global-search/global-search.component';
 import { Subscription } from 'rxjs';
@@ -19,7 +20,7 @@ import { Subscription } from 'rxjs';
 })
 export class MainHeaderComponent implements OnInit, OnDestroy {
   cartItemCount = 0;
-  wishlistCount = 5;
+  wishlistCount = 0;  // alimentado por WishlistService.wishlistCount$
   
   // Usuario logueado
   isLoggedIn = false;
@@ -35,7 +36,8 @@ export class MainHeaderComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private cartService: CartService
+    private cartService: CartService,
+    private wishlistService: WishlistService
   ) {}
 
   ngOnInit(): void {
@@ -49,6 +51,13 @@ export class MainHeaderComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.cartService.cartCount$.subscribe(count => {
         this.cartItemCount = count;
+      })
+    );
+
+    // Suscribirse al contador de la wishlist
+    this.subscriptions.add(
+      this.wishlistService.wishlistCount$.subscribe(count => {
+        this.wishlistCount = count;
       })
     );
     
@@ -114,7 +123,7 @@ export class MainHeaderComponent implements OnInit, OnDestroy {
   }
 
   toggleWishlist(): void {
-    // Wishlist silencioso
+    this.router.navigate(['/wishlist']);
   }
 
   navigateToLogin(): void {
@@ -128,6 +137,15 @@ export class MainHeaderComponent implements OnInit, OnDestroy {
   navigateToProfile(): void {
     this.closeUserMenu();
     this.router.navigate(['/dashboard/seguridad']);
+  }
+
+  navigateToAdmin(): void {
+    this.closeUserMenu();
+    this.router.navigate(['/admin']);
+  }
+
+  isAdminUser(): boolean {
+    return this.authService.isAdmin() || this.authService.isSuperAdmin();
   }
 
   toggleMobileMenu(): void {

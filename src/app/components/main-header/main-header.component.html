@@ -62,6 +62,12 @@
             <div class="dropdown-divider"></div>
             
             <ul class="dropdown-menu-list">
+              <li *ngIf="isAdminUser()">
+                <button (click)="navigateToAdmin()" class="dropdown-item admin-item">
+                  <span class="material-icons">admin_panel_settings</span>
+                  <span>Panel de Administración</span>
+                </button>
+              </li>
               <li>
                 <button (click)="navigateToProfile()" class="dropdown-item">
                   <span class="material-icons">settings</span>
@@ -69,7 +75,7 @@
                 </button>
               </li>
               <li>
-                <button (click)="closeUserMenu()" routerLink="/orders" class="dropdown-item">
+                <button (click)="closeUserMenu()" routerLink="/orders/my" class="dropdown-item">
                   <span class="material-icons">shopping_bag</span>
                   <span>Mis Pedidos</span>
                 </button>
@@ -121,12 +127,7 @@
             <span class="nav-text">Inicio</span>
           </a>
         </li>
-        <li class="nav-item">
-          <a routerLink="/ofertas" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
-            <span class="material-icons">local_offer</span>
-            <span class="nav-text">Ofertas</span>
-          </a>
-        </li>
+
         <li class="nav-item">
           <a routerLink="/catalogo" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
             <span class="material-icons">library_music</span>

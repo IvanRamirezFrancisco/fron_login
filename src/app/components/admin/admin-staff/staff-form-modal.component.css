@@ -1,4 +1,4 @@
-﻿/* ================================================================
+/* ================================================================
    staff-form-modal.component.css
    ViewEncapsulation.None    todos los selectores deben
    estar prefijados con app-staff-form-modal o el contexto
@@ -7,7 +7,7 @@
 
 /* ---------- Variables corporativas ---------- */
 app-staff-form-modal {
-  --wine-color: #800020;
+  --wine-color: #722f37;
   --gold-color: #D4A347;
   --wine-hover: #600018;
   --gold-hover: #b8903d;
@@ -21,7 +21,7 @@ app-staff-form-modal {
   overflow: hidden;
 }
 
-/* El <form> es el hijo directo del host y también debe ser flex */
+/* El <form> es el hijo directo del host y tambi�n debe ser flex */
 app-staff-form-modal > form {
   display: flex;
   flex-direction: column;
@@ -32,7 +32,7 @@ app-staff-form-modal > form {
 
 /* ---------- Modal header ---------- */
 app-staff-form-modal .modal-header.bg-wine {
-  background: linear-gradient(135deg, #800020 0%, #600018 100%) !important;
+  background: linear-gradient(135deg, #722f37 0%, #600018 100%) !important;
   border-bottom: 3px solid #D4A347;
   padding: 1.25rem 1.75rem;
   flex-shrink: 0;
@@ -49,7 +49,7 @@ app-staff-form-modal .modal-title i {
   color: #D4A347;
 }
 
-/* ---------- Modal body: aquí vive el scroll ---------- */
+/* ---------- Modal body: aqu� vive el scroll ---------- */
 app-staff-form-modal .modal-body {
   padding: 1.75rem;
   background-color: #f4f6f8;
@@ -64,7 +64,7 @@ app-staff-form-modal .modal-body {
 app-staff-form-modal .modal-body::-webkit-scrollbar        { width: 8px; }
 app-staff-form-modal .modal-body::-webkit-scrollbar-track  { background: #e9ecef; border-radius: 8px; }
 app-staff-form-modal .modal-body::-webkit-scrollbar-thumb  {
-  background: linear-gradient(180deg, #800020, #600018);
+  background: linear-gradient(180deg, #722f37, #600018);
   border-radius: 8px;
   border: 2px solid #e9ecef;
 }
@@ -94,7 +94,7 @@ app-staff-form-modal .form-section:last-child { margin-bottom: 0; }
 app-staff-form-modal .section-title {
   font-size: 1rem;
   font-weight: 700;
-  color: #800020;
+  color: #722f37;
   border-bottom: 2px solid #D4A347;
   padding-bottom: 0.5rem;
   margin-bottom: 1.25rem !important;
@@ -117,7 +117,7 @@ app-staff-form-modal .form-control {
 }
 
 app-staff-form-modal .form-control:focus {
-  border-color: #800020;
+  border-color: #722f37;
   box-shadow: 0 0 0 0.2rem rgba(128, 0, 32, 0.12);
   outline: none;
 }
@@ -141,10 +141,10 @@ app-staff-form-modal .input-group .form-control {
   border-radius: 0 8px 8px 0;
 }
 
-app-staff-form-modal .input-group:focus-within .input-group-text { border-color: #800020; }
-app-staff-form-modal .input-group:focus-within .form-control      { border-color: #800020; }
+app-staff-form-modal .input-group:focus-within .input-group-text { border-color: #722f37; }
+app-staff-form-modal .input-group:focus-within .form-control      { border-color: #722f37; }
 
-/* ---------- Feedback de validación ---------- */
+/* ---------- Feedback de validaci�n ---------- */
 app-staff-form-modal .invalid-feedback {
   display: block;
   margin-top: 0.35rem;
@@ -161,7 +161,7 @@ app-staff-form-modal .valid-feedback {
   color: #198754;
 }
 
-/* ---------- Hint de contraseña ---------- */
+/* ---------- Hint de contrase�a ---------- */
 app-staff-form-modal .password-hint {
   background: #fff8e1;
   border: 1px solid #ffe082;
@@ -193,7 +193,7 @@ app-staff-form-modal .roles-selection-container {
 app-staff-form-modal .roles-selection-container::-webkit-scrollbar        { width: 8px; }
 app-staff-form-modal .roles-selection-container::-webkit-scrollbar-track  { background: #f1f1f1; border-radius: 8px; }
 app-staff-form-modal .roles-selection-container::-webkit-scrollbar-thumb  {
-  background: linear-gradient(180deg, #800020, #600018);
+  background: linear-gradient(180deg, #722f37, #600018);
   border-radius: 8px;
   border: 2px solid #f1f1f1;
 }
@@ -213,25 +213,39 @@ app-staff-form-modal .role-card {
 app-staff-form-modal .role-card:last-child { margin-bottom: 0; }
 
 app-staff-form-modal .role-card:hover {
-  border-color: #800020;
+  border-color: #722f37;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(128, 0, 32, 0.12);
 }
 
 app-staff-form-modal .role-card.selected {
-  border: 2px solid #800020;
+  border: 2px solid #722f37;
   background: linear-gradient(135deg, rgba(128, 0, 32, 0.04), rgba(212, 163, 71, 0.06));
   box-shadow: 0 6px 20px rgba(128, 0, 32, 0.18);
   transform: translateY(-2px);
 }
 
-/* Tarjeta bloqueada — ROLE_SUPER_ADMIN para no-super-admins */
+/* Tarjeta bloqueada � ROLE_SUPER_ADMIN para no-super-admins */
 app-staff-form-modal .role-card.role-card--locked {
   opacity: 0.55;
   cursor: not-allowed;
   pointer-events: none;
   background: #f9f9f9;
   border-color: #d1d5db;
+}
+
+app-staff-form-modal .roles-disabled {
+  position: relative;
+  pointer-events: none;
+}
+
+app-staff-form-modal .roles-disabled::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  z-index: 1;
 }
 
 app-staff-form-modal .role-card.role-card--locked:hover {
@@ -257,15 +271,15 @@ app-staff-form-modal .form-check-input {
   flex-shrink: 0;
 }
 
-app-staff-form-modal .form-check-input:checked { background-color: #800020; border-color: #800020; }
+app-staff-form-modal .form-check-input:checked { background-color: #722f37; border-color: #722f37; }
 app-staff-form-modal .form-check-input:focus   { box-shadow: 0 0 0 0.2rem rgba(128, 0, 32, 0.15); }
 
-/* ---------- Ícono de rol ---------- */
+/* ---------- �cono de rol ---------- */
 app-staff-form-modal .role-icon {
   width: 48px;
   height: 48px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #800020, #600018);
+  background: linear-gradient(135deg, #722f37, #600018);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -295,7 +309,7 @@ app-staff-form-modal .role-info { flex: 1; min-width: 0; }
 app-staff-form-modal .role-name {
   font-size: 1rem;
   font-weight: 700;
-  color: #800020;
+  color: #722f37;
   line-height: 1.3;
 }
 
@@ -315,7 +329,7 @@ app-staff-form-modal .role-footer {
 }
 
 /* ---------- Utilidades ---------- */
-app-staff-form-modal .text-wine { color: #800020 !important; }
+app-staff-form-modal .text-wine { color: #722f37 !important; }
 app-staff-form-modal .text-gold { color: #D4A347 !important; }
 
 app-staff-form-modal .bg-gold-subtle {
@@ -342,7 +356,7 @@ app-staff-form-modal .btn {
 }
 
 app-staff-form-modal .btn-wine {
-  background: linear-gradient(135deg, #800020 0%, #600018 100%) !important;
+  background: linear-gradient(135deg, #722f37 0%, #600018 100%) !important;
   border: none !important;
   color: #ffffff !important;
   box-shadow: 0 4px 10px rgba(128, 0, 32, 0.25);

@@ -8,7 +8,11 @@ import {
   CreateStaffRequest,
   UpdateStaffRequest,
   StaffFilters,
-  PageResponse
+  PageResponse,
+  CreateStaffInvitationRequest,
+  StaffInvitationDto,
+  InvitationInfoDto,
+  AcceptInvitationRequest
 } from '../models/staff.model';
 
 /** Forma exacta en que el backend devuelve la lista de staff */
@@ -258,5 +262,92 @@ export class StaffService {
       params,
       responseType: 'blob'
     });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // INVITACIONES DE EMPLEADOS
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Verifica si un email está disponible para invitación.
+   * Mapeo defensivo: soporta respuesta directa { available } o
+   * envuelta en ApiResponse { data: { available } } o booleano puro.
+   */
+  checkEmailAvailability(email: string): Observable<boolean> {
+    return this.http.get<any>(
+      `${this.apiUrl}/check-email`,
+      { params: { email } }
+    ).pipe(
+      map(response => {
+        // Respuesta envuelta: { success: true, data: { available: true } }
+        if (response && response.data && typeof response.data.available === 'boolean') {
+          return response.data.available;
+        }
+        // Respuesta directa: { available: true }
+        if (response && typeof response.available === 'boolean') {
+          return response.available;
+        }
+        // Booleano puro
+        if (typeof response === 'boolean') {
+          return response;
+        }
+        // Fallback seguro: asumir no disponible antes que un falso positivo
+        return false;
+      })
+    );
+  }
+
+  /**
+   * Envía una invitación a un nuevo empleado
+   */
+  sendInvitation(data: CreateStaffInvitationRequest): Observable<StaffInvitationDto> {
+    return this.http.post<StaffInvitationDto>(`${this.apiUrl}/invitations`, data);
+  }
+
+  /**
+   * Lista todas las invitaciones
+   */
+  listInvitations(): Observable<StaffInvitationDto[]> {
+    return this.http.get<StaffInvitationDto[]>(`${this.apiUrl}/invitations`);
+  }
+
+  /**
+   * Lista solo invitaciones pendientes
+   */
+  listPendingInvitations(): Observable<StaffInvitationDto[]> {
+    return this.http.get<StaffInvitationDto[]>(`${this.apiUrl}/invitations/pending`);
+  }
+
+  /**
+   * Cancela una invitación pendiente
+   */
+  cancelInvitation(invitationId: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/invitations/${invitationId}`);
+  }
+
+  /**
+   * Reenvía una invitación con nuevo token
+   */
+  resendInvitation(invitationId: number): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/invitations/${invitationId}/resend`, {});
+  }
+
+  /**
+   * Valida un token de invitación (endpoint público, sin auth)
+   */
+  validateInvitationToken(token: string): Observable<InvitationInfoDto> {
+    return this.http.get<InvitationInfoDto>(
+      `${environment.apiUrl}/auth/accept-invitation/validate/${token}`
+    );
+  }
+
+  /**
+   * Acepta una invitación (endpoint público, sin auth)
+   */
+  acceptInvitation(token: string, data: AcceptInvitationRequest): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${environment.apiUrl}/auth/accept-invitation/${token}`,
+      data
+    );
   }
 }

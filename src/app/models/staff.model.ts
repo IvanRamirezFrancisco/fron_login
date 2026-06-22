@@ -111,3 +111,39 @@ export interface RoleUserDTO {
   roles: string;          // roles concatenados: "ROLE_ADMIN, ROLE_STAFF"
   createdAt?: string;
 }
+
+// ═══════════════════════════════════════════════════════
+// Interfaces para el flujo de invitaciones de empleados
+// ═══════════════════════════════════════════════════════
+
+export interface CreateStaffInvitationRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  roleIds: number[];
+}
+
+export interface AcceptInvitationRequest {
+  password: string;
+  confirmPassword: string;
+}
+
+export interface StaffInvitationDto {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  status: 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'CANCELLED';
+  roleNames: string[];
+  invitedByName: string;
+  createdAt: string;
+  expiresAt: string;
+  acceptedAt?: string;
+}
+
+export interface InvitationInfoDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  roleNames: string[];
+}

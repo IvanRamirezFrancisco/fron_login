@@ -25,7 +25,7 @@
 
 /* Header principal */
 .header-main {
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   color: #F5F5F5;
   padding: 15px 0;
   box-shadow: 0 4px 20px rgba(128, 0, 32, 0.3);
@@ -72,15 +72,16 @@
 .search-bar {
   display: flex;
   align-items: center;
-  background: white;
+  background: #FDFCFB;
   border-radius: 30px;
   padding: 8px 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 15px rgba(45,42,38,0.08);
   transition: all 0.3s ease;
+  border: 1px solid #E8E2DC;
 }
 
 .search-icon {
-  color: #800020;
+  color: #722f37;
   margin-right: 10px;
 }
 
@@ -198,7 +199,7 @@
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  background: linear-gradient(135deg, #F5F5F5 0%, #FAFAFA 100%);
+  background: linear-gradient(135deg, #f5f0eb 0%, #ede8e1 100%);
 }
 
 .register-content .container {
@@ -209,9 +210,10 @@
 }
 
 .register-card {
-  background: white;
+  background: #FDFCFB;
   border-radius: 30px;
-  box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+  box-shadow: 0 15px 50px rgba(45,42,38,0.12);
+  border: 1px solid #E8E2DC;
   overflow: hidden;
   max-width: 600px;
   width: 100%;
@@ -231,7 +233,7 @@
 }
 
 .register-header {
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   color: white;
   padding: 40px;
   text-align: center;
@@ -290,7 +292,7 @@
 
 .form-label .material-icons {
   font-size: 20px;
-  color: #800020;
+  color: #722f37;
 }
 
 .input-wrapper {
@@ -301,19 +303,19 @@
   width: 100%;
   padding: 14px 18px;
   padding-right: 50px; /* Espacio para iconos de validación */
-  border: 2px solid #E0E0E0;
+  border: 2px solid #E8E2DC;
   border-radius: 12px;
   font-size: 1rem;
   font-family: Roboto, sans-serif;
   transition: all 0.3s ease;
-  color: #1A1A1A;
-  background: white;
+  color: #2D2A26;
+  background: #FDFCFB;
   box-sizing: border-box;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #800020;
+  border-color: #722f37;
   box-shadow: 0 0 0 4px rgba(128, 0, 32, 0.1);
   transform: translateY(-1px);
 }
@@ -388,7 +390,7 @@
 }
 
 .password-toggle:hover {
-  color: #800020;
+  color: #722f37;
 }
 
 .password-strength {
@@ -400,7 +402,7 @@
   margin-top: 12px;
   padding: 16px;
   background: rgba(128, 0, 32, 0.03);
-  border-left: 3px solid #800020;
+  border-left: 3px solid #722f37;
   border-radius: 8px;
   animation: slideDown 0.3s ease-out;
 }
@@ -422,7 +424,7 @@
   gap: 8px;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #800020;
+  color: #722f37;
   margin-bottom: 12px;
   font-family: 'Roboto', sans-serif;
 }
@@ -502,7 +504,7 @@
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #800020;
+  color: #722f37;
 }
 
 /* Feedback de zxcvbn */
@@ -649,7 +651,7 @@
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: #800020;
+  accent-color: #722f37;
   margin-top: 2px;
 }
 
@@ -663,7 +665,7 @@
 }
 
 .checkbox-label a {
-  color: #800020;
+  color: #722f37;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
@@ -681,7 +683,7 @@
 .register-btn {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #800020 0%, #A0002A 100%);
+  background: linear-gradient(135deg, #722f37 0%, #A0002A 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -700,7 +702,7 @@
 }
 
 .register-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #A0002A 0%, #800020 100%);
+  background: linear-gradient(135deg, #A0002A 0%, #722f37 100%);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(128, 0, 32, 0.4);
 }
@@ -774,9 +776,9 @@
   margin-top: 12px;
   padding: 10px 16px;
   background: rgba(128, 0, 32, 0.05);
-  border-left: 3px solid #800020;
+  border-left: 3px solid #722f37;
   border-radius: 6px;
-  color: #800020;
+  color: #722f37;
   font-size: 0.9rem;
   font-weight: 500;
   animation: fadeIn 0.3s ease-in;
@@ -784,7 +786,7 @@
 
 .btn-help-text .material-icons {
   font-size: 20px;
-  color: #800020;
+  color: #722f37;
 }
 
 @keyframes fadeIn {
@@ -830,7 +832,7 @@
 }
 
 .login-link a {
-  color: #800020;
+  color: #722f37;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s ease;
@@ -907,7 +909,7 @@
 .home-btn {
   margin-top: 30px;
   padding: 14px 40px;
-  background: white;
+  background: #FDFCFB;
   color: #27AE60;
   border: none;
   border-radius: 12px;
@@ -922,9 +924,9 @@
 }
 
 .home-btn:hover {
-  background: #F5F5F5;
+  background: #f5f0eb;
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 15px rgba(45,42,38,0.2);
 }
 /* Footer */
 .footer {

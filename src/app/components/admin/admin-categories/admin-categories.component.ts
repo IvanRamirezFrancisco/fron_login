@@ -4,7 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { CategoryService } from '../../../services/category.service';
+import { AuthService } from '../../../services/auth.service';
 import { Category, CreateCategoryRequest, UpdateCategoryRequest } from '../../../models/category.model';
+import Swal from 'sweetalert2';
 
 /**
  * Componente para gestión completa de categorías (CRUD)
@@ -55,6 +57,8 @@ export class AdminCategoriesComponent implements OnInit, OnDestroy {
     parentId: null
   };
 
+  initialCategoryFormState: string = '';
+
   // Categoría seleccionada
   selectedCategory: Category | null = null;
 
@@ -64,6 +68,7 @@ export class AdminCategoriesComponent implements OnInit, OnDestroy {
 
   constructor(
     private categoryService: CategoryService,
+    public authService: AuthService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -168,6 +173,7 @@ export class AdminCategoriesComponent implements OnInit, OnDestroy {
   openCreateModal(): void {
     console.log('➕ Abriendo modal de crear categoría');
     this.resetForm();
+    this.saveInitialFormState();
     this.showCreateModal = true;
     this.errorMessage = '';
   }
@@ -181,6 +187,7 @@ export class AdminCategoriesComponent implements OnInit, OnDestroy {
       imageUrl: category.imageUrl || '',
       active: category.active
     };
+    this.saveInitialFormState();
     this.showEditModal = true;
     this.errorMessage = '';
   }
@@ -327,6 +334,65 @@ export class AdminCategoriesComponent implements OnInit, OnDestroy {
     this.showDeleteModal = false;
     this.selectedCategory = null;
     this.errorMessage = '';
+  }
+
+  saveInitialFormState(): void {
+    const state = {
+      name: this.categoryForm.name || '',
+      description: this.categoryForm.description || '',
+      imageUrl: this.categoryForm.imageUrl || '',
+      active: !!this.categoryForm.active,
+      parentId: this.categoryForm.parentId || null
+    };
+    this.initialCategoryFormState = JSON.stringify(state);
+  }
+
+  hasUnsavedCategoryChanges(): boolean {
+    const currentState = {
+      name: this.categoryForm.name || '',
+      description: this.categoryForm.description || '',
+      imageUrl: this.categoryForm.imageUrl || '',
+      active: !!this.categoryForm.active,
+      parentId: this.categoryForm.parentId || null
+    };
+    return JSON.stringify(currentState) !== this.initialCategoryFormState;
+  }
+
+  confirmCloseCategoryModal(): void {
+    if (this.loading) {
+      Swal.fire({
+        title: 'Operación en proceso',
+        text: 'Hay una operación en proceso. Espera a que termine antes de cerrar.',
+        icon: 'warning',
+        confirmButtonColor: '#800020',
+        confirmButtonText: 'Entendido',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      });
+      return;
+    }
+
+    if (this.hasUnsavedCategoryChanges()) {
+      Swal.fire({
+        title: 'Cambios sin guardar',
+        text: 'Tienes cambios sin guardar. Si cierras ahora, se perderán los cambios realizados.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Cerrar sin guardar',
+        cancelButtonText: 'Seguir editando',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.closeModal();
+        }
+      });
+    } else {
+      this.closeModal();
+    }
   }
 
   navigateToProducts(categoryId: number): void {

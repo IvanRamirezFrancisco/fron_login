@@ -1,8 +1,9 @@
-import { HttpInterceptorFn, HttpRequest } from '@angular/common/http';
+import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
@@ -29,12 +30,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/api/reviews/product',        // Ver reseñas de producto (público)
     '/api/reviews/statistics'      // Estadísticas de reseñas (público)
   ];
-  
+
   const isPublicUrl = publicUrls.some(url => req.url.includes(url));
-  
+
   // También detectar peticiones marcadas como públicas por headers
   const isMarkedAsPublic = req.headers.has('X-Public-Request');
-  
+
   const isPublicRequest = isPublicUrl || isMarkedAsPublic;
 
   if (isPublicRequest) {
@@ -55,10 +56,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError(error => {
       if (error.status === 401 && !isPublicRequest) {
+        // Sesión expirada: limpiar estado y redirigir con motivo
         authService.logout();
-        router.navigate(['/login']);
+        router.navigate(['/login'], {
+          queryParams: { reason: 'session_expired' }
+        });
       }
-      
+
+      if (error.status === 403 && !isPublicRequest) {
+        // Acceso denegado — el componente/guard maneja la UI
+        if (!environment.production) {
+          console.warn('[AuthInterceptor] 403 Forbidden:', req.url);
+        }
+      }
+
       return throwError(() => error);
     })
   );

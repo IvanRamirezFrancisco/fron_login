@@ -53,12 +53,7 @@
           Marcas
           <span class="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-red-600 transition-all duration-300 group-hover:w-full"></span>
         </a>
-        <a routerLink="/catalogo" [queryParams]="{descuento:'true'}"
-           class="relative text-sm font-medium tracking-wide transition-colors duration-200 group"
-           [ngClass]="scrolled ? 'text-red-600' : 'text-red-400 hover:text-red-300'">
-          Ofertas
-          <span class="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-red-600 transition-all duration-300 group-hover:w-full"></span>
-        </a>
+
       </nav>
 
       <!-- ── ÍCONOS DERECHA ────────────────────────────────────────── -->
@@ -219,10 +214,7 @@
          class="flex items-center gap-4 py-4 border-b border-white/10 text-white text-lg font-medium hover:text-red-400 transition-colors duration-200">
         <span class="material-symbols-outlined">sell</span> Marcas
       </a>
-      <a routerLink="/catalogo" [queryParams]="{descuento:'true'}" (click)="cerrarMenuMovil()"
-         class="flex items-center gap-4 py-4 border-b border-white/10 text-red-400 text-lg font-medium hover:text-red-300 transition-colors duration-200">
-        <span class="material-symbols-outlined">local_offer</span> Ofertas
-      </a>
+
     </nav>
 
     <!-- Acciones móvil -->

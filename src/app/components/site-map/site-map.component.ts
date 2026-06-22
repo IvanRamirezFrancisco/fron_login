@@ -29,8 +29,7 @@ export class SiteMapComponent {
       icon: 'home',
       links: [
         { name: 'Inicio', path: '/home', description: 'Página principal de Casa de Música Castillo' },
-        { name: 'Catálogo', path: '/catalogo', description: 'Explora nuestra colección completa de instrumentos musicales' },
-        { name: 'Ofertas', path: '/ofertas', description: 'Descubre las mejores ofertas y promociones especiales' }
+        { name: 'Catálogo', path: '/catalogo', description: 'Explora nuestra colección completa de instrumentos musicales' }
       ]
     },
     {

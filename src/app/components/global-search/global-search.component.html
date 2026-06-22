@@ -96,32 +96,32 @@
           <!-- Imagen -->
           <div class="result-image">
             <img 
-              *ngIf="product.images && product.images.length > 0"
-              [src]="product.images[0]" 
+              *ngIf="product.imageUrl"
+              [src]="product.imageUrl" 
               [alt]="product.name"
             >
-            <div *ngIf="!product.images || product.images.length === 0" class="image-placeholder">
+            <div *ngIf="!product.imageUrl" class="image-placeholder">
               <span class="material-symbols-outlined">music_note</span>
             </div>
           </div>
 
           <!-- Info -->
           <div class="result-info">
-            <span class="result-category">{{ product.category.name }}</span>
+            <span class="result-category" *ngIf="product.category">{{ product.category.name }}</span>
             <h4 class="result-name" [innerHTML]="highlightMatch(product.name)"></h4>
             <div class="result-meta">
-              <span class="result-brand">{{ product.brand }}</span>
-              <span *ngIf="product.rating" class="result-rating">
+              <span class="result-brand" *ngIf="product.brand">{{ product.brand.name }}</span>
+              <span *ngIf="product.averageRating" class="result-rating">
                 <span class="material-symbols-outlined">star</span>
-                {{ product.rating }}
+                {{ product.averageRating }}
               </span>
             </div>
           </div>
 
           <!-- Precio -->
           <div class="result-price">
-            <span class="price-current">\${{ product.price | number:'1.2-2' }}</span>
-            <span *ngIf="product.discount" class="price-discount">-{{ product.discount }}%</span>
+            <span class="price-current">${{ product.discountPrice || product.price | number:'1.2-2' }}</span>
+            <span *ngIf="product.discountPrice && product.discountPrice < product.price" class="price-original">${{ product.price | number:'1.2-2' }}</span>
           </div>
         </div>
       </div>

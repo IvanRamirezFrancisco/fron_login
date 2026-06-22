@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil, switchMap } from 'rxjs';
 import { SearchService, SearchResult } from '../../services/search.service';
-import { Product } from '../../models/product.model';
+import { PublicProduct } from '../../models/product.model';
 
 @Component({
   selector: 'app-global-search',
@@ -19,7 +19,7 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
   searchQuery = '';
   showDropdown = false;
   isSearching = false;
-  searchResults: Product[] = [];
+  searchResults: PublicProduct[] = [];
   searchSuggestions: string[] = [];
   totalResults = 0;
   executionTime = 0;
@@ -121,7 +121,7 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
   }
 
   // Navegar a detalle de producto
-  viewProductDetail(product: Product): void {
+  viewProductDetail(product: PublicProduct): void {
     this.closeDropdown();
     this.router.navigate(['/producto', product.id]);
   }
@@ -130,8 +130,8 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
   viewAllResults(): void {
     if (this.searchQuery.trim()) {
       this.closeDropdown();
-      this.router.navigate(['/busqueda'], {
-        queryParams: { q: this.searchQuery }
+      this.router.navigate(['/catalogo'], {
+        queryParams: { busqueda: this.searchQuery }
       });
     }
   }

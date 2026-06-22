@@ -166,13 +166,21 @@
         </small>
       </div>
 
-      <div class="roles-selection-container">
+      <!-- Aviso auto-edición -->
+      <div *ngIf="isEditingSelf" class="alert alert-warning d-flex align-items-start mb-3">
+        <i class="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
+        <small>
+          <strong>No puedes modificar tus propios roles.</strong> La asignación de roles está deshabilitada para tu propio usuario por seguridad.
+        </small>
+      </div>
+
+      <div class="roles-selection-container" [class.roles-disabled]="isEditingSelf">
         <div 
           *ngFor="let role of filteredRoles" 
           class="role-card"
           [class.selected]="isRoleSelected(role.id)"
-          [class.role-card--locked]="role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin"
-          (click)="role.name !== 'ROLE_SUPER_ADMIN' || isCurrentUserSuperAdmin ? toggleRole(role.id) : null">
+          [class.role-card--locked]="isEditingSelf || (role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin)"
+          (click)="!isEditingSelf && (role.name !== 'ROLE_SUPER_ADMIN' || isCurrentUserSuperAdmin) ? toggleRole(role.id) : null">
           
           <!-- Checkbox y contenido -->
           <div class="role-card-inner">
@@ -182,7 +190,7 @@
                 type="checkbox" 
                 [id]="'role-' + role.id"
                 [checked]="isRoleSelected(role.id)"
-                [disabled]="role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin"
+                [disabled]="isEditingSelf || (role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin)"
                 (click)="$event.stopPropagation()">
             </div>
             

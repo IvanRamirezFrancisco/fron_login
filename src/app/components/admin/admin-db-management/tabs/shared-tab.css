@@ -59,7 +59,7 @@
   padding: .1em .4em;
   border-radius: 4px;
   font-size: .78rem;
-  color: #800020;
+  color: #722f37;
 }
 
 /* Badge "Próximamente" */
@@ -117,7 +117,7 @@
 }
 
 .metric-card {
-  background: #fff;
+  background: #FDFCFB;
   border-radius: 14px;
   border: 1px solid #e5e7eb;
   padding: 1.25rem;
@@ -189,7 +189,7 @@
    TARJETA DE SECCIÓN (tabla envuelta)
    ════════════════════════════════════════════════════════════════════════════ */
 .section-card {
-  background: #fff;
+  background: #FDFCFB;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
   overflow: hidden;
@@ -201,7 +201,7 @@
   gap: .7rem;
   padding: 1.1rem 1.4rem;
   border-bottom: 1px solid #f3f4f6;
-  background: #fafafa;
+  background: #FAF8F6;
 }
 .section-card__header .material-icons { font-size: 1.1rem; color: #6b7280; }
 .section-card__header h3 {
@@ -240,7 +240,7 @@
   vertical-align: middle;
 }
 .tab-table tr:last-child td { border-bottom: none; }
-.tab-table tr:hover td { background: #fafafa; }
+.tab-table tr:hover td { background: #FAF8F6; }
 
 /* Skeleton rows */
 .skeleton-tr td { padding: .7rem 1rem; }
@@ -278,7 +278,7 @@
   gap: .4rem;
   padding: .45rem 1rem;
   border-radius: 9px;
-  background: #fff;
+  background: #FDFCFB;
   border: 1px solid #e5e7eb;
   font-family: 'Poppins', sans-serif;
   font-size: .8rem;
@@ -308,7 +308,7 @@
   gap: .4rem;
   font-family: 'Courier New', monospace;
   font-weight: 700;
-  color: #800020;
+  color: #722f37;
 }
 .table-icon { font-size: .9rem; color: #9ca3af; }
 
@@ -372,7 +372,7 @@
   border-top: 1px solid #f3f4f6;
   font-size: .78rem;
   color: #9ca3af;
-  background: #fafafa;
+  background: #FAF8F6;
 }
 .coming-soon-note .material-icons { font-size: 1rem; color: #d1d5db; }
 .coming-soon-note code {
@@ -453,7 +453,7 @@
 
 /* Tarjeta base */
 .mon-card {
-  background: #fff;
+  background: #FDFCFB;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
   padding: 1.25rem 1.3rem 1rem;
@@ -548,7 +548,7 @@
 
 /* ── Tabla Top 5 rediseñada ────────────────────────────────────────────── */
 .mon-table-card {
-  background: #fff;
+  background: #FDFCFB;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
   overflow: hidden;
@@ -560,7 +560,7 @@
   gap: .65rem;
   padding: 1.1rem 1.5rem;
   border-bottom: 1px solid #f3f4f6;
-  background: #fafafa;
+  background: #FAF8F6;
 }
 .mon-table-card__header .material-icons { font-size: 1.1rem; color: #6b7280; }
 .mon-table-card__header h3 {
@@ -598,7 +598,7 @@
   color: #374151;
 }
 .mon-table tr:last-child td { border-bottom: none; }
-.mon-table tbody tr:hover td { background: #fafafa; }
+.mon-table tbody tr:hover td { background: #FAF8F6; }
 
 /* Rank # */
 .mon-td-rank {
@@ -615,7 +615,7 @@
   gap: .45rem;
   font-family: 'Courier New', monospace;
   font-weight: 700;
-  color: #800020;
+  color: #722f37;
   font-size: .82rem;
 }
 .mon-td-icon { font-size: .85rem; color: #d1d5db; }
@@ -678,7 +678,7 @@
   gap: 1.25rem; margin-bottom: 1.75rem;
 }
 .maint-action-card {
-  background: #fff; border: 1px solid #e5e7eb; border-radius: 16px;
+  background: #FDFCFB; border: 1px solid #e5e7eb; border-radius: 16px;
   padding: 1.4rem; display: flex; flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 1px 6px rgba(0,0,0,.05);
@@ -708,7 +708,7 @@
   transition: background .15s, box-shadow .15s;
 }
 .maint-btn:disabled { opacity: .5; cursor: not-allowed; }
-.maint-btn--vacuum  { background: #800020; }
+.maint-btn--vacuum  { background: #722f37; }
 .maint-btn--vacuum:hover:not(:disabled)  { background: #600018; }
 .maint-btn--reindex { background: #1a1a1a; }
 .maint-btn--reindex:hover:not(:disabled) { background: #374151; }
@@ -717,13 +717,13 @@
 
 /* Tarjeta de auditoría */
 .maint-audit-card {
-  background: #fff; border: 1px solid #e5e7eb; border-radius: 16px;
+  background: #FDFCFB; border: 1px solid #e5e7eb; border-radius: 16px;
   overflow: hidden; box-shadow: 0 1px 8px rgba(0,0,0,.05);
 }
 .maint-audit-card__header {
   display: flex; align-items: center; justify-content: space-between;
   gap: .75rem; padding: 1.1rem 1.5rem;
-  border-bottom: 1px solid #f3f4f6; background: #fafafa; flex-wrap: wrap;
+  border-bottom: 1px solid #f3f4f6; background: #FAF8F6; flex-wrap: wrap;
 }
 .maint-audit-card__header-left { display: flex; align-items: center; gap: .65rem; }
 .maint-audit-card__header-left .material-icons { font-size: 1.1rem; color: #6b7280; }
@@ -791,10 +791,10 @@
 
 /* Vacuum — outline vino tinto */
 .maint-row-btn--vacuum {
-  color: #800020; border: 1.5px solid #800020;
+  color: #722f37; border: 1.5px solid #722f37;
 }
 .maint-row-btn--vacuum:hover:not(:disabled) {
-  background: #800020; color: #fff;
+  background: #722f37; color: #fff;
 }
 
 /* Reindex — outline negro */
@@ -815,7 +815,7 @@
   z-index: 9999;
   width: 380px;
   max-width: calc(100vw - 2rem);
-  background: #fff;
+  background: #FDFCFB;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.08);
   overflow: hidden;

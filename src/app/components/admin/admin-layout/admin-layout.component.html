@@ -38,7 +38,7 @@
         </div>
       </div>
       
-      <button class="btn-action" (click)="goToStore()" [title]="'Ver Tienda'">
+      <button *ngIf="showStoreButton" class="btn-action" (click)="goToStore()" [title]="'Ver Tienda'">
         <span class="material-icons">storefront</span>
         <span *ngIf="!isSidebarCollapsed">Ver Tienda</span>
       </button>
@@ -51,9 +51,9 @@
   </aside>
 
   <!-- Main Content -->
-  <main class="admin-main" [class.expanded]="isSidebarCollapsed">
+  <main class="admin-main" [class.expanded]="isSidebarCollapsed" #adminMain>
     <!-- Top Bar -->
-    <header class="admin-topbar">
+    <header class="admin-topbar" [class.scrolled]="isScrolled">
       <div class="topbar-left">
         <button class="mobile-menu-btn" (click)="toggleSidebar()">
           <span class="material-icons">menu</span>
@@ -98,6 +98,12 @@
             <span>{{ currentModuleHeader.actionLabel }}</span>
           </button>
         </div>
+
+        <!-- Separador visual -->
+        <div class="topbar-divider"></div>
+
+        <!-- Centro de notificaciones global -->
+        <app-notification-center></app-notification-center>
       </div>
     </header>
 

@@ -186,18 +186,18 @@
 
         <!-- Acciones de la tarjeta -->
         <div class="category-card-actions">
-          <button class="btn-card btn-card-primary" (click)="openEditModal(category)" title="Editar">
+          <button *ngIf="authService.hasPermission('CATEGORY_MANAGE')" class="btn-card btn-card-primary" (click)="openEditModal(category)" title="Editar">
             <span class="material-icons">edit</span>
             Editar
           </button>
-          <button 
+          <button *ngIf="authService.hasPermission('CATEGORY_MANAGE')"
             class="btn-card btn-card-toggle" 
             (click)="toggleStatus(category)"
             [title]="category.active ? 'Desactivar' : 'Activar'">
             <span class="material-icons">{{ category.active ? 'visibility_off' : 'visibility' }}</span>
             {{ category.active ? 'Desactivar' : 'Activar' }}
           </button>
-          <button class="btn-card btn-card-danger" (click)="confirmDelete(category)" title="Eliminar">
+          <button *ngIf="authService.hasPermission('CATEGORY_MANAGE')" class="btn-card btn-card-danger" (click)="confirmDelete(category)" title="Eliminar">
             <span class="material-icons">delete</span>
           </button>
         </div>
@@ -371,7 +371,7 @@
                 <td class="px-6 py-3 text-center">
                   <div class="flex items-center justify-center gap-1">
                     <!-- Ver / Toggle estado -->
-                    <button
+                    <button *ngIf="authService.hasPermission('CATEGORY_MANAGE')"
                       (click)="toggleStatus(category)"
                       [title]="category.active ? 'Desactivar' : 'Activar'"
                       class="w-8 h-8 flex items-center justify-center rounded-lg
@@ -385,7 +385,7 @@
                     </button>
 
                     <!-- Editar -->
-                    <button
+                    <button *ngIf="authService.hasPermission('CATEGORY_MANAGE')"
                       (click)="openEditModal(category)"
                       title="Editar categoría"
                       class="w-8 h-8 flex items-center justify-center rounded-lg
@@ -395,7 +395,7 @@
                     </button>
 
                     <!-- Eliminar -->
-                    <button
+                    <button *ngIf="authService.hasPermission('CATEGORY_MANAGE')"
                       (click)="confirmDelete(category)"
                       title="Eliminar categoría"
                       class="w-8 h-8 flex items-center justify-center rounded-lg
@@ -423,7 +423,7 @@
                 Crea tu primera categoría para comenzar a organizar productos.
               </p>
             </div>
-            <button
+            <button *ngIf="authService.hasPermission('CATEGORY_MANAGE')"
               (click)="openCreateModal()"
               class="inline-flex items-center gap-2 px-4 py-2 bg-[#800020] text-white
                      text-sm font-semibold rounded-xl hover:bg-[#6a001a] transition-colors
@@ -443,7 +443,7 @@
      MODAL CREAR / EDITAR CATEGORÍA
      z-index: 9999 → por encima del sidebar y topbar
      ══════════════════════════════════════════════════════════════ -->
-<div class="brand-modal-overlay" *ngIf="showCreateModal || showEditModal" (click)="closeModal()">
+<div class="brand-modal-overlay" *ngIf="showCreateModal || showEditModal" (click)="confirmCloseCategoryModal()">
   <div class="brand-modal-panel" (click)="$event.stopPropagation()">
 
     <!-- Header -->
@@ -457,7 +457,7 @@
           {{ showCreateModal ? 'Completa los datos para registrar una nueva categoría' : 'Modifica los datos de la categoría' }}
         </p>
       </div>
-      <button class="brand-modal-close" (click)="closeModal()" title="Cerrar">
+      <button class="brand-modal-close" (click)="confirmCloseCategoryModal()" [disabled]="loading" title="Cerrar">
         <span class="material-icons" style="font-size:1rem;">close</span>
       </button>
     </div>
@@ -563,7 +563,7 @@
 
     <!-- Footer -->
     <div class="brand-modal-footer">
-      <button class="brand-btn brand-btn--ghost" (click)="closeModal()" [disabled]="loading" type="button">
+      <button class="brand-btn brand-btn--ghost" (click)="confirmCloseCategoryModal()" [disabled]="loading" type="button">
         Cancelar
       </button>
       <button class="brand-btn brand-btn--primary" (click)="saveCategory()" [disabled]="loading" type="button">

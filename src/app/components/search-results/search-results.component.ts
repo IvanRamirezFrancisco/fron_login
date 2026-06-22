@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { SearchService, SearchResult } from '../../services/search.service';
-import { Product } from '../../models/product.model';
+import { PublicProduct } from '../../models/product.model';
 
 @Component({
   selector: 'app-search-results',
@@ -14,7 +14,7 @@ import { Product } from '../../models/product.model';
 })
 export class SearchResultsComponent implements OnInit, OnDestroy {
   searchQuery = '';
-  searchResults: Product[] = [];
+  searchResults: PublicProduct[] = [];
   totalResults = 0;
   executionTime = 0;
   isLoading = true;
@@ -69,7 +69,7 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
     });
   }
 
-  viewProductDetail(product: Product): void {
+  viewProductDetail(product: PublicProduct): void {
     this.router.navigate(['/producto', product.id]);
   }
 

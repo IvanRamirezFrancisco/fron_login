@@ -29,6 +29,12 @@ export enum ShippingStatus {
   RETURNED = 'RETURNED'
 }
 
+export enum PaymentProofStatus {
+  PENDING_REVIEW = 'PENDING_REVIEW',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED'
+}
+
 // ==================== INTERFACES ====================
 
 export interface OrderItem {
@@ -86,6 +92,8 @@ export interface Order {
   notes?: string;
   customerNotes?: string;
   cancellationReason?: string;
+  cancelledBy?: number;
+  cancelSource?: string;
 
   // Timestamps
   createdAt: string;
@@ -98,6 +106,12 @@ export interface Order {
   canBeCancelled?: boolean;
   canBeRefunded?: boolean;
   canUpdateShipping?: boolean;
+
+  // Payment Proof Fields
+  hasPaymentProof?: boolean;
+  paymentProofStatus?: PaymentProofStatus;
+  paymentProofUploadedAt?: string;
+  paymentProofRejectionReason?: string;
 }
 
 export interface OrderStats {
@@ -126,4 +140,58 @@ export interface PageResponse<T> {
   number: number;
   first: boolean;
   last: boolean;
+}
+
+// ==================== CHECKOUT ====================
+
+export type PaymentMethodType = 'CASH_ON_DELIVERY' | 'BANK_TRANSFER' | 'MERCADO_PAGO';
+
+export interface CheckoutRequest {
+  shippingAddress: string;
+  billingAddress: string;
+  paymentMethod: PaymentMethodType;
+  notes?: string;
+}
+
+export interface CancelOrderRequest {
+  reason?: string;
+}
+
+// ==================== COMPROBANTES DE PAGO ====================
+
+export interface PaymentProofResponse {
+  id: number;
+  orderId: number;
+  orderNumber: string;
+  originalFilename: string;
+  contentType: string;
+  fileSizeBytes: number;
+  status: PaymentProofStatus;
+  referenceNumber?: string;
+  bankName?: string;
+  amountDeclared?: number;
+  transferDate?: string;
+  notes?: string;
+  uploadedAt: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+}
+
+export interface RejectPaymentProofRequest {
+  reason: string;
+}
+
+// ==================== CONFIGURACIÓN DE TRANSFERENCIA BANCARIA ====================
+
+export interface PaymentInstructionsResponse {
+  configured: boolean;
+  bankName?: string;
+  accountHolder?: string;
+  clabe?: string;
+  accountNumber?: string;
+  concept?: string;
+  amount?: number;
+  orderNumber?: string;
+  referenceInstructions?: string;
+  additionalInstructions?: string;
 }

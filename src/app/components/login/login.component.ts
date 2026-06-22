@@ -142,19 +142,8 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
         
         if (token && user) {
           this.authService.completeLogin(token, user);
-          
-          // Navegar según el rol del usuario (verificar ROLE_ADMIN primero)
-          const isAdmin = user.roles && Array.isArray(user.roles) && user.roles.some((role: string) => {
-            return role === 'ROLE_ADMIN' || role === 'ADMIN';
-          });
-          
-          const targetRoute = isAdmin ? '/admin/dashboard' : '/home';
-          
-          // Usar replaceUrl para evitar que el guestGuard interfiera
-          this.router.navigate([targetRoute], { 
-            replaceUrl: true,
-            skipLocationChange: false 
-          });
+          // Enrutamiento inteligente post-login basado en permisos granulares
+          this.authService.redirectAfterLogin();
         } else {
           this.errorMessage = 'Error al procesar la respuesta del servidor';
         }
@@ -173,16 +162,14 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
             this.errorMessage = `Ya tienes un bloqueo activo. Espera ${this.formatTimeLeft()}.`;
           }
         } else {
-          // Mensajes de error más específicos para otros tipos de error
-          if (error.status === 401) {
-            this.errorMessage = 'Email o contraseña incorrectos';
-          } else if (error.status === 403) {
-            this.errorMessage = 'Cuenta bloqueada. Contacta al administrador';
+          // ✅ Mensajes genéricos anti-enumeración: NO revelar si el email existe o la cuenta está bloqueada
+          if (error.status === 401 || error.status === 403) {
+            this.errorMessage = 'Credenciales incorrectas. Verifica tus datos e intenta nuevamente.';
           } else if (error.status === 0) {
             // ✅ Error de conexión - NO debe contar como intento de fuerza bruta
-            this.errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión a internet';
+            this.errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión a internet.';
           } else {
-            this.errorMessage = error.error?.message || 'Error al iniciar sesión. Intenta nuevamente';
+            this.errorMessage = 'Ocurrió un error inesperado. Intenta nuevamente más tarde.';
           }
           // Limpiar countdown solo para errores que NO son rate limit
           if (error.status !== 429) {
@@ -352,7 +339,8 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
         
         if (token && user) {
           this.authService.completeLogin(token, user);
-          this.router.navigate(['/']);
+          // Enrutamiento inteligente post-login con 2FA
+          this.authService.redirectAfterLogin();
         } else {
           this.errorMessage = 'Código inválido o expirado';
         }
@@ -416,7 +404,8 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
           
           if (token && user) {
             this.authService.completeLogin(token, user);
-            this.router.navigate(['/']);
+            // Enrutamiento inteligente post-login con código de respaldo
+            this.authService.redirectAfterLogin();
           } else {
             this.errorMessage = 'Respuesta de login inválida';
           }

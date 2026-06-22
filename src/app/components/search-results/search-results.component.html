@@ -48,10 +48,7 @@
         <span class="material-symbols-outlined">store</span>
         Ver Catálogo Completo
       </button>
-      <button class="btn-secondary" routerLink="/ofertas">
-        <span class="material-symbols-outlined">local_offer</span>
-        Ver Ofertas
-      </button>
+
     </div>
   </div>
 
@@ -59,66 +56,66 @@
   <div class="results-grid" *ngIf="!isLoading && searchResults.length > 0">
     <div class="product-card" *ngFor="let producto of searchResults">
       <!-- Discount Badge -->
-      <div class="discount-badge" *ngIf="producto.discount && producto.discount > 0">
-        <span class="discount-percent">-{{ producto.discount }}%</span>
+      <div class="discount-badge" *ngIf="producto.discountPrice && producto.discountPrice < producto.price">
+        <span class="discount-percent">-{{ ((1 - producto.discountPrice / producto.price) * 100) | number:'1.0-0' }}%</span>
       </div>
 
       <!-- Product Image -->
       <div class="product-image" (click)="viewProductDetail(producto)">
         <img 
-          [src]="producto.images && producto.images.length > 0 ? producto.images[0] : 'assets/placeholder.jpg'" 
+          [src]="producto.imageUrl || 'assets/placeholder.jpg'" 
           [alt]="producto.name"
           loading="lazy">
       </div>
 
       <!-- Product Info -->
       <div class="product-info">
-        <p class="product-category">{{ producto.category.name }}</p>
+        <p class="product-category" *ngIf="producto.category">{{ producto.category.name }}</p>
         <h3 class="product-name" (click)="viewProductDetail(producto)">
           {{ producto.name }}
         </h3>
         
         <div class="product-meta">
-          <div class="rating">
+          <div class="rating" *ngIf="producto.averageRating">
             <span class="material-symbols-outlined star">star</span>
-            <span class="rating-value">{{ producto.rating }}</span>
+            <span class="rating-value">{{ producto.averageRating }}</span>
             <span class="rating-count">({{ producto.reviewCount }})</span>
           </div>
           
-          <div class="stock-badge" [class.in-stock]="producto.inStock" [class.out-of-stock]="!producto.inStock">
+          <div class="stock-badge" [class.in-stock]="producto.stock > 0" [class.out-of-stock]="producto.stock <= 0">
             <span class="material-symbols-outlined">
-              {{ producto.inStock ? 'check_circle' : 'cancel' }}
+              {{ producto.stock > 0 ? 'check_circle' : 'cancel' }}
             </span>
-            <span>{{ producto.inStock ? 'Disponible' : 'Agotado' }}</span>
+            <span>{{ producto.stock > 0 ? 'Disponible' : 'Agotado' }}</span>
           </div>
         </div>
 
         <!-- Brand -->
         <p class="product-brand" *ngIf="producto.brand">
           <span class="material-symbols-outlined">verified</span>
-          {{ producto.brand }}
+          {{ producto.brand.name }}
         </p>
 
         <!-- Price Section -->
         <div class="price-section">
-          <div class="price-header" *ngIf="producto.discount && producto.discount > 0">
+          <div class="price-header" *ngIf="producto.discountPrice && producto.discountPrice < producto.price">
             <span class="price-label">Precio anterior:</span>
-            <span class="price-original">${{ producto.price.toLocaleString('es-MX') }}</span>
+            <span class="price-original">${{ producto.price | number:'1.2-2' }}</span>
           </div>
           
           <div class="price-main">
             <span class="price-current">
-              ${{ (producto.price * (1 - (producto.discount || 0) / 100)).toLocaleString('es-MX') }}
+              ${{ (producto.discountPrice || producto.price) | number:'1.2-2' }}
             </span>
-            <span class="price-badge" *ngIf="producto.discount && producto.discount > 0">
+            <span class="price-badge" *ngIf="producto.discountPrice && producto.discountPrice < producto.price">
               <span class="material-symbols-outlined">savings</span>
-              Ahorras ${{ (producto.price * (producto.discount || 0) / 100).toLocaleString('es-MX') }}
+              Ahorras ${{ (producto.price - producto.discountPrice) | number:'1.2-2' }}
             </span>
           </div>
           
-          <div class="price-installments" *ngIf="producto.inStock">
+          <div class="price-installments" *ngIf="producto.stock > 0">
             <span class="material-symbols-outlined">credit_card</span>
-            <span>18x de ${{ ((producto.price * (1 - (producto.discount || 0) / 100)) / 18).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+            <span>18x de ${{ ((producto.discountPrice || producto.price) / 18) | number:'1.2-2' }}</span>
           </div>
         </div>
 
@@ -126,7 +123,7 @@
         <button 
           class="btn-view-detail" 
           (click)="viewProductDetail(producto)"
-          [disabled]="!producto.inStock">
+          [disabled]="producto.stock <= 0">
           <span class="material-symbols-outlined">visibility</span>
           Ver Detalles
         </button>

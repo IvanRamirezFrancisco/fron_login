@@ -1,38 +1,31 @@
-<!-- ========================================
+<!-- ================================================================
      CARRITO DE COMPRAS - CASA DE MÚSICA CASTILLO
-     ======================================== -->
+     FASE 1.2 - Carrito UX - 2026-05-15
+     ================================================================ -->
 
 <div class="cart-page">
-  
-  <!-- HEADER DEL CARRITO -->
+
+  <!-- HEADER -->
   <div class="cart-header">
     <div class="container">
       <div class="breadcrumb">
         <a routerLink="/home" class="breadcrumb-link">
-          <span class="material-icons">home</span>
-          Inicio
+          <span class="material-icons">home</span>Inicio
         </a>
         <span class="material-icons">chevron_right</span>
         <span class="breadcrumb-current">Carrito de Compras</span>
       </div>
-      
       <div class="header-content">
         <div class="header-left">
           <h1 class="page-title">
-            <span class="material-icons">shopping_cart</span>
-            Mi Carrito
+            <span class="material-icons">shopping_cart</span>Mi Carrito
           </h1>
-          <p class="items-count" *ngIf="cartItems.length > 0">
+          <p class="items-count" *ngIf="hasItems">
             {{ getTotalItems() }} {{ getTotalItems() === 1 ? 'artículo' : 'artículos' }}
           </p>
         </div>
-        
-        <button 
-          class="btn-continue-shopping"
-          routerLink="/catalogo"
-        >
-          <span class="material-icons">arrow_back</span>
-          Seguir Comprando
+        <button class="btn-continue-shopping" routerLink="/catalogo">
+          <span class="material-icons">arrow_back</span>Seguir Comprando
         </button>
       </div>
     </div>
@@ -41,73 +34,102 @@
   <!-- CONTENIDO PRINCIPAL -->
   <div class="cart-body">
     <div class="container">
-      
-      <!-- CARRITO VACÍO -->
-      <div class="empty-cart" *ngIf="cartItems.length === 0">
+
+      <!-- ── ESTADO: CARGANDO ── -->
+      <div class="cart-loading" *ngIf="isLoading">
+        <div class="loading-spinner"></div>
+        <p>Cargando tu carrito...</p>
+      </div>
+
+      <!-- ── ESTADO: ERROR ── -->
+      <div class="cart-error" *ngIf="hasError">
+        <div class="error-icon">
+          <span class="material-icons">error_outline</span>
+        </div>
+        <h2>{{ errorMessage || 'Error al cargar el carrito' }}</h2>
+        <p>Verifica tu conexión o inicia sesión nuevamente.</p>
+        <div class="error-actions">
+          <button class="btn-retry" (click)="retryLoad()">
+            <span class="material-icons">refresh</span>Reintentar
+          </button>
+          <button class="btn-login" routerLink="/login">
+            <span class="material-icons">login</span>Iniciar Sesión
+          </button>
+        </div>
+      </div>
+
+      <!-- ── ESTADO: VACÍO ── -->
+      <div class="empty-cart" *ngIf="isEmpty">
         <div class="empty-icon">
           <span class="material-icons">shopping_cart</span>
         </div>
         <h2 class="empty-title">Tu carrito está vacío</h2>
         <p class="empty-text">¡Descubre nuestra colección de instrumentos musicales!</p>
         <button class="btn-explore" routerLink="/catalogo">
-          <span class="material-icons">explore</span>
-          Explorar Catálogo
+          <span class="material-icons">explore</span>Explorar Catálogo
         </button>
       </div>
 
-      <!-- CARRITO CON PRODUCTOS -->
-      <div class="cart-layout" *ngIf="cartItems.length > 0">
-        
+      <!-- ── ESTADO: CON PRODUCTOS ── -->
+      <div class="cart-layout" *ngIf="hasItems">
+
         <!-- COLUMNA IZQUIERDA: PRODUCTOS -->
         <div class="products-section">
-          
-          <!-- Acciones del carrito -->
+
+          <!-- Barra de acciones -->
           <div class="cart-actions-bar">
             <p class="items-summary">
               <span class="material-icons">inventory_2</span>
               {{ getTotalItems() }} {{ getTotalItems() === 1 ? 'producto' : 'productos' }} en tu carrito
             </p>
-            
-            <button 
-              class="btn-clear-cart"
-              (click)="showClearConfirm = true"
-              *ngIf="cartItems.length > 0"
-            >
-              <span class="material-icons">delete_outline</span>
-              Vaciar carrito
+            <button class="btn-clear-cart" (click)="showClearConfirm = true">
+              <span class="material-icons">delete_outline</span>Vaciar carrito
             </button>
           </div>
 
           <!-- Lista de productos -->
           <div class="products-list">
-            <div 
+            <div
               class="product-card"
-              *ngFor="let item of cartItems; trackBy: trackByProductId"
+              [class.unavailable-item]="!isItemAvailable(item)"
+              *ngFor="let item of cartItems; trackBy: trackByItemId"
               [@slideIn]
             >
-              <!-- Imagen del producto -->
+              <!-- Imagen -->
               <div class="product-image">
-                <img 
-                  [src]="item.product.images[0]" 
+                <img
+                  [src]="item.product.images && item.product.images.length > 0
+                    ? item.product.images[0]
+                    : '/assets/logoP.png'"
                   [alt]="item.product.name"
                   (error)="onImageError($event)"
                 />
-                <span class="stock-badge" *ngIf="item.product.stockQuantity < 10">
-                  Solo {{ item.product.stockQuantity }} disponibles
+                <span
+                  class="stock-badge"
+                  *ngIf="item.availableStock > 0 && item.availableStock < 10 && isItemAvailable(item)"
+                >
+                  Solo {{ item.availableStock }} disponibles
+                </span>
+                
+                <!-- Badge de Agotado/No Disponible -->
+                <span class="stock-badge unavailable-badge" *ngIf="!isItemAvailable(item)">
+                  {{ getAvailabilityLabel(item) }}
                 </span>
               </div>
 
               <!-- Información del producto -->
               <div class="product-details">
                 <h3 class="product-name">{{ item.product.name }}</h3>
-                <p class="product-brand">
-                  <span class="material-icons">verified</span>
-                  {{ item.product.brand }}
+                <p class="product-brand" *ngIf="item.product.brand">
+                  <span class="material-icons">verified</span>{{ item.product.brand }}
                 </p>
-                
+                <p class="product-sku" *ngIf="item.product.sku">
+                  SKU: {{ item.product.sku }}
+                </p>
+
                 <!-- Opciones seleccionadas -->
                 <div class="product-options" *ngIf="item.selectedOptions">
-                  <span 
+                  <span
                     class="option-badge"
                     *ngFor="let option of getSelectedOptionsArray(item.selectedOptions)"
                   >
@@ -115,69 +137,104 @@
                   </span>
                 </div>
 
-                <!-- Acciones del producto -->
+                <!-- Mensaje de Advertencia por item -->
+                <div class="item-warning-message" *ngIf="!isItemAvailable(item) || item.warningMessage">
+                  <span class="material-icons">warning</span>
+                  <span>{{ getAvailabilityMessage(item) }}</span>
+                </div>
+
+                <!-- Acciones -->
                 <div class="product-actions">
-                  <button 
+                  <button
                     class="action-btn remove"
                     (click)="removeItem(item)"
+                    [disabled]="isItemUpdating(item.backendItemId)"
+                    [attr.aria-label]="'Eliminar ' + item.product.name + ' del carrito'"
                     title="Eliminar del carrito"
                   >
                     <span class="material-icons">delete_outline</span>
-                    Eliminar
+                    <span *ngIf="!isItemUpdating(item.backendItemId)">Eliminar</span>
+                    <span *ngIf="isItemUpdating(item.backendItemId)">Procesando...</span>
+                  </button>
+                  
+                  <button
+                    *ngIf="!isItemAvailable(item)"
+                    class="action-btn wishlist"
+                    (click)="moveToWishlist(item)"
+                    [disabled]="isItemUpdating(item.backendItemId)"
+                    title="Mover a lista de deseos"
+                  >
+                    <span class="material-icons">favorite_border</span>
+                    <span>Mover a Wishlist</span>
                   </button>
                 </div>
               </div>
 
               <!-- Precio y cantidad -->
               <div class="product-pricing">
+
                 <!-- Precio unitario -->
                 <div class="price-section">
                   <div class="price-main">
-                    <span class="price-current">${{ item.product.price | number:'1.2-2' }}</span>
+                    <span class="price-current">${{ item.backendUnitPrice | number:'1.2-2' }}</span>
                     <span class="price-unit">c/u</span>
-                  </div>
-                  <div class="price-original" *ngIf="item.product.originalPrice && item.product.discount">
-                    <span class="price-crossed">${{ item.product.originalPrice | number:'1.2-2' }}</span>
-                    <span class="discount-badge">-{{ item.product.discount }}%</span>
                   </div>
                 </div>
 
-                <!-- Control de cantidad -->
+                <!-- ── SELECTOR DE CANTIDAD PROFESIONAL (FASE 1.2) ── -->
+                <!-- Reemplaza el <input type="number"> que generaba spinners duplicados -->
                 <div class="quantity-section">
                   <label class="quantity-label">Cantidad</label>
-                  <div class="quantity-controls">
-                    <button 
-                      class="qty-btn"
+                  <div
+                    class="quantity-control"
+                    [class.quantity-loading]="isItemUpdating(item.backendItemId)"
+                  >
+                    <button
+                      type="button"
+                      class="qty-btn qty-decrease"
+                      [disabled]="item.quantity <= 1 || isItemUpdating(item.backendItemId) || !canUpdateQuantity(item)"
                       (click)="decreaseQuantity(item)"
-                      [disabled]="item.quantity <= 1 || updating"
+                      [attr.aria-label]="'Disminuir cantidad de ' + item.product.name"
                     >
                       <span class="material-icons">remove</span>
                     </button>
-                    
-                    <input 
-                      type="number" 
-                      class="qty-input"
-                      [value]="item.quantity"
-                      (blur)="updateQuantityFromInput(item, $event)"
-                      [max]="item.product.stockQuantity"
-                      min="1"
-                    />
-                    
-                    <button 
-                      class="qty-btn"
+
+                    <!-- Span solo-lectura: sin spinners del navegador -->
+                    <span
+                      class="qty-value"
+                      [attr.aria-label]="'Cantidad: ' + item.quantity"
+                    >{{ item.quantity }}</span>
+
+                    <button
+                      type="button"
+                      class="qty-btn qty-increase"
+                      [disabled]="item.quantity >= (item.availableStock || 99) || isItemUpdating(item.backendItemId) || !canUpdateQuantity(item)"
                       (click)="increaseQuantity(item)"
-                      [disabled]="item.quantity >= item.product.stockQuantity || updating"
+                      [attr.aria-label]="'Aumentar cantidad de ' + item.product.name"
                     >
                       <span class="material-icons">add</span>
                     </button>
                   </div>
+
+                  <!-- Aviso de stock bajo -->
+                  <span
+                    class="stock-warning"
+                    *ngIf="item.quantity >= (item.availableStock || 99) && item.availableStock > 0"
+                  >
+                    Máximo disponible
+                  </span>
                 </div>
 
-                <!-- Subtotal del producto -->
+                <!-- Subtotal del item -->
                 <div class="item-total">
                   <span class="total-label">Subtotal</span>
                   <span class="total-price">${{ getItemTotal(item) | number:'1.2-2' }}</span>
                 </div>
+              </div>
+
+              <!-- Overlay de loading por item -->
+              <div class="item-loading-overlay" *ngIf="isItemUpdating(item.backendItemId)">
+                <div class="item-spinner"></div>
               </div>
             </div>
           </div>
@@ -186,19 +243,26 @@
         <!-- COLUMNA DERECHA: RESUMEN -->
         <aside class="summary-section">
           <div class="summary-card sticky">
-            
-            <!-- Header del resumen -->
+
+            <!-- Header -->
             <div class="summary-header">
               <h2 class="summary-title">Resumen del Pedido</h2>
             </div>
 
-            <!-- Detalles del resumen -->
+            <!-- Detalles -->
             <div class="summary-details">
+              
+              <!-- Warning Global del Carrito -->
+              <div class="global-warning" *ngIf="!canCheckout && cartWarningMessage">
+                <span class="material-icons">error_outline</span>
+                <span>{{ cartWarningMessage }}</span>
+              </div>
+              
               <div class="detail-row">
                 <span class="detail-label">Subtotal ({{ getTotalItems() }} productos)</span>
                 <span class="detail-value">${{ cartSubtotal | number:'1.2-2' }}</span>
               </div>
-              
+
               <div class="detail-row">
                 <span class="detail-label">Envío</span>
                 <span class="detail-value" [class.free]="cartShipping === 0">
@@ -215,7 +279,7 @@
                   </span>
                 </div>
                 <div class="progress-bar">
-                  <div 
+                  <div
                     class="progress-fill"
                     [style.width.%]="(cartSubtotal / freeShippingThreshold) * 100"
                   ></div>
@@ -226,10 +290,20 @@
                 <span class="material-icons">check_circle</span>
                 <span>¡Envío gratis aplicado!</span>
               </div>
-              
+
               <div class="detail-row">
                 <span class="detail-label">IVA (16%)</span>
                 <span class="detail-value">${{ cartTaxes | number:'1.2-2' }}</span>
+              </div>
+
+              <!-- Descuento por cupón -->
+              <div class="detail-row discount-row" *ngIf="currentDiscount > 0">
+                <span class="detail-label">
+                  Descuento
+                  <span class="coupon-tag" *ngIf="appliedCoupon">({{ appliedCoupon }})</span>
+                </span>
+                <span class="detail-value discount-value">-${{ currentDiscount | number:'1.2-2' }}</span>
+                <button class="btn-remove-coupon" (click)="removeCoupon()" title="Quitar cupón">✕</button>
               </div>
 
               <div class="divider"></div>
@@ -238,40 +312,50 @@
                 <span class="detail-label">Total</span>
                 <span class="detail-value total-value">${{ cartTotal | number:'1.2-2' }}</span>
               </div>
+              
+              <!-- Productos No Disponibles -->
+              <div class="detail-row unavailable-row" *ngIf="unavailableItemsTotal > 0">
+                <span class="detail-label">Productos no disponibles</span>
+                <span class="detail-value">${{ unavailableItemsTotal | number:'1.2-2' }}</span>
+              </div>
             </div>
 
-            <!-- Cupón de descuento -->
+            <!-- Cupón -->
             <div class="coupon-section">
               <button class="coupon-toggle" (click)="toggleCoupon()">
                 <span class="material-icons">local_offer</span>
                 ¿Tienes un cupón de descuento?
                 <span class="material-icons">{{ showCouponInput ? 'expand_less' : 'expand_more' }}</span>
               </button>
-              
+
               <div class="coupon-input-wrapper" *ngIf="showCouponInput" [@slideIn]>
-                <input 
-                  type="text" 
-                  class="coupon-input" 
+                <input
+                  type="text"
+                  class="coupon-input"
                   placeholder="Código del cupón"
                   [(ngModel)]="couponCode"
+                  (keyup.enter)="applyCoupon()"
                 />
-                <button class="btn-apply-coupon" (click)="applyCoupon()">
-                  Aplicar
-                </button>
+                <button class="btn-apply-coupon" (click)="applyCoupon()">Aplicar</button>
               </div>
             </div>
 
-            <!-- Botón de checkout -->
-            <button 
-              class="btn-checkout"
-              (click)="proceedToCheckout()"
-              [disabled]="cartItems.length === 0 || updating"
-            >
-              <span class="material-icons">lock</span>
-              Proceder al Pago
-            </button>
+            <!-- Botón Checkout (TODO Fase 2) -->
+            <div class="checkout-wrapper" [title]="!canCheckout ? 'Elimina o mueve a lista de deseos los productos no disponibles para continuar.' : ''">
+              <button
+                id="btn-proceed-checkout"
+                class="btn-checkout"
+                (click)="proceedToCheckout()"
+                [disabled]="cartItems.length === 0 || !canCheckout"
+              >
+                <span class="material-icons">lock</span>Proceder al Pago
+              </button>
+              <p class="checkout-hint" *ngIf="!canCheckout">
+                Hay productos no disponibles en tu carrito.
+              </p>
+            </div>
 
-            <!-- Métodos de pago aceptados -->
+            <!-- Métodos de pago -->
             <div class="payment-methods">
               <p class="methods-title">Métodos de pago aceptados</p>
               <div class="methods-icons">
@@ -300,11 +384,12 @@
           </div>
         </aside>
       </div>
+
     </div>
   </div>
 </div>
 
-<!-- MODAL DE CONFIRMACIÓN PARA VACIAR CARRITO -->
+<!-- MODAL: Confirmar vaciar carrito -->
 <div class="modal-overlay" *ngIf="showClearConfirm" (click)="showClearConfirm = false">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-icon warning">
@@ -313,12 +398,8 @@
     <h3 class="modal-title">¿Vaciar carrito?</h3>
     <p class="modal-text">Esta acción eliminará todos los productos de tu carrito. ¿Deseas continuar?</p>
     <div class="modal-actions">
-      <button class="btn-cancel" (click)="showClearConfirm = false">
-        Cancelar
-      </button>
-      <button class="btn-confirm" (click)="confirmClearCart()">
-        Sí, vaciar carrito
-      </button>
+      <button class="btn-cancel" (click)="showClearConfirm = false">Cancelar</button>
+      <button class="btn-confirm" (click)="confirmClearCart()">Sí, vaciar carrito</button>
     </div>
   </div>
 </div>

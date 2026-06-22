@@ -155,11 +155,12 @@
           </p>
 
           <!-- Ordenar por -->
-          <div class="flex items-center gap-2 pl-3 pr-2 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:border-slate-300 hover:shadow-sm transition-all duration-200">
-            <span class="text-slate-400 text-sm font-medium whitespace-nowrap">Ordenar por:</span>
+          <div class="flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm hover:border-red-300 hover:shadow-sm transition-all duration-200 cursor-pointer">
+            <span class="text-slate-500 text-sm font-medium whitespace-nowrap">Ordenar por:</span>
             <select [ngModel]="sortBy"
                     (change)="onSortSelect($any($event.target).value)"
-                    class="bg-transparent outline-none text-slate-800 font-medium cursor-pointer pr-1">
+                    class="bg-transparent outline-none text-slate-800 font-semibold cursor-pointer appearance-none pr-6"
+                    style="background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23722f37%22%3E%3Cpath d=%22M7 10l5 5 5-5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0 center; background-size: 20px;">
               <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
             </select>
           </div>
@@ -251,6 +252,24 @@
                 <span class="material-symbols-outlined text-6xl text-slate-200">music_note</span>
               </div>
 
+              <!-- Botón Favoritos -->
+              <button (click)="toggleFavorite(producto.id, $event)"
+                      [disabled]="togglingFavs.has(producto.id)"
+                      class="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm hover:bg-white flex items-center justify-center shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-300 group"
+                      [ngClass]="isFavorite(producto.id) ? 'text-red-600' : 'text-slate-400 hover:text-red-500'"
+                      title="{{ isFavorite(producto.id) ? 'Quitar de favoritos' : 'Agregar a favoritos' }}">
+                
+                <span class="material-symbols-outlined text-[20px] leading-none transition-transform duration-300 flex items-center justify-center"
+                      style="margin-top: 1px;"
+                      [ngClass]="isFavorite(producto.id) ? 'scale-110' : 'group-hover:scale-110'"
+                      [style.font-variation-settings]="isFavorite(producto.id) ? '\'FILL\' 1' : '\'FILL\' 0'">
+                  {{ isFavorite(producto.id) ? 'favorite' : 'favorite_border' }}
+                </span>
+
+                <!-- Spinner de carga -->
+                <span *ngIf="togglingFavs.has(producto.id)" class="absolute inset-0 rounded-full border-2 border-slate-100 border-t-red-500 animate-spin"></span>
+              </button>
+
               <!-- Badge disponibilidad -->
               <div class="absolute top-3 left-3">
                 <span *ngIf="producto.stock > 0"
@@ -265,7 +284,7 @@
               </div>
 
               <!-- Badge descuento -->
-              <div *ngIf="getDiscountPercent(producto) > 0" class="absolute top-3 right-3">
+              <div *ngIf="getDiscountPercent(producto) > 0" class="absolute top-10 left-3">
                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-600 text-white shadow-sm">
                   -{{ getDiscountPercent(producto) }}%
                 </span>

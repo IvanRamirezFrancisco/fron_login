@@ -225,11 +225,7 @@
                   -{{ getDiscountPercent(product) }}%
                 </span>
               }
-              <button (click)="$event.stopPropagation(); toggleFavorite(product.id)"
-                      class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 hover:bg-white
-                             flex items-center justify-center shadow-sm transition-colors duration-200">
-                <span class="material-symbols-outlined text-[18px] text-gray-400 hover:text-red-500">favorite</span>
-              </button>
+
             </div>
 
             <div class="flex flex-col flex-1 p-4">

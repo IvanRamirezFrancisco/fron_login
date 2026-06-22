@@ -7,6 +7,7 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
 import { PublicApiService } from '../../services/public-api.service';
+import { WishlistService } from '../../services/wishlist.service';
 import { User } from '../../models/user.model';
 import { PublicProduct, PublicCategory, SpringPage } from '../../models/product.model';
 
@@ -23,7 +24,6 @@ import { PublicProduct, PublicCategory, SpringPage } from '../../models/product.
 export class CatalogoComponent implements OnInit, OnDestroy {
   searchQuery = '';
   cartItemCount = 0;
-  wishlistCount = 0;
 
   // Usuario logueado
   isLoggedIn = false;
@@ -74,7 +74,8 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private authService: AuthService,
     private publicApiService: PublicApiService,
-    private cartService: CartService
+    private cartService: CartService,
+    private wishlistService: WishlistService
   ) {}
 
   ngOnInit(): void {
@@ -90,11 +91,15 @@ export class CatalogoComponent implements OnInit, OnDestroy {
       error: () => {}
     });
 
-    // Leer filtro de categoría desde query params (ej: /catalogo?categoryId=3)
+    // Leer filtro de categoría y búsqueda desde query params
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const catId = params['categoryId'] ? +params['categoryId'] : null;
       if (catId) {
         this.categoriaSeleccionada = [catId];
+      }
+      const busqueda = params['busqueda'];
+      if (busqueda) {
+        this.searchQuery = busqueda;
       }
       this.loadProducts();
     });
@@ -179,6 +184,32 @@ export class CatalogoComponent implements OnInit, OnDestroy {
   // Ver detalle del producto
   verDetalle(producto: PublicProduct): void {
     this.router.navigate(['/producto', producto.id]);
+  }
+
+  // ── Favoritos ──────────────────────────────────────────────────────────────
+  togglingFavs = new Set<number>();
+
+  isFavorite(productId: number): boolean {
+    return this.wishlistService.isInWishlist(productId);
+  }
+
+  toggleFavorite(productId: number, event: Event): void {
+    event.stopPropagation();
+    
+    if (!this.isLoggedIn) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+
+    this.togglingFavs.add(productId);
+    this.wishlistService.toggle(productId).subscribe({
+      next: () => {
+        this.togglingFavs.delete(productId);
+      },
+      error: () => {
+        this.togglingFavs.delete(productId);
+      }
+    });
   }
 
   // Agregar producto al carrito
@@ -321,8 +352,6 @@ export class CatalogoComponent implements OnInit, OnDestroy {
   navigateToCart(): void {
     this.router.navigate(['/carrito']);
   }
-
-  toggleWishlist(): void {}
 
   navigateToHome(): void {
     this.router.navigate(['/home']);

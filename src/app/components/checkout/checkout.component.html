@@ -1,0 +1,633 @@
+<!-- ================================================================
+     CHECKOUT — CASA DE MÚSICA CASTILLO
+     ================================================================ -->
+
+<div class="checkout-page">
+
+  <!-- ── HEADER ──────────────────────────────────────────────── -->
+  <div class="checkout-header">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Ruta de navegación">
+        <a routerLink="/home" class="breadcrumb-link">
+          <span class="material-icons">home</span>Inicio
+        </a>
+        <span class="material-icons sep">chevron_right</span>
+        <a routerLink="/carrito" class="breadcrumb-link">Carrito</a>
+        <span class="material-icons sep">chevron_right</span>
+        <span class="breadcrumb-current">Finalizar Compra</span>
+      </nav>
+      <div class="header-row">
+        <h1 class="page-title">
+          <span class="material-icons">lock</span>Finalizar Compra
+        </h1>
+        <div class="secure-badge">
+          <span class="material-icons">verified_user</span>
+          <span>Compra segura</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container checkout-body">
+
+    <!-- ── ALERTA GLOBAL DE ERROR ──────────────────────────────── -->
+    <div class="alert alert-error" *ngIf="generalError">
+      <span class="material-icons">error_outline</span>
+      <span>{{ generalError }}</span>
+    </div>
+
+    <!-- ── ADVERTENCIA DE CARRITO NO VÁLIDO ──────────────────── -->
+    <div class="alert alert-warning" *ngIf="warningMessage && !canCheckout">
+      <span class="material-icons">warning_amber</span>
+      <div class="alert-body">
+        <span>{{ warningMessage }}</span>
+        <a routerLink="/carrito" class="alert-link">Volver al carrito →</a>
+      </div>
+    </div>
+
+    <!-- ── CARRITO VACÍO ───────────────────────────────────────── -->
+    <div class="state-block" *ngIf="cartItems.length === 0 && !generalError && !isProcessing">
+      <div class="state-icon-wrap">
+        <span class="material-icons state-icon">shopping_cart</span>
+      </div>
+      <h2>Tu carrito está vacío</h2>
+      <p>Agrega productos antes de continuar con el pago.</p>
+      <a routerLink="/catalogo" class="btn-state">
+        <span class="material-icons">explore</span>Ir al Catálogo
+      </a>
+    </div>
+
+    <!-- ── CARRITO BLOQUEADO (productos no disponibles) ──────── -->
+    <div class="state-block state-blocked" *ngIf="!canCheckout && cartItems.length > 0">
+      <div class="state-icon-wrap">
+        <span class="material-icons state-icon">remove_shopping_cart</span>
+      </div>
+      <h2>No puedes continuar con la compra</h2>
+      <p>Tu carrito contiene productos no disponibles. Por favor elimínalos antes de continuar.</p>
+      <a routerLink="/carrito" class="btn-state">
+        <span class="material-icons">arrow_back</span>Volver al Carrito
+      </a>
+    </div>
+
+    <!-- ================================================================
+         LAYOUT PRINCIPAL: solo visible cuando canCheckout === true
+    ================================================================= -->
+    <div class="checkout-layout" *ngIf="canCheckout && cartItems.length > 0">
+
+      <!-- ── COLUMNA IZQUIERDA: FORMULARIO ──────────────────────── -->
+      <div class="checkout-form-section">
+        <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" novalidate>
+
+          <!-- ── SECCIÓN 1: DIRECCIÓN DE ENVÍO ──────────────────── -->
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="card-header-icon">
+                <span class="material-icons">local_shipping</span>
+              </div>
+              <div>
+                <h2 class="card-title">Dirección de Envío</h2>
+                <p class="card-subtitle">¿Dónde recibirás tu pedido?</p>
+              </div>
+            </div>
+            
+            <div class="form-card-body" formGroupName="shippingAddress">
+            
+              <!-- Barra de datos precargados -->
+              <div class="account-prefill-card complete" *ngIf="userDataLoadStatus === 'COMPLETE'">
+                <div class="account-prefill-icon">
+                  <i class="fas fa-user-check"></i>
+                </div>
+                <div class="account-prefill-content">
+                  <span class="account-prefill-title">Datos de cuenta cargados</span>
+                  <span class="account-prefill-description">Puedes modificar estos datos para este pedido.</span>
+                </div>
+                <button type="button" class="account-prefill-action" (click)="loadUserData(true)">
+                  <i class="fas fa-rotate-right"></i> Usar mis datos de cuenta
+                </button>
+              </div>
+
+              <div class="account-prefill-card partial" *ngIf="userDataLoadStatus === 'PARTIAL'">
+                <div class="account-prefill-icon">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="account-prefill-content">
+                  <span class="account-prefill-title">Datos parciales</span>
+                  <span class="account-prefill-description">Completa los campos faltantes antes de confirmar tu pedido.</span>
+                </div>
+                <button type="button" class="account-prefill-action" (click)="loadUserData(true)">
+                  <i class="fas fa-rotate-right"></i> Usar mis datos de cuenta
+                </button>
+              </div>
+
+              <!-- Nombre y Apellidos -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="firstName">Nombre(s) <span class="required-mark">*</span></label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    formControlName="firstName"
+                    class="form-input"
+                    [class.input-error]="isFieldInvalid('shippingAddress.firstName')"
+                    placeholder="Tu nombre"
+                    autocomplete="given-name"
+                  >
+                  <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.firstName')">
+                    <span class="material-icons">error</span>Nombre es requerido.
+                  </span>
+                </div>
+                <div class="form-group">
+                  <label for="lastName">Apellidos <span class="required-mark">*</span></label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    formControlName="lastName"
+                    class="form-input"
+                    [class.input-error]="isFieldInvalid('shippingAddress.lastName')"
+                    placeholder="Tus apellidos"
+                    autocomplete="family-name"
+                  >
+                  <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.lastName')">
+                    <span class="material-icons">error</span>Apellidos son requeridos.
+                  </span>
+                </div>
+              </div>
+
+              <!-- Teléfono -->
+              <div class="form-group">
+                <label for="phone">Teléfono de contacto <span class="required-mark">*</span></label>
+                <div class="input-with-icon">
+                  <span class="material-icons input-icon">phone</span>
+                  <input
+                    type="tel"
+                    id="phone"
+                    formControlName="phone"
+                    class="form-input with-icon"
+                    [class.input-error]="isFieldInvalid('shippingAddress.phone')"
+                    placeholder="Ej: 5512345678"
+                    autocomplete="tel"
+                    inputmode="numeric"
+                    maxlength="10"
+                    (input)="sanitizeNumericField('shippingAddress.phone', 10)"
+                  >
+                </div>
+                <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.phone')">
+                  <span class="material-icons">error</span>Ingresa un teléfono válido de 10 dígitos.
+                </span>
+              </div>
+
+              <!-- Ayuda Dirección -->
+              <div class="address-helper-card">
+                <div class="address-helper-icon">
+                  <i class="fas fa-location-dot"></i>
+                </div>
+                <div class="address-helper-content">
+                  <span class="address-helper-title">Completa tu dirección de envío</span>
+                  <span class="address-helper-text">Estos datos se usarán solo para entregar tu pedido.</span>
+                </div>
+              </div>
+
+              <!-- Calle -->
+              <div class="form-group">
+                <label for="street">Calle <span class="required-mark">*</span></label>
+                <input
+                  type="text"
+                  id="street"
+                  formControlName="street"
+                  class="form-input"
+                  [class.input-error]="isFieldInvalid('shippingAddress.street')"
+                  placeholder="Nombre de la calle"
+                  autocomplete="address-line1"
+                >
+                <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.street')">
+                  <span class="material-icons">error</span>La calle es requerida.
+                </span>
+              </div>
+
+              <!-- Número ext / int -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="exteriorNumber">Número exterior <span class="required-mark">*</span></label>
+                  <input
+                    type="text"
+                    id="exteriorNumber"
+                    formControlName="exteriorNumber"
+                    class="form-input"
+                    [class.input-error]="isFieldInvalid('shippingAddress.exteriorNumber')"
+                    placeholder="Ej: 123"
+                  >
+                  <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.exteriorNumber')">
+                    <span class="material-icons">error</span>Requerido.
+                  </span>
+                </div>
+                <div class="form-group">
+                  <label for="interiorNumber">Número interior <span class="optional-tag">(opcional)</span></label>
+                  <input
+                    type="text"
+                    id="interiorNumber"
+                    formControlName="interiorNumber"
+                    class="form-input"
+                    placeholder="Ej: 4A"
+                  >
+                </div>
+              </div>
+
+              <!-- Colonia -->
+              <div class="form-group">
+                <label for="neighborhood">Colonia <span class="required-mark">*</span></label>
+                <input
+                  type="text"
+                  id="neighborhood"
+                  formControlName="neighborhood"
+                  class="form-input"
+                  [class.input-error]="isFieldInvalid('shippingAddress.neighborhood')"
+                  placeholder="Nombre de la colonia"
+                >
+                <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.neighborhood')">
+                  <span class="material-icons">error</span>La colonia es requerida.
+                </span>
+              </div>
+
+              <!-- Ciudad / Estado / CP -->
+              <div class="form-row form-row-3">
+                <div class="form-group">
+                  <label for="city">Municipio / Ciudad <span class="required-mark">*</span></label>
+                  <input
+                    type="text"
+                    id="city"
+                    formControlName="city"
+                    class="form-input"
+                    [class.input-error]="isFieldInvalid('shippingAddress.city')"
+                    placeholder="Ciudad"
+                    autocomplete="address-level2"
+                  >
+                  <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.city')">
+                    <span class="material-icons">error</span>Ciudad requerida.
+                  </span>
+                </div>
+                <div class="form-group">
+                  <label for="state">Estado <span class="required-mark">*</span></label>
+                  <input
+                    type="text"
+                    id="state"
+                    formControlName="state"
+                    class="form-input"
+                    [class.input-error]="isFieldInvalid('shippingAddress.state')"
+                    placeholder="Estado"
+                    autocomplete="address-level1"
+                  >
+                  <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.state')">
+                    <span class="material-icons">error</span>Estado requerido.
+                  </span>
+                </div>
+                <div class="form-group cp-group">
+                  <label for="zipCode">Código Postal <span class="required-mark">*</span></label>
+                  <input
+                    type="text"
+                    id="zipCode"
+                    formControlName="zipCode"
+                    class="form-input"
+                    [class.input-error]="isFieldInvalid('shippingAddress.zipCode')"
+                    placeholder="00000"
+                    maxlength="5"
+                    inputmode="numeric"
+                    autocomplete="postal-code"
+                    (input)="sanitizeNumericField('shippingAddress.zipCode', 5)"
+                  >
+                  <span class="field-error" *ngIf="isFieldInvalid('shippingAddress.zipCode')">
+                    <span class="material-icons">error</span>El código postal debe tener 5 dígitos.
+                  </span>
+                </div>
+              </div>
+
+              <!-- Referencias -->
+              <div class="form-group">
+                <label for="references">Referencias de entrega <span class="optional-tag">(opcional)</span></label>
+                <textarea
+                  id="references"
+                  formControlName="references"
+                  class="form-input form-textarea"
+                  placeholder="Ej: Casa blanca con portón negro, entre calle Juárez y Morelos..."
+                  rows="2"
+                ></textarea>
+              </div>
+
+            </div>
+          </div><!-- /form-card shipping -->
+
+          <!-- ── SECCIÓN 2: FACTURACIÓN ──────────────────────────── -->
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="card-header-icon">
+                <span class="material-icons">receipt_long</span>
+              </div>
+              <div>
+                <h2 class="card-title">Facturación</h2>
+                <p class="card-subtitle">¿Necesitas comprobante fiscal?</p>
+              </div>
+            </div>
+
+            <div class="form-card-body">
+              <label class="toggle-label">
+                <input type="checkbox" formControlName="requireInvoice" class="toggle-checkbox">
+                <div class="toggle-box">
+                  <span class="toggle-text">Requiero factura (CFDI)</span>
+                  <span class="toggle-sub">Mis datos de envío no son suficientes para facturar</span>
+                </div>
+              </label>
+
+              <div class="billing-section" *ngIf="isRequireInvoice()" formGroupName="billingAddress">
+                <div class="billing-notice">
+                  <span class="material-icons">info</span>
+                  La facturación será procesada y validada posteriormente por el negocio.
+                </div>
+                <div class="form-row">
+                  <div class="form-group cp-group">
+                    <label for="rfc">RFC <span class="required-mark">*</span></label>
+                    <input
+                      type="text"
+                      id="rfc"
+                      formControlName="rfc"
+                      class="form-input"
+                      [class.input-error]="isFieldInvalid('billingAddress.rfc')"
+                      placeholder="XAXX010101000"
+                      maxlength="13"
+                      (input)="sanitizeRfcField()"
+                    >
+                    <span class="field-error" *ngIf="isFieldInvalid('billingAddress.rfc')">
+                      <span class="material-icons">error</span>RFC es requerido (12-13 caracteres).
+                    </span>
+                  </div>
+                  <div class="form-group" style="flex:2">
+                    <label for="businessName">Razón Social <span class="required-mark">*</span></label>
+                    <input
+                      type="text"
+                      id="businessName"
+                      formControlName="businessName"
+                      class="form-input"
+                      [class.input-error]="isFieldInvalid('billingAddress.businessName')"
+                      placeholder="Nombre legal de la empresa o persona"
+                    >
+                    <span class="field-error" *ngIf="isFieldInvalid('billingAddress.businessName')">
+                      <span class="material-icons">error</span>Razón social requerida.
+                    </span>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group cp-group">
+                    <label for="fiscalZipCode">CP Fiscal <span class="required-mark">*</span></label>
+                    <input
+                      type="text"
+                      id="fiscalZipCode"
+                      formControlName="fiscalZipCode"
+                      class="form-input"
+                      [class.input-error]="isFieldInvalid('billingAddress.fiscalZipCode')"
+                      placeholder="00000"
+                      maxlength="5"
+                      inputmode="numeric"
+                      (input)="sanitizeNumericField('billingAddress.fiscalZipCode', 5)"
+                    >
+                    <span class="field-error" *ngIf="isFieldInvalid('billingAddress.fiscalZipCode')">
+                      <span class="material-icons">error</span>El código postal debe tener 5 dígitos.
+                    </span>
+                  </div>
+                  <div class="form-group">
+                    <label for="invoiceEmail">Correo para factura <span class="required-mark">*</span></label>
+                    <input
+                      type="email"
+                      id="invoiceEmail"
+                      formControlName="invoiceEmail"
+                      class="form-input"
+                      [class.input-error]="isFieldInvalid('billingAddress.invoiceEmail')"
+                      placeholder="factura@empresa.com"
+                    >
+                    <span class="field-error" *ngIf="isFieldInvalid('billingAddress.invoiceEmail')">
+                      <span class="material-icons">error</span>Correo inválido.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div><!-- /form-card billing -->
+
+          <!-- ── SECCIÓN 3: MÉTODO DE PAGO ──────────────────────── -->
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="card-header-icon">
+                <span class="material-icons">account_balance</span>
+              </div>
+              <div>
+                <h2 class="card-title">Método de Pago</h2>
+                <p class="card-subtitle">¿Cómo deseas pagar?</p>
+              </div>
+            </div>
+            <div class="form-card-body">
+              <div class="payment-options">
+                <div
+                  class="payment-option"
+                  *ngFor="let method of paymentMethods"
+                  [class.selected]="checkoutForm.get('paymentMethod')?.value === method.value"
+                  (click)="selectPaymentMethod(method.value)"
+                  role="radio"
+                  [attr.aria-checked]="checkoutForm.get('paymentMethod')?.value === method.value"
+                >
+                  <div class="payment-icon-wrap">
+                    <span class="material-icons">{{ method.icon }}</span>
+                  </div>
+                  <div class="payment-info">
+                    <span class="payment-label">{{ method.label }}</span>
+                    <span class="payment-desc">{{ method.description }}</span>
+                    <div class="payment-badges" *ngIf="method.badges">
+                      <span class="payment-badge" *ngFor="let badge of method.badges">{{ badge }}</span>
+                    </div>
+                  </div>
+                  <span class="payment-check material-icons"
+                    *ngIf="checkoutForm.get('paymentMethod')?.value === method.value">
+                    check_circle
+                  </span>
+                </div>
+              </div>
+
+              <!-- Panel informativo dinámico -->
+              <div class="payment-info-panel" *ngIf="checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER'">
+                <span class="material-icons info-icon">account_balance</span>
+                <p>Al confirmar tu pedido, te mostraremos los datos bancarios para realizar la transferencia. Después podrás subir tu comprobante para revisión.</p>
+              </div>
+
+              <div class="payment-info-panel mp-panel" *ngIf="checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">
+                <span class="material-icons info-icon">shield</span>
+                <p>Serás redirigido al entorno seguro de Mercado Pago para completar tu pago. La confirmación final se realizará automáticamente cuando Mercado Pago notifique el resultado.</p>
+                <span class="secure-badge-mp">Redirección segura</span>
+              </div>
+            </div>
+          </div><!-- /form-card payment -->
+
+          <!-- ── SECCIÓN 4: NOTAS ────────────────────────────────── -->
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="card-header-icon">
+                <span class="material-icons">notes</span>
+              </div>
+              <div>
+                <h2 class="card-title">Notas o referencias para la entrega <span class="optional-tag">(opcional)</span></h2>
+              </div>
+            </div>
+            <div class="form-card-body">
+              <textarea
+                id="notes"
+                formControlName="notes"
+                class="form-input form-textarea"
+                placeholder="Ejemplo: llamar antes de llegar, entregar después de las 4 pm, cuidado especial del instrumento…"
+                rows="3"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- ── ERRORES DE VALIDACIÓN DEL BACKEND ──────────────── -->
+          <div class="validation-errors-block" *ngIf="validationErrors.length > 0">
+            <span class="material-icons">error</span>
+            <ul>
+              <li *ngFor="let err of validationErrors">{{ err }}</li>
+            </ul>
+          </div>
+
+          <!-- ── BOTÓN SUBMIT MÓVIL ──────────────────────────────── -->
+          <div class="submit-mobile">
+            <button
+              type="submit"
+              class="btn-confirm"
+              [disabled]="isProcessing"
+            >
+              <span class="spinner" *ngIf="isProcessing"></span>
+              <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value !== 'MERCADO_PAGO'">lock</span>
+              <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">shield</span>
+              <span *ngIf="isValidating">Validando carrito...</span>
+              <span *ngIf="isSubmitting && !isProcessingPayment">Generando pedido...</span>
+              <span *ngIf="isProcessingPayment">Preparando redirección segura...</span>
+              <span *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER'">Confirmar Pedido — ${{ cartTotal | number:'1.2-2' }}</span>
+              <span *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">Confirmar y pagar con Mercado Pago — ${{ cartTotal | number:'1.2-2' }}</span>
+            </button>
+          </div>
+
+        </form>
+      </div><!-- /checkout-form-section -->
+
+      <!-- ── COLUMNA DERECHA: RESUMEN ──────────────────────────── -->
+      <aside class="checkout-summary">
+        <div class="summary-card">
+
+          <!-- Header resumen -->
+          <div class="summary-header">
+            <span class="material-icons">receipt</span>
+            <h2>Resumen del Pedido</h2>
+          </div>
+
+          <!-- Productos -->
+          <div class="summary-items">
+            <div class="summary-item" *ngFor="let item of cartItems; trackBy: trackByItemId">
+              <div class="item-img-wrap">
+                <img
+                  [src]="item.product.images && item.product.images.length > 0 ? item.product.images[0] : '/assets/logoP.png'"
+                  [alt]="item.product.name"
+                  class="item-img"
+                  (error)="onImageError($event)"
+                >
+                <span class="item-qty">{{ item.quantity }}</span>
+              </div>
+              <div class="item-info">
+                <span class="item-name">{{ item.product.name }}</span>
+                <span class="item-sku" *ngIf="item.product.sku">{{ item.product.sku }}</span>
+              </div>
+              <span class="item-price">${{ (item.backendUnitPrice * item.quantity) | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="summary-sep"></div>
+
+          <!-- Totales -->
+          <div class="totals-block">
+            <div class="total-row">
+              <span>Subtotal</span>
+              <span>${{ cartSubtotal | number:'1.2-2' }}</span>
+            </div>
+            <div class="total-row">
+              <span>IVA (16%)</span>
+              <span>${{ cartTax | number:'1.2-2' }}</span>
+            </div>
+            <div class="total-row discount" *ngIf="cartDiscount > 0">
+              <span>Descuento</span>
+              <span>-${{ cartDiscount | number:'1.2-2' }}</span>
+            </div>
+            <div class="total-row unavail" *ngIf="unavailableItemsTotal > 0">
+              <span>No disponible (excluido)</span>
+              <span>-${{ unavailableItemsTotal | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="summary-sep"></div>
+
+          <!-- Gran total -->
+          <div class="grand-total-row">
+            <span class="grand-label">Total a pagar</span>
+            <span class="grand-value">${{ cartTotal | number:'1.2-2' }}</span>
+          </div>
+
+          <!-- Método seleccionado -->
+          <div class="payment-selected-info" *ngIf="checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER'">
+            <span class="material-icons">account_balance</span>
+            <span>Transferencia bancaria</span>
+          </div>
+
+          <div class="payment-selected-info mp-selected" *ngIf="checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">
+            <span class="material-icons">shield</span>
+            <span>Mercado Pago Checkout Pro</span>
+            <span class="secure-badge-sm">Pago protegido</span>
+          </div>
+
+          <div class="summary-sep"></div>
+
+          <!-- BOTÓN CONFIRMAR (desktop) — SIEMPRE VISIBLE -->
+          <button
+            type="button"
+            class="btn-confirm"
+            (click)="onSubmit()"
+            [disabled]="isProcessing"
+            id="btn-confirmar-pedido"
+          >
+            <span class="spinner" *ngIf="isProcessing"></span>
+            <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value !== 'MERCADO_PAGO'">lock</span>
+            <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">shield</span>
+            <span *ngIf="isValidating">Validando carrito...</span>
+            <span *ngIf="isSubmitting && !isProcessingPayment">Generando pedido...</span>
+            <span *ngIf="isProcessingPayment">Preparando redirección segura...</span>
+            <span *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER'">Confirmar Pedido — ${{ cartTotal | number:'1.2-2' }}</span>
+            <span *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">Confirmar y pagar con Mercado Pago — ${{ cartTotal | number:'1.2-2' }}</span>
+          </button>
+
+          <a routerLink="/carrito" class="back-link">
+            <span class="material-icons">arrow_back</span>Volver al carrito
+          </a>
+
+          <!-- Garantías -->
+          <div class="guarantees">
+            <div class="guarantee">
+              <span class="material-icons">verified_user</span>
+              <span>Compra 100% segura</span>
+            </div>
+            <div class="guarantee">
+              <span class="material-icons">cached</span>
+              <span>30 días de devolución</span>
+            </div>
+            <div class="guarantee">
+              <span class="material-icons">support_agent</span>
+              <span>Soporte en tu compra</span>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+
+    </div><!-- /checkout-layout -->
+
+  </div><!-- /container -->
+</div><!-- /checkout-page -->

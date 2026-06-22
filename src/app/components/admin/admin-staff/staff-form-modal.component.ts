@@ -1,6 +1,8 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, OnDestroy, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { StaffService } from '../../../services/staff.service';
 import { StaffUser, Role, CreateStaffRequest, UpdateStaffRequest } from '../../../models/staff.model';
 import Swal from 'sweetalert2';
@@ -13,7 +15,7 @@ import Swal from 'sweetalert2';
   styleUrls: ['./staff-form-modal.component.css'],
   encapsulation: ViewEncapsulation.None
 })
-export class StaffFormModalComponent implements OnInit, OnChanges {
+export class StaffFormModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isEditMode = false;
   @Input() user: StaffUser | null = null;
   @Input() roles: Role[] = [];
@@ -28,6 +30,8 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
   
   // Roles filtrados (sin ROLE_USER)
   filteredRoles: Role[] = [];
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
@@ -45,6 +49,22 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
         const name = (typeof r === 'string' ? r : r?.name ?? r?.authority ?? '') as string;
         return name.toUpperCase().replace('ROLE_', '') === 'SUPER_ADMIN';
       });
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * True si el usuario que se está editando es el mismo que el usuario logueado.
+   * En ese caso, la asignación de roles se deshabilita (prevención de auto-edición).
+   */
+  get isEditingSelf(): boolean {
+    if (!this.isEditMode || !this.user) return false;
+    try {
+      const raw = localStorage.getItem('user');
+      if (!raw) return false;
+      const currentUser = JSON.parse(raw);
+      return currentUser?.id === this.user.id || currentUser?.email === this.user.email;
     } catch {
       return false;
     }
@@ -137,9 +157,12 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Toggle selección de rol
+   * Toggle selección de rol.
+   * Bloqueado si se está editando a sí mismo (prevención de auto-edición de roles).
    */
   toggleRole(roleId: number): void {
+    if (this.isEditingSelf) return; // Protección contra auto-edición
+
     const index = this.selectedRoleIds.indexOf(roleId);
     
     if (index > -1) {
@@ -249,7 +272,7 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
       roleIds: this.selectedRoleIds
     };
 
-    this.staffService.createStaff(request).subscribe({
+    this.staffService.createStaff(request).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.loading = false;
         Swal.fire({
@@ -289,7 +312,7 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
       request.password = formValue.password;
     }
 
-    this.staffService.updateStaff(this.user.id, request).subscribe({
+    this.staffService.updateStaff(this.user.id, request).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.loading = false;
         Swal.fire({
@@ -330,6 +353,11 @@ export class StaffFormModalComponent implements OnInit, OnChanges {
    */
   onClose(): void {
     this.close.emit();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**

@@ -21,7 +21,6 @@ import { Product } from '../../models/product.model';
 export class OfertasComponent implements OnInit {
   searchQuery = '';
   cartItemCount = 0;
-  wishlistCount = 0;
 
   // Usuario logueado
   isLoggedIn = false;
@@ -168,10 +167,6 @@ export class OfertasComponent implements OnInit {
 
   navigateToCart(): void {
     this.router.navigate(['/carrito']);
-  }
-
-  toggleWishlist(): void {
-    // Toggle silencioso
   }
 
   navigateToHome(): void {

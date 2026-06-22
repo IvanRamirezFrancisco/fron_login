@@ -1,14 +1,14 @@
 /* ════════════════════════════════════════════════════════════════════════════
    Admin DB Management — Estilos del contenedor padre con Tabs
-   Paleta: #800020 (burgundy) · #C5A059 (dorado antiguo) · grises neutros
+   Paleta: #722f37 (burgundy) · #C5A059 (dorado antiguo) · grises neutros
    ════════════════════════════════════════════════════════════════════════════ */
 
 :host { display: block; }
 
 /* ── Contenedor raíz ────────────────────────────────────────────────────── */
 .dbm-root {
-  min-height: calc(100vh - 73px); /* 73px = altura del topbar */
-  background: #F5F5F5;
+  min-height: 100%;
+  background: #f5f0eb;
   font-family: 'Poppins', 'Segoe UI', sans-serif;
   display: flex;
   flex-direction: column;
@@ -21,11 +21,11 @@
   display: flex;
   align-items: flex-end;
   gap: 0;
-  background: #fff;
+  background: #FDFCFB;
   border-bottom: 1px solid #e5e7eb;
   padding: 0 2rem;          /* coincide con el padding del topbar */
   position: sticky;
-  top: 0;
+  top: var(--topbar-height, 57px); /* se pega justo debajo del admin-topbar */
   z-index: 20;
   /* Sin box-shadow propio — el topbar ya da la separación visual */
 }
@@ -90,6 +90,7 @@
    ════════════════════════════════════════════════════════════════════════════ */
 .dbm-content {
   flex: 1;
+  background: #f5f0eb;
   animation: tabFadeIn .2s ease;
 }
 

@@ -1,10 +1,13 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { StaffService } from '../../../services/staff.service';
 import { RoleService } from '../../../services/role.service';
-import { StaffUser, Role, StaffFilters, PageResponse } from '../../../models/staff.model';
+import { AuthService } from '../../../services/auth.service';
+import { StaffUser, Role, StaffFilters, PageResponse, StaffInvitationDto, CreateStaffInvitationRequest } from '../../../models/staff.model';
 import Swal from 'sweetalert2';
 import { StaffFormModalComponent } from './staff-form-modal.component';
 
@@ -15,9 +18,11 @@ import { StaffFormModalComponent } from './staff-form-modal.component';
   templateUrl: './admin-staff.component.html',
   styleUrls: ['./admin-staff.component.css']
 })
-export class AdminStaffComponent implements OnInit {
+export class AdminStaffComponent implements OnInit, OnDestroy {
   // Exponer Math al template
   Math = Math;
+
+  private destroy$ = new Subject<void>();
   
   private _staffList: StaffUser[] = [];
   get staffList(): StaffUser[] {
@@ -49,14 +54,65 @@ export class AdminStaffComponent implements OnInit {
   filterEnabled: boolean | null = null;
   filterLocked: boolean | null = null;
 
-  // Modal
+  // Modal de edición (existente)
   showModal = false;
   isEditMode = false;
   selectedUser: StaffUser | null = null;
 
+  // ═══════════════════════════════════════════════════
+  // Tabs: 'staff' | 'invitations'
+  // ═══════════════════════════════════════════════════
+  activeTab: 'staff' | 'invitations' = 'staff';
+
+  // ═══════════════════════════════════════════════════
+  // Modal de invitación (nuevo)
+  // ═══════════════════════════════════════════════════
+  showInviteModal = false;
+  inviteSending = false;
+  invite = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    roleIds: [] as number[]
+  };
+  
+  // Verificación de email en tiempo real
+  emailCheckState: 'idle' | 'checking' | 'available' | 'taken' | 'invalid' = 'idle';
+  private emailCheckTimeout: any = null;
+  
+  // Roles filtrados (sin ROLE_USER)
+  get filteredRoles(): Role[] {
+    return this.roles.filter(r => r.name && r.name !== 'ROLE_USER');
+  }
+
+  // ═══════════════════════════════════════════════════
+  // Invitaciones pendientes
+  // ═══════════════════════════════════════════════════
+  invitations: StaffInvitationDto[] = [];
+  invitationsLoading = false;
+  pendingCount = 0;
+
+  // Filtros de invitaciones
+  invitationFilters = { search: '', status: '' };
+
+  get filteredInvitations(): StaffInvitationDto[] {
+    return this.invitations.filter(inv => {
+      const matchSearch = !this.invitationFilters.search ||
+        inv.email.toLowerCase().includes(this.invitationFilters.search.toLowerCase()) ||
+        (inv.firstName + ' ' + inv.lastName).toLowerCase().includes(this.invitationFilters.search.toLowerCase());
+      const matchStatus = !this.invitationFilters.status || inv.status === this.invitationFilters.status;
+      return matchSearch && matchStatus;
+    });
+  }
+
+  clearInvitationFilters(): void {
+    this.invitationFilters = { search: '', status: '' };
+  }
+
   constructor(
     private staffService: StaffService,
     private roleService: RoleService,
+    public authService: AuthService,
     private router: Router,
     private route: ActivatedRoute
   ) { }
@@ -64,10 +120,11 @@ export class AdminStaffComponent implements OnInit {
   ngOnInit(): void {
     this.loadStaff();
     this.loadRoles();
+    this.loadInvitations();
 
-    this.route.queryParams.subscribe(params => {
-      if (params['action'] === 'create' && !this.showModal) {
-        this.openCreateModal();
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      if (params['action'] === 'create' && !this.showModal && !this.showInviteModal) {
+        this.openInviteModal();
         this.clearActionParam();
       }
       if (params['action'] === 'export') {
@@ -75,6 +132,14 @@ export class AdminStaffComponent implements OnInit {
         this.clearActionParam();
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    if (this.emailCheckTimeout) {
+      clearTimeout(this.emailCheckTimeout);
+    }
   }
 
   /**
@@ -93,7 +158,7 @@ export class AdminStaffComponent implements OnInit {
       sort: 'createdAt,desc'
     };
 
-    this.staffService.getAllStaff(filters).subscribe({
+    this.staffService.getAllStaff(filters).pipe(takeUntil(this.destroy$)).subscribe({
       next: (response: PageResponse<StaffUser>) => {
         this.staffList = response.content || [];
         this.totalElements = response.totalElements || 0;
@@ -108,7 +173,7 @@ export class AdminStaffComponent implements OnInit {
           icon: 'error',
           title: 'Error',
           text: 'No se pudo cargar la lista de usuarios',
-          confirmButtonColor: '#800020'
+          confirmButtonColor: '#722f37'
         });
       }
     });
@@ -118,7 +183,7 @@ export class AdminStaffComponent implements OnInit {
    * Carga todos los roles disponibles
    */
   loadRoles(): void {
-    this.roleService.getAllRoles().subscribe({
+    this.roleService.getAllRoles().pipe(takeUntil(this.destroy$)).subscribe({
       next: (roles) => {
         this.roles = roles || [];
       },
@@ -180,14 +245,279 @@ export class AdminStaffComponent implements OnInit {
   }
 
   /**
-   * Abrir modal para crear nuevo usuario
+   * Abrir modal para crear nuevo usuario (ahora abre invitación)
    */
   openCreateModal(): void {
-    console.log('Abriendo modal de creación...');
-    this.isEditMode = false;
-    this.selectedUser = null;
-    this.showModal = true;
-    console.log('showModal:', this.showModal);
+    this.openInviteModal();
+  }
+
+  // ═══════════════════════════════════════════════════
+  // Tabs
+  // ═══════════════════════════════════════════════════
+  switchTab(tab: 'staff' | 'invitations'): void {
+    this.activeTab = tab;
+    if (tab === 'invitations') {
+      this.loadInvitations();
+    }
+  }
+
+  // ═══════════════════════════════════════════════════
+  // Modal de invitación
+  // ═══════════════════════════════════════════════════
+  openInviteModal(): void {
+    this.invite = { firstName: '', lastName: '', email: '', roleIds: [] };
+    this.emailCheckState = 'idle';
+    this.inviteSending = false;
+    this.showInviteModal = true;
+  }
+
+  closeInviteModal(): void {
+    this.showInviteModal = false;
+    if (this.emailCheckTimeout) {
+      clearTimeout(this.emailCheckTimeout);
+    }
+  }
+
+  /** Toggle selección de rol en el modal de invitación */
+  toggleInviteRole(roleId: number): void {
+    const idx = this.invite.roleIds.indexOf(roleId);
+    if (idx > -1) {
+      this.invite.roleIds.splice(idx, 1);
+    } else {
+      this.invite.roleIds.push(roleId);
+    }
+  }
+
+  isInviteRoleSelected(roleId: number): boolean {
+    return this.invite.roleIds.includes(roleId);
+  }
+
+  /** Verificar email con debounce */
+  onEmailInput(): void {
+    if (this.emailCheckTimeout) clearTimeout(this.emailCheckTimeout);
+
+    const email = this.invite.email?.trim();
+    if (!email || !this.isValidEmail(email)) {
+      this.emailCheckState = email ? 'invalid' : 'idle';
+      return;
+    }
+
+    this.emailCheckState = 'checking';
+    this.emailCheckTimeout = setTimeout(() => {
+      this.staffService.checkEmailAvailability(email).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (available: boolean) => {
+          this.emailCheckState = available ? 'available' : 'taken';
+        },
+        error: (err) => {
+          // 401/403 → el usuario no tiene permiso; no bloquear el formulario
+          // 4xx distinto → email probablemente inválido
+          console.warn('check-email error:', err?.status, err?.message);
+          this.emailCheckState = 'idle';
+        }
+      });
+    }, 500);
+  }
+
+  private isValidEmail(email: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  /** Validar si el formulario de invitación es completo */
+  get isInviteFormValid(): boolean {
+    return !!(
+      this.invite.firstName?.trim() &&
+      this.invite.lastName?.trim() &&
+      this.invite.email?.trim() &&
+      this.emailCheckState === 'available' &&
+      this.invite.roleIds.length > 0 &&
+      !this.inviteSending
+    );
+  }
+
+  /** Enviar invitación */
+  sendInvitation(): void {
+    if (!this.isInviteFormValid) return;
+
+    this.inviteSending = true;
+
+    const request: CreateStaffInvitationRequest = {
+      firstName: this.invite.firstName.trim(),
+      lastName: this.invite.lastName.trim(),
+      email: this.invite.email.trim(),
+      roleIds: [...this.invite.roleIds]
+    };
+
+    this.staffService.sendInvitation(request).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.inviteSending = false;
+        this.closeInviteModal();
+        Swal.fire({
+          icon: 'success',
+          title: '¡Invitación enviada!',
+          html: `Se envió un correo de activación a <strong>${request.email}</strong>.<br><small class="text-muted">El enlace expira en 48 horas.</small>`,
+          confirmButtonColor: '#722f37',
+          timer: 4000,
+          timerProgressBar: true,
+          showConfirmButton: false
+        });
+        this.loadInvitations();
+      },
+      error: (err) => {
+        this.inviteSending = false;
+        const msg = err.error?.message || err.error?.error || 'Error al enviar la invitación';
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: msg,
+          confirmButtonColor: '#722f37'
+        });
+      }
+    });
+  }
+
+  // ═══════════════════════════════════════════════════
+  // Invitaciones (listado)
+  // ═══════════════════════════════════════════════════
+  loadInvitations(): void {
+    this.invitationsLoading = true;
+    this.staffService.listInvitations().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (list) => {
+        this.invitations = list || [];
+        this.pendingCount = this.invitations.filter(i => i.status === 'PENDING').length;
+        this.invitationsLoading = false;
+      },
+      error: () => {
+        this.invitations = [];
+        this.pendingCount = 0;
+        this.invitationsLoading = false;
+      }
+    });
+  }
+
+  /** Cancelar invitación */
+  cancelInvitation(inv: StaffInvitationDto): void {
+    Swal.fire({
+      title: '¿Cancelar invitación?',
+      html: `Se cancelará la invitación de <strong>${inv.firstName} ${inv.lastName}</strong> (${inv.email}).`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'No'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.staffService.cancelInvitation(inv.id).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Cancelada',
+              text: 'La invitación fue cancelada correctamente.',
+              timer: 2000,
+              showConfirmButton: false
+            });
+            this.loadInvitations();
+          },
+          error: (err) => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: err.error?.message || 'No se pudo cancelar la invitación',
+              confirmButtonColor: '#722f37'
+            });
+          }
+        });
+      }
+    });
+  }
+
+  /** Reenviar invitación */
+  resendInvitation(inv: StaffInvitationDto): void {
+    Swal.fire({
+      title: '¿Reenviar invitación?',
+      html: `Se enviará un nuevo correo a <strong>${inv.email}</strong> con un enlace renovado.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#722f37',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, reenviar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.staffService.resendInvitation(inv.id).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            Swal.fire({
+              icon: 'success',
+              title: '¡Reenviada!',
+              text: 'Se generó un nuevo enlace y se envió al correo.',
+              timer: 2500,
+              showConfirmButton: false
+            });
+            this.loadInvitations();
+          },
+          error: (err) => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: err.error?.message || 'No se pudo reenviar la invitación',
+              confirmButtonColor: '#722f37'
+            });
+          }
+        });
+      }
+    });
+  }
+
+  /** ¿La invitación expira pronto? (<6h) */
+  isExpiringSoon(inv: StaffInvitationDto): boolean {
+    if (inv.status !== 'PENDING') return false;
+    const expires = new Date(inv.expiresAt).getTime();
+    const now = Date.now();
+    return expires - now < 6 * 60 * 60 * 1000 && expires > now;
+  }
+
+  /** Obtener nombre legible del rol */
+  getRoleDisplayName(roleName: string): string {
+    const translations: { [key: string]: string } = {
+      'ROLE_SUPER_ADMIN': 'Super Admin',
+      'ROLE_ADMIN': 'Administrador',
+      'ROLE_MODERATOR': 'Moderador',
+      'ROLE_MANAGER': 'Gerente',
+      'ROLE_STAFF': 'Personal',
+      'ROLE_SALES': 'Ventas',
+      'ROLE_INVENTORY': 'Inventario',
+      'ROLE_SUPPORT': 'Soporte'
+    };
+    return translations[roleName] || roleName.replace('ROLE_', '');
+  }
+
+  /** Icono para cada rol */
+  getRoleIcon(roleName: string): string {
+    const icons: { [key: string]: string } = {
+      'ROLE_SUPER_ADMIN': 'shield-fill-check',
+      'ROLE_ADMIN': 'person-badge-fill',
+      'ROLE_MODERATOR': 'flag-fill',
+      'ROLE_MANAGER': 'briefcase-fill',
+      'ROLE_STAFF': 'person-fill',
+      'ROLE_SALES': 'cart-fill',
+      'ROLE_INVENTORY': 'box-seam-fill',
+      'ROLE_SUPPORT': 'headset'
+    };
+    return icons[roleName] || 'star-fill';
+  }
+
+  /** Es superadmin el usuario actual */
+  get isCurrentUserSuperAdmin(): boolean {
+    try {
+      const raw = localStorage.getItem('user');
+      if (!raw) return false;
+      const user = JSON.parse(raw);
+      const roles: any[] = user?.roles ?? [];
+      return roles.some((r: any) => {
+        const name = (typeof r === 'string' ? r : r?.name ?? r?.authority ?? '') as string;
+        return name.toUpperCase().replace('ROLE_', '') === 'SUPER_ADMIN';
+      });
+    } catch { return false; }
   }
 
   /**
@@ -234,13 +564,13 @@ export class AdminStaffComponent implements OnInit {
       text: `¿Estás seguro de que deseas ${action} a ${user.firstName} ${user.lastName}?`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#800020',
+      confirmButtonColor: '#722f37',
       cancelButtonColor: '#6c757d',
       confirmButtonText: `Sí, ${action}`,
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.staffService.enableUser(user.id).subscribe({
+        this.staffService.enableUser(user.id).pipe(takeUntil(this.destroy$)).subscribe({
           next: () => {
             user.enabled = !user.enabled;
             Swal.fire({
@@ -257,7 +587,7 @@ export class AdminStaffComponent implements OnInit {
               icon: 'error',
               title: 'Error',
               text: error?.error?.message || 'No se pudo cambiar el estado del usuario',
-              confirmButtonColor: '#800020'
+              confirmButtonColor: '#722f37'
             });
           }
         });
@@ -276,13 +606,13 @@ export class AdminStaffComponent implements OnInit {
       text: `¿Estás seguro de que deseas ${action} la cuenta de ${user.firstName} ${user.lastName}?`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#800020',
+      confirmButtonColor: '#722f37',
       cancelButtonColor: '#6c757d',
       confirmButtonText: `Sí, ${action}`,
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.staffService.lockAccount(user.id).subscribe({
+        this.staffService.lockAccount(user.id).pipe(takeUntil(this.destroy$)).subscribe({
           next: () => {
             user.accountNonLocked = !user.accountNonLocked;
             Swal.fire({
@@ -299,7 +629,7 @@ export class AdminStaffComponent implements OnInit {
               icon: 'error',
               title: 'Error',
               text: error?.error?.message || 'No se pudo cambiar el estado de bloqueo',
-              confirmButtonColor: '#800020'
+              confirmButtonColor: '#722f37'
             });
           }
         });
@@ -322,7 +652,7 @@ export class AdminStaffComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.staffService.deleteStaff(user.id).subscribe({
+        this.staffService.deleteStaff(user.id).pipe(takeUntil(this.destroy$)).subscribe({
           next: () => {
             this.loadStaff();
             Swal.fire({
@@ -339,7 +669,7 @@ export class AdminStaffComponent implements OnInit {
               icon: 'error',
               title: 'Error',
               text: error.error?.message || 'No se pudo eliminar el usuario',
-              confirmButtonColor: '#800020'
+              confirmButtonColor: '#722f37'
             });
           }
         });
@@ -351,7 +681,7 @@ export class AdminStaffComponent implements OnInit {
    * Resetear intentos fallidos
    */
   resetFailedAttempts(user: StaffUser): void {
-    this.staffService.resetFailedAttempts(user.id).subscribe({
+    this.staffService.resetFailedAttempts(user.id).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         user.failedLoginAttempts = 0;
         Swal.fire({
@@ -368,7 +698,7 @@ export class AdminStaffComponent implements OnInit {
           icon: 'error',
           title: 'Error',
           text: 'No se pudo resetear los intentos fallidos',
-          confirmButtonColor: '#800020'
+          confirmButtonColor: '#722f37'
         });
       }
     });
@@ -383,7 +713,7 @@ export class AdminStaffComponent implements OnInit {
       roleId: this.selectedRoleId || undefined
     };
 
-    this.staffService.exportStaffToCsv(filters).subscribe({
+    this.staffService.exportStaffToCsv(filters).pipe(takeUntil(this.destroy$)).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -398,7 +728,7 @@ export class AdminStaffComponent implements OnInit {
           icon: 'error',
           title: 'Error',
           text: 'No se pudo exportar la lista',
-          confirmButtonColor: '#800020'
+          confirmButtonColor: '#722f37'
         });
       }
     });

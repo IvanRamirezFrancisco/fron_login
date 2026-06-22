@@ -8,6 +8,8 @@ export interface User {
     emailVerified?: boolean;
     twoFactorEnabled: boolean;
     roles: string[];
+    permissions?: string[];
+    isCustomer?: boolean;
     createdAt: string;
     updatedAt: string;
     googleAuthEnabled?: boolean;

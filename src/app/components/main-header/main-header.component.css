@@ -30,7 +30,7 @@
 
 /* Header principal - Sticky completo con navegación secundaria integrada */
 .header-main {
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   color: #F5F5F5;
   padding: 0; /* Sin padding para control total */
   box-shadow: 0 4px 20px rgba(128, 0, 32, 0.4);
@@ -164,7 +164,7 @@
   right: 20px;
   width: 16px;
   height: 16px;
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   transform: rotate(45deg);
   border-radius: 2px 0 0 0;
 }
@@ -185,7 +185,7 @@
   align-items: center;
   gap: 12px;
   padding: 1.25rem;
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   border-radius: 12px 12px 0 0;
 }
 
@@ -258,7 +258,7 @@
 
 .dropdown-item .material-icons {
   font-size: 20px;
-  color: #800020;
+  color: #722f37;
 }
 
 .logout-item {
@@ -268,6 +268,20 @@
 
 .logout-item:hover {
   background: #fee;
+}
+
+/* Admin Panel Link */
+.admin-item {
+  background: linear-gradient(135deg, rgba(114, 47, 55, 0.04) 0%, rgba(197, 160, 89, 0.04) 100%);
+  border-bottom: 1px solid rgba(114, 47, 55, 0.08);
+}
+
+.admin-item .material-icons {
+  color: #C5A059 !important;
+}
+
+.admin-item:hover {
+  background: linear-gradient(135deg, rgba(114, 47, 55, 0.1) 0%, rgba(197, 160, 89, 0.08) 100%);
 }
 
 .logout-item .material-icons {
@@ -663,7 +677,7 @@
 
 .dropdown-item-nav:hover {
   background: rgba(128, 0, 32, 0.03);
-  color: #800020;
+  color: #722f37;
   padding-left: 28px;
   border-left-color: #C5A059;
 }
@@ -674,7 +688,7 @@
 
 .dropdown-item-nav .material-icons {
   font-size: 22px;
-  color: #800020;
+  color: #722f37;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 1;
@@ -826,7 +840,7 @@
 .mobile-nav-header {
   display: none;
   padding: 20px;
-  background: linear-gradient(135deg, #800020 0%, #600015 100%);
+  background: linear-gradient(135deg, #722f37 0%, #600015 100%);
   border-bottom: 2px solid rgba(197, 160, 89, 0.3);
   align-items: center;
   justify-content: space-between;
@@ -1046,7 +1060,7 @@
     width: 85%;
     max-width: 320px;
     height: 100vh;
-    background: linear-gradient(180deg, #800020 0%, #600015 100%);
+    background: linear-gradient(180deg, #722f37 0%, #600015 100%);
     z-index: 1001;
     transition: left 0.3s ease-out;
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);

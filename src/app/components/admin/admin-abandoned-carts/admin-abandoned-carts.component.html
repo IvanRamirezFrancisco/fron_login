@@ -82,8 +82,23 @@
     <p>Cargando carritos abandonados...</p>
   </div>
 
-  <!-- Error Message -->
-  <div *ngIf="error" class="error-message">
+  <!-- FASE 1: Banner de módulo pendiente de backend -->
+  <div *ngIf="error === 'PENDING_BACKEND'" class="pending-backend-banner">
+    <div class="pending-icon">🚧</div>
+    <div class="pending-content">
+      <h3>Módulo en desarrollo</h3>
+      <p>
+        El módulo de carritos abandonados requiere un endpoint de backend que aún no está implementado.<br>
+        <strong>GET /api/admin/carts/abandoned</strong> — pendiente de desarrollo en el servidor.
+      </p>
+      <p class="pending-note">
+        Esta funcionalidad estará disponible cuando el equipo de backend implemente el endpoint correspondiente.
+      </p>
+    </div>
+  </div>
+
+  <!-- Error Message (errores técnicos reales, distintos del pending) -->
+  <div *ngIf="error && error !== 'PENDING_BACKEND'" class="error-message">
     <i class="icon-error"></i>
     {{ error }}
     <button class="btn-close-error" (click)="error = null">✕</button>

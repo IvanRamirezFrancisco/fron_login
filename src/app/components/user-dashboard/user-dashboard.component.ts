@@ -168,7 +168,7 @@ export class UserDashboardComponent implements OnInit {
   }
 
   navigateToOrders() {
-    this.router.navigate(['/orders']);
+    this.router.navigate(['/orders/my']);
   }
 
   navigateToWishlist() {
