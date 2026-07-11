@@ -127,6 +127,8 @@
                   <div class="lh-sm overflow-hidden">
                     <div class="fw-semibold cell-text text-truncate" style="max-width:155px" [title]="getFullName(user)">
                       {{ getFullName(user) }}
+                      <span *ngIf="user.protectedOwner" class="badge bg-danger ms-1" style="font-size: 0.6rem;" title="Propietario del Sistema">Propietario</span>
+                      <span *ngIf="user.currentUser" class="badge bg-secondary ms-1" style="font-size: 0.6rem;" title="Tú">Tú</span>
                     </div>
                     <div class="text-muted cell-sub">ID #{{ user.id }}</div>
                   </div>
@@ -135,9 +137,23 @@
 
               <!-- ②  Email -->
               <td class="text-nowrap">
-                <a [href]="'mailto:' + user.email" class="text-decoration-none text-dark cell-text" [title]="user.email">
-                  {{ user.email }}
-                </a>
+                <ng-container *ngIf="user.displayEmail || user.maskedEmail || user.email; else emailProtegido">
+                  <ng-container *ngIf="(user.displayEmail || user.maskedEmail || user.email).includes('****') || (user.displayEmail || user.maskedEmail || user.email) === 'Correo protegido'; else mailtoLink">
+                    <span class="text-muted fst-italic cell-text" [title]="user.displayEmail || user.maskedEmail || user.email">
+                      {{ user.displayEmail || user.maskedEmail || user.email }}
+                    </span>
+                  </ng-container>
+                  <ng-template #mailtoLink>
+                    <a [href]="'mailto:' + (user.displayEmail || user.maskedEmail || user.email)" 
+                       class="text-decoration-none text-dark cell-text" 
+                       [title]="user.displayEmail || user.maskedEmail || user.email">
+                      {{ user.displayEmail || user.maskedEmail || user.email }}
+                    </a>
+                  </ng-template>
+                </ng-container>
+                <ng-template #emailProtegido>
+                  <span class="text-muted fst-italic">Correo protegido</span>
+                </ng-template>
               </td>
 
               <!-- ③  Roles -->
@@ -153,14 +169,16 @@
               <!-- ④  Estado -->
               <td class="text-center">
                 <div class="d-flex justify-content-center align-items-center gap-1">
-                  <input *ngIf="authService.hasPermission('USER_UPDATE')"
-                    class="form-check-input staff-switch m-0"
-                    type="checkbox"
-                    role="switch"
-                    [id]="'sw-' + user.id"
-                    [checked]="user.enabled"
-                    (click)="$event.preventDefault(); toggleEnabled(user)"
-                    [title]="user.enabled ? 'Activo – click para desactivar' : 'Inactivo – click para activar'">
+                  <!-- Solo mostrar si tiene permiso de actualización y no es el currentUser ni un Owner protegido que no somos -->
+                  <ng-container *ngIf="authService.hasPermission('USER_UPDATE') && user.canDisable === true && !user.currentUser && !(user.protectedOwner && !user.currentUser)">
+                    <input class="form-check-input staff-switch m-0"
+                           type="checkbox"
+                           role="switch"
+                           [id]="'sw-' + user.id"
+                           [checked]="user.enabled"
+                           (click)="$event.preventDefault(); toggleEnabled(user)"
+                           [title]="user.enabled ? 'Activo – click para desactivar' : 'Inactivo – click para activar'">
+                  </ng-container>
                   <span class="badge fs-badge"
                         [class.badge-activo]="user.enabled"
                         [class.badge-inactivo]="!user.enabled">
@@ -174,10 +192,10 @@
                 <span class="badge fs-badge d-inline-flex align-items-center gap-1"
                       [class.badge-ok]="user.accountNonLocked"
                       [class.badge-bloqueado]="!user.accountNonLocked"
-                      [class.cursor-pointer]="authService.hasPermission('USER_UPDATE')"
-                      (click)="authService.hasPermission('USER_UPDATE') ? toggleLock(user) : null"
-                      [title]="user.accountNonLocked ? 'Desbloqueada' + (authService.hasPermission('USER_UPDATE') ? ' – click para bloquear' : '') : 'Bloqueada' + (authService.hasPermission('USER_UPDATE') ? ' – click para desbloquear' : '')"
-                      [style.cursor]="authService.hasPermission('USER_UPDATE') ? 'pointer' : 'default'">
+                      [class.cursor-pointer]="authService.hasPermission('USER_UPDATE') && user.canDisable === true && !(user.protectedOwner && !user.currentUser)"
+                      (click)="authService.hasPermission('USER_UPDATE') && user.canDisable === true && !(user.protectedOwner && !user.currentUser) ? toggleLock(user) : null"
+                      [title]="!(user.protectedOwner && !user.currentUser) ? (user.canDisable === false ? 'No modificable por jerarquía' : (user.accountNonLocked ? 'Desbloqueada' + (authService.hasPermission('USER_UPDATE') ? ' – click para bloquear' : '') : 'Bloqueada' + (authService.hasPermission('USER_UPDATE') ? ' – click para desbloquear' : ''))) : 'Protegido'"
+                      [style.cursor]="authService.hasPermission('USER_UPDATE') && user.canDisable === true && !(user.protectedOwner && !user.currentUser) ? 'pointer' : 'default'">
                   <i class="bi" [class.bi-unlock-fill]="user.accountNonLocked" [class.bi-lock-fill]="!user.accountNonLocked"></i>
                   {{ user.accountNonLocked ? 'OK' : 'Bloqueado' }}
                 </span>
@@ -194,31 +212,56 @@
                         [title]="(user.failedLoginAttempts || 0) + ' intentos fallidos'">
                     {{ user.failedLoginAttempts || 0 }}
                   </span>
-                  <button *ngIf="(user.failedLoginAttempts || 0) > 0"
-                          class="btn-reset-link"
-                          (click)="resetFailedAttempts(user)"
-                          title="Resetear intentos">
-                    <i class="bi bi-arrow-counterclockwise"></i>
-                  </button>
+                  <ng-container *ngIf="!(user.protectedOwner && !user.currentUser)">
+                    <button *ngIf="(user.failedLoginAttempts || 0) > 0"
+                            class="btn-reset-link"
+                            (click)="resetFailedAttempts(user)"
+                            title="Resetear intentos">
+                      <i class="bi bi-arrow-counterclockwise"></i>
+                    </button>
+                  </ng-container>
                 </div>
               </td>
 
               <!-- ⑦  Acciones -->
               <td class="text-center">
-                <div class="d-flex justify-content-center gap-1">
-                  <button *ngIf="authService.hasPermission('USER_UPDATE')"
-                          class="accion-btn accion-edit"
-                          (click)="openEditModal(user)"
-                          title="Editar usuario">
-                    <i class="bi bi-pencil-fill"></i>
-                  </button>
-                  <button *ngIf="authService.hasPermission('USER_DELETE')"
-                          class="accion-btn accion-delete"
-                          (click)="deleteUser(user)"
-                          title="Eliminar usuario">
-                    <i class="bi bi-trash-fill"></i>
-                  </button>
-                </div>
+                <!-- Modo Protección: Owner visto por otro admin -->
+                <ng-container *ngIf="user.protectedOwner && !user.currentUser">
+                  <div class="d-flex justify-content-center">
+                    <span class="badge bg-secondary d-flex align-items-center" title="Cuenta protegida por el sistema">
+                      <i class="bi bi-shield-lock-fill me-1"></i> Protegida
+                    </span>
+                  </div>
+                </ng-container>
+                
+                <!-- Acciones normales si no es un Owner protegido visto por otro -->
+                <ng-container *ngIf="!(user.protectedOwner && !user.currentUser)">
+                  <div class="d-flex justify-content-center gap-1">
+                    
+                    <!-- EDITAR (No mostrar si no tiene canEdit) -->
+                    <button *ngIf="authService.hasPermission('USER_UPDATE') && user.canEdit === true"
+                            class="accion-btn accion-edit"
+                            (click)="openEditModal(user)"
+                            title="Editar usuario">
+                      <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <!-- Candado informativo si no puede editar pero tiene permiso de vista -->
+                    <span *ngIf="authService.hasPermission('USER_UPDATE') && user.canEdit === false"
+                          class="accion-btn text-muted" style="cursor: help; opacity: 0.5"
+                          title="Acción restringida por jerarquía de seguridad">
+                      <i class="bi bi-lock-fill"></i>
+                    </span>
+                    
+                    <!-- ELIMINAR (No mostrar si es current user o no puede eliminar) -->
+                    <button *ngIf="authService.hasPermission('USER_DELETE') && user.canDelete === true && !user.currentUser"
+                            class="accion-btn accion-delete"
+                            (click)="deleteUser(user)"
+                            title="Eliminar usuario">
+                      <i class="bi bi-trash-fill"></i>
+                    </button>
+                    
+                  </div>
+                </ng-container>
               </td>
 
             </tr>

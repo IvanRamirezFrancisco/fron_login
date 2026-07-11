@@ -1,13 +1,33 @@
-<div class="modal-header bg-wine text-white">
-  <h5 class="modal-title fw-bold">
-    <i class="bi me-2" [class.bi-person-plus-fill]="!isEditMode" [class.bi-pencil-square]="isEditMode"></i>
-    {{ isEditMode ? 'Editar Usuario del Sistema' : 'Nuevo Usuario del Sistema' }}
-  </h5>
+<div class="modal-header bg-wine text-white align-items-center">
+  <div>
+    <h5 class="modal-title fw-bold mb-1">
+      <i class="bi me-2" [class.bi-person-plus-fill]="!isEditMode" [class.bi-pencil-square]="isEditMode"></i>
+      {{ isEditMode ? 'Editar Usuario' : 'Nuevo Usuario' }}
+    </h5>
+    <small *ngIf="isEditMode" class="text-white-50">Gestiona la información y permisos del usuario.</small>
+  </div>
+  
+  <div class="ms-auto me-3 d-flex gap-1" *ngIf="isEditMode && user">
+    <span *ngIf="user.currentUser" class="badge bg-secondary">Tú</span>
+    <span *ngIf="user.protectedOwner" class="badge bg-danger">Propietario técnico</span>
+    <span *ngIf="isProtectedViewOnly" class="badge bg-dark"><i class="bi bi-eye-fill me-1"></i>Solo lectura</span>
+  </div>
+  
   <button type="button" class="btn-close btn-close-white" (click)="onClose()" aria-label="Close"></button>
 </div>
 
 <form [formGroup]="staffForm" (ngSubmit)="onSubmit()">
-  <div class="modal-body">
+  <div class="modal-body" style="max-height: calc(90vh - 130px); overflow-y: auto; overflow-x: hidden;">
+    
+    <!-- Aviso Cuenta Protegida (Modo solo lectura) -->
+    <div *ngIf="isProtectedViewOnly" class="alert alert-dark d-flex align-items-center mb-4">
+      <i class="bi bi-shield-lock-fill fs-4 me-3"></i>
+      <div>
+        <strong>Cuenta protegida por el sistema.</strong><br>
+        <small>No tienes los permisos necesarios para modificar este usuario.</small>
+      </div>
+    </div>
+
     <!-- Mensaje de error general -->
     <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
       <i class="bi bi-exclamation-triangle-fill me-2"></i>
@@ -34,6 +54,7 @@
             [class]="getValidationClass('firstName')"
             id="firstName" 
             formControlName="firstName"
+            [readOnly]="isCompletelyReadOnly"
             placeholder="Juan">
           <div class="invalid-feedback">
             {{ getErrorMessage('firstName') }}
@@ -51,6 +72,7 @@
             [class]="getValidationClass('lastName')"
             id="lastName" 
             formControlName="lastName"
+            [readOnly]="isCompletelyReadOnly"
             placeholder="Pérez">
           <div class="invalid-feedback">
             {{ getErrorMessage('lastName') }}
@@ -78,7 +100,7 @@
           <div *ngIf="staffForm.get('email')?.invalid && staffForm.get('email')?.touched" class="invalid-feedback d-block">
             {{ getErrorMessage('email') }}
           </div>
-          <small *ngIf="isEditMode" class="text-muted">
+          <small *ngIf="isEditMode && !isCompletelyReadOnly" class="text-muted">
             <i class="bi bi-info-circle me-1"></i>
             El correo no se puede modificar después de crear el usuario
           </small>
@@ -152,81 +174,82 @@
       </div>
     </div>
 
-    <!-- Asignación de Roles -->
-    <div class="form-section">
+    <!-- Asignación de Roles (Oculto en Solo Lectura) -->
+    <div class="form-section" *ngIf="!isProtectedViewOnly">
       <h6 class="section-title text-wine mb-3 mt-4">
         <i class="bi bi-shield-check me-2"></i>
-        Asignación de Roles y Permisos
+        Roles y Permisos
       </h6>
       
-      <div class="alert alert-info d-flex align-items-start mb-3">
-        <i class="bi bi-info-circle-fill me-2 mt-1"></i>
-        <small>
-          Selecciona uno o más roles para el usuario. Cada rol otorga diferentes permisos y capacidades en el sistema.
-        </small>
-      </div>
-
       <!-- Aviso auto-edición -->
-      <div *ngIf="isEditingSelf" class="alert alert-warning d-flex align-items-start mb-3">
-        <i class="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
-        <small>
-          <strong>No puedes modificar tus propios roles.</strong> La asignación de roles está deshabilitada para tu propio usuario por seguridad.
-        </small>
+      <div *ngIf="rolesDisabled" class="alert alert-warning py-2 px-3 mb-3 d-flex align-items-start" style="font-size: 0.9rem;">
+        <i class="bi bi-shield-lock-fill me-2 mt-1"></i>
+        <div>
+          <strong>Roles protegidos.</strong><br>
+          <small>{{ rolesDisabledReason }}</small>
+        </div>
       </div>
 
-      <div class="roles-selection-container" [class.roles-disabled]="isEditingSelf">
-        <div 
-          *ngFor="let role of filteredRoles" 
-          class="role-card"
-          [class.selected]="isRoleSelected(role.id)"
-          [class.role-card--locked]="isEditingSelf || (role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin)"
-          (click)="!isEditingSelf && (role.name !== 'ROLE_SUPER_ADMIN' || isCurrentUserSuperAdmin) ? toggleRole(role.id) : null">
-          
-          <!-- Checkbox y contenido -->
-          <div class="role-card-inner">
-            <div class="form-check">
-              <input 
-                class="form-check-input" 
-                type="checkbox" 
-                [id]="'role-' + role.id"
-                [checked]="isRoleSelected(role.id)"
-                [disabled]="isEditingSelf || (role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin)"
-                (click)="$event.stopPropagation()">
-            </div>
-            
-            <div class="role-content flex-grow-1">
-              <!-- Header con icono y nombre -->
-              <div class="role-header">
-                <div class="role-icon">
+      <!-- Vista compacta si son roles propios o no se puede editar roles (Chips) -->
+      <div *ngIf="rolesDisabled && isEditMode" class="roles-chips-container mt-2">
+        <h6 class="small text-muted fw-bold mb-2">Roles actuales:</h6>
+        <div class="d-flex flex-wrap gap-2">
+          <span *ngFor="let role of user?.rolesDetail || user?.roles" 
+                class="badge border text-dark bg-light p-2 d-flex align-items-center gap-2"
+                style="font-size: 0.85rem">
+            <i class="bi" [class]="'bi-' + getRoleIcon(role.name)"></i>
+            {{ translateRole(role.name) }}
+            <i class="bi bi-lock-fill text-muted ms-1" title="Rol protegido"></i>
+          </span>
+          <span *ngIf="!(user?.rolesDetail?.length || user?.roles?.length)" class="text-muted small fst-italic">Sin roles asignados</span>
+        </div>
+      </div>
+
+      <!-- Selector interactivo si se puede editar -->
+      <div *ngIf="!rolesDisabled" class="mt-3">
+        <div class="roles-grid" *ngIf="filteredRoles.length > 0">
+          <div *ngFor="let role of filteredRoles"
+               class="role-card-modern"
+               [class.selected]="isRoleSelected(role.id)"
+               [class.locked]="role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin"
+               (click)="role.name !== 'ROLE_SUPER_ADMIN' || isCurrentUserSuperAdmin ? toggleRole(role.id) : null"
+               [attr.aria-label]="'Seleccionar rol ' + translateRole(role.name)"
+               role="button"
+               tabindex="0"
+               (keydown.enter)="role.name !== 'ROLE_SUPER_ADMIN' || isCurrentUserSuperAdmin ? toggleRole(role.id) : null">
+               
+            <div class="role-card-modern-header">
+              <!-- Checkbox visual en círculo -->
+              <div class="role-checkbox-custom" [class.checked]="isRoleSelected(role.id)">
+                <i class="bi" [class.bi-check-lg]="isRoleSelected(role.id)"></i>
+              </div>
+              
+              <div class="d-flex align-items-center gap-2 flex-grow-1 min-w-0">
+                <div class="role-icon-small">
                   <i class="bi" [class]="'bi-' + getRoleIcon(role.name)"></i>
                 </div>
-                <div class="role-info">
-                  <div class="role-name">{{ translateRole(role.name) }}</div>
-                </div>
-                <!-- Candado para SUPER_ADMIN si no eres SUPER_ADMIN -->
-                <span
-                  *ngIf="role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin"
-                  class="badge bg-secondary ms-auto"
-                  title="Solo un Super Administrador puede asignar este rol">
-                  <i class="bi bi-lock-fill me-1"></i>Restringido
-                </span>
-              </div>
-              
-              <!-- Descripción de permisos -->
-              <div class="role-description mt-2">
-                <div class="d-flex align-items-start">
-                  <i class="bi bi-info-circle text-wine me-2 mt-1"></i>
-                  <small class="text-muted">{{ getRoleDescription(role.name) }}</small>
+                <div class="role-title-wrapper text-truncate">
+                  <div class="role-title text-truncate" [title]="translateRole(role.name)">
+                    {{ translateRole(role.name) }}
+                  </div>
                 </div>
               </div>
-              
-              <!-- Badge de cantidad de permisos -->
-              <div class="role-footer mt-2">
-                <span class="badge bg-gold-subtle text-dark">
-                  <i class="bi bi-key-fill me-1"></i>
-                  {{ (role.permissions && role.permissions.length) || 0 }} permisos
-                </span>
+
+              <!-- Badges a la derecha -->
+              <div class="role-badges flex-shrink-0">
+                <span *ngIf="role.name === 'ROLE_SUPER_ADMIN' || role.name === 'ROLE_ADMIN'" 
+                      class="badge-system">Sistema</span>
               </div>
+            </div>
+            
+            <div class="role-card-modern-body">
+              <p class="role-desc" [title]="getRoleDescription(role.name)">
+                {{ getRoleDescription(role.name) }}
+              </p>
+            </div>
+
+            <div *ngIf="role.name === 'ROLE_SUPER_ADMIN' && !isCurrentUserSuperAdmin" class="role-card-modern-locked">
+              <i class="bi bi-lock-fill me-1"></i> No modificable
             </div>
           </div>
         </div>
@@ -234,12 +257,12 @@
         <!-- Mensaje si no hay roles -->
         <div *ngIf="filteredRoles.length === 0" class="text-center py-4">
           <i class="bi bi-inbox display-4 text-muted"></i>
-          <p class="text-muted mt-2">No hay roles disponibles</p>
+          <p class="text-muted mt-2">No hay roles disponibles para asignar</p>
         </div>
       </div>
       
-      <!-- Advertencia si no se selecciona ningún rol -->
-      <div *ngIf="selectedRoleIds.length === 0 && staffForm.touched" class="alert alert-warning mt-3">
+      <!-- Advertencia si no se selecciona ningún rol (y si se puede editar) -->
+      <div *ngIf="!rolesDisabled && selectedRoleIds.length === 0 && staffForm.touched" class="alert alert-warning mt-3 py-2 px-3">
         <i class="bi bi-exclamation-triangle me-2"></i>
         Debes seleccionar al menos un rol para el usuario
       </div>
@@ -247,20 +270,33 @@
   </div>
 
   <!-- Footer del modal -->
-  <div class="modal-footer bg-light">
-    <button type="button" class="btn btn-outline-secondary" (click)="onClose()" [disabled]="loading">
-      <i class="bi bi-x-lg me-2"></i>
-      Cancelar
-    </button>
-    <button type="submit" class="btn btn-wine" [disabled]="loading || staffForm.invalid || selectedRoleIds.length === 0">
-      <span *ngIf="!loading">
-        <i class="bi me-2" [class.bi-save]="isEditMode" [class.bi-plus-lg]="!isEditMode"></i>
-        {{ isEditMode ? 'Actualizar Usuario' : 'Crear Usuario' }}
-      </span>
-      <span *ngIf="loading">
-        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-        Guardando...
-      </span>
-    </button>
+  <div class="modal-footer bg-light" style="position: sticky; bottom: 0; z-index: 10;">
+    
+    <!-- Botón Cerrar (si es read-only total) -->
+    <ng-container *ngIf="isCompletelyReadOnly">
+      <button type="button" class="btn btn-secondary" (click)="onClose()">
+        <i class="bi bi-x-lg me-2"></i>Cerrar
+      </button>
+    </ng-container>
+
+    <!-- Botones Normales (Si hay campos editables) -->
+    <ng-container *ngIf="!isCompletelyReadOnly">
+      <button type="button" class="btn btn-outline-secondary" (click)="onClose()" [disabled]="loading">
+        <i class="bi bi-x-lg me-1"></i>Cancelar
+      </button>
+      
+      <button type="submit" class="btn btn-wine" 
+              [disabled]="loading || staffForm.invalid || (!rolesDisabled && selectedRoleIds.length === 0) || !hasChanges()">
+        <span *ngIf="!loading">
+          <i class="bi me-2" [class.bi-save]="isEditMode" [class.bi-plus-lg]="!isEditMode"></i>
+          {{ isEditMode ? 'Guardar cambios' : 'Crear Usuario' }}
+        </span>
+        <span *ngIf="loading">
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          Guardando...
+        </span>
+      </button>
+    </ng-container>
+
   </div>
 </form>

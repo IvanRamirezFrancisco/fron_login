@@ -7,7 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 import { StaffService } from '../../../services/staff.service';
 import { RoleService } from '../../../services/role.service';
 import { AuthService } from '../../../services/auth.service';
-import { StaffUser, Role, StaffFilters, PageResponse, StaffInvitationDto, CreateStaffInvitationRequest } from '../../../models/staff.model';
+import { StaffUser, StaffFilters, PageResponse, Role, AssignableRole, StaffInvitationDto, CreateStaffInvitationRequest } from '../../../models/staff.model';
 import Swal from 'sweetalert2';
 import { StaffFormModalComponent } from './staff-form-modal.component';
 
@@ -32,11 +32,11 @@ export class AdminStaffComponent implements OnInit, OnDestroy {
     this._staffList = value || [];
   }
   
-  private _roles: Role[] = [];
-  get roles(): Role[] {
+  private _roles: AssignableRole[] = [];
+  get roles(): AssignableRole[] {
     return this._roles || [];
   }
-  set roles(value: Role[]) {
+  set roles(value: AssignableRole[]) {
     this._roles = value || [];
   }
   
@@ -81,7 +81,7 @@ export class AdminStaffComponent implements OnInit, OnDestroy {
   private emailCheckTimeout: any = null;
   
   // Roles filtrados (sin ROLE_USER)
-  get filteredRoles(): Role[] {
+  get filteredRoles(): AssignableRole[] {
     return this.roles.filter(r => r.name && r.name !== 'ROLE_USER');
   }
 
@@ -180,20 +180,20 @@ export class AdminStaffComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Carga todos los roles disponibles
+   * Carga los roles que el usuario actual puede asignar
    */
   loadRoles(): void {
-    this.roleService.getAllRoles().pipe(takeUntil(this.destroy$)).subscribe({
+    this.staffService.getAssignableRoles().pipe(takeUntil(this.destroy$)).subscribe({
       next: (roles) => {
         this.roles = roles || [];
       },
       error: (error) => {
-        console.error('Error al cargar roles:', error);
+        console.error('Error al cargar roles asignables:', error);
         this.roles = []; // Asegurar que siempre sea un array
         Swal.fire({
           icon: 'warning',
           title: 'Advertencia',
-          text: 'No se pudieron cargar los roles disponibles'
+          text: 'No se pudieron cargar los roles asignables'
         });
       }
     });
@@ -478,6 +478,34 @@ export class AdminStaffComponent implements OnInit, OnDestroy {
 
   /** Obtener nombre legible del rol */
   getRoleDisplayName(roleName: string): string {
+    let isStoreManager = false;
+    try {
+      const raw = localStorage.getItem('user');
+      if (raw) {
+        const user = JSON.parse(raw);
+        const roles: any[] = user?.roles ?? [];
+        isStoreManager = roles.some((r: any) => {
+          const name = (typeof r === 'string' ? r : r?.name ?? r?.authority ?? '') as string;
+          return name.toUpperCase() === 'ROLE_STORE_MANAGER';
+        });
+      }
+    } catch {}
+
+    if (isStoreManager) {
+      const storeTranslations: { [key: string]: string } = {
+        'ROLE_STORE_STAFF': 'Personal de tienda',
+        'ROLE_CATALOG_MANAGER': 'Encargado de catálogo',
+        'ROLE_ORDER_MANAGER': 'Encargado de pedidos',
+        'ROLE_PAYMENT_ASSISTANT': 'Auxiliar de pagos',
+        'ROLE_STORE_MANAGER': 'Gerente de tienda'
+      };
+      
+      if (storeTranslations[roleName]) {
+        return storeTranslations[roleName];
+      }
+      return 'Rol no disponible';
+    }
+
     const translations: { [key: string]: string } = {
       'ROLE_SUPER_ADMIN': 'Super Admin',
       'ROLE_ADMIN': 'Administrador',
@@ -486,7 +514,12 @@ export class AdminStaffComponent implements OnInit, OnDestroy {
       'ROLE_STAFF': 'Personal',
       'ROLE_SALES': 'Ventas',
       'ROLE_INVENTORY': 'Inventario',
-      'ROLE_SUPPORT': 'Soporte'
+      'ROLE_SUPPORT': 'Soporte',
+      'ROLE_STORE_STAFF': 'Personal de tienda',
+      'ROLE_CATALOG_MANAGER': 'Encargado de catálogo',
+      'ROLE_ORDER_MANAGER': 'Encargado de pedidos',
+      'ROLE_PAYMENT_ASSISTANT': 'Auxiliar de pagos',
+      'ROLE_STORE_MANAGER': 'Gerente de tienda'
     };
     return translations[roleName] || roleName.replace('ROLE_', '');
   }
@@ -524,9 +557,26 @@ export class AdminStaffComponent implements OnInit, OnDestroy {
    * Abrir modal para editar usuario
    */
   openEditModal(user: StaffUser): void {
-    this.isEditMode = true;
-    this.selectedUser = { ...user };
-    this.showModal = true;
+    // Show a loading overlay or just use the card loading state
+    this.loading = true;
+    this.staffService.getStaffById(user.id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (fullUser) => {
+        this.loading = false;
+        this.isEditMode = true;
+        this.selectedUser = fullUser;
+        this.showModal = true;
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Error fetching full user details:', err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo cargar la información del usuario.',
+          confirmButtonColor: '#722f37'
+        });
+      }
+    });
   }
 
   /**

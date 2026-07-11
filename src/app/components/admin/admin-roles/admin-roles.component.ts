@@ -7,6 +7,7 @@ import { RoleService } from '../../../services/role.service';
 import { AuthService } from '../../../services/auth.service';
 import { Role, Permission, PermissionsByCategory, RoleUserDTO, PageResponse } from '../../../models/staff.model';
 import { User } from '../../../models/user.model';
+import { SecurityConfirmationService } from '../../../services/security-confirmation.service';
 
 declare const Swal: any;
 
@@ -60,7 +61,8 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
     private roleService: RoleService,
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private securityConfirmation: SecurityConfirmationService
   ) {}
 
   ngOnInit(): void {
@@ -250,8 +252,29 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
     return count > 0 && count < perms.length;
   }
 
-  savePermissions(): void {
+  async savePermissions(): Promise<void> {
     if (!this.selectedRole || this.permissionsModalReadOnly) return;
+
+    // --- Validación de Seguridad Extra para PROTECTED_OWNER ---
+    const originalPermIds = this.selectedRole.permissions?.map(p => p.id) ?? [];
+    const changes = this.securityConfirmation.detectCriticalPermissionChanges(
+      originalPermIds,
+      this.selectedPermissions,
+      this.allPermissions
+    );
+
+    if (changes.isCritical) {
+      const roleAffected = {
+        name: this.selectedRole.name,
+        description: this.selectedRole.description
+      };
+      const confirmed = await this.securityConfirmation.confirmCriticalPermissionAction(roleAffected, changes);
+      if (!confirmed) {
+        return; // Detener guardado si se cancela
+      }
+    }
+    // ------------------------------------------------------------
+
     this.savingPermissions = true;
     this.roleService.updateRolePermissions(
       this.selectedRole.id,
@@ -312,7 +335,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
     });
   }
 
-  saveRole(): void {
+  async saveRole(): Promise<void> {
     let rawName = this.roleFormData.name.trim().toUpperCase();
     if (!rawName) {
       Swal.fire({
@@ -348,6 +371,25 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
       });
       return;
     }
+
+    // --- Validación de Seguridad Extra para PROTECTED_OWNER ---
+    const changes = this.securityConfirmation.detectCriticalPermissionChanges(
+      [], // originales vacío porque es un rol nuevo
+      this.selectedPermissions,
+      this.allPermissions
+    );
+
+    if (changes.isCritical) {
+      const roleAffected = {
+        name: rawName,
+        description: this.roleFormData.description.trim()
+      };
+      const confirmed = await this.securityConfirmation.confirmCriticalPermissionAction(roleAffected, changes);
+      if (!confirmed) {
+        return; // Detener guardado si se cancela
+      }
+    }
+    // ------------------------------------------------------------
 
     this.savingRole = true;
     this.roleService.createRole({

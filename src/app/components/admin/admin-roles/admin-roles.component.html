@@ -1,4 +1,4 @@
-﻿<!-- ================================================================
+<!-- ================================================================
      GESTIÓN DE ROLES Y PERMISOS
      Accesible solo para SUPER_ADMIN (protegido por SuperAdminGuard)
      ================================================================ -->
@@ -356,6 +356,8 @@
                   <span class="create-perm-name">{{ translatePermission(perm.name) }}</span>
                   <span class="create-perm-desc">{{ perm.description }}</span>
                   <div class="create-perm-tags">
+                    <span *ngIf="perm.ownerOnly" class="tag-owner-only" title="Solo el Protected Owner puede asignar esto">Owner Only</span>
+                    <span *ngIf="perm.critical" class="tag-critical" title="Permiso de alto impacto">Crítico</span>
                     <span class="tag-action" [ngClass]="getActionClass(perm.name)">{{ getPermissionAction(perm.name) }}</span>
                     <span class="tag-technical">{{ perm.name }}</span>
                   </div>
@@ -481,6 +483,8 @@
                   <span class="perm-name">{{ translatePermission(perm.name) }}</span>
                   <span class="perm-desc">{{ perm.description }}</span>
                   <div class="perm-tags">
+                    <span *ngIf="perm.ownerOnly" class="tag-owner-only" title="Solo el Protected Owner puede asignar esto">Owner Only</span>
+                    <span *ngIf="perm.critical" class="tag-critical" title="Permiso de alto impacto">Crítico</span>
                     <span class="tag-action" [ngClass]="getActionClass(perm.name)">{{ getPermissionAction(perm.name) }}</span>
                     <span class="tag-technical">{{ perm.name }}</span>
                   </div>

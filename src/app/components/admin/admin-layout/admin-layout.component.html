@@ -15,7 +15,7 @@
     <!-- Navigation Menu -->
     <nav class="sidebar-nav">
       <a 
-        *ngFor="let item of menuItems" 
+        *ngFor="let item of visibleMenuItems; trackBy: trackByMenuItem" 
         [routerLink]="item.route"
         class="nav-item"
         [class.active]="isActive(item.route)"

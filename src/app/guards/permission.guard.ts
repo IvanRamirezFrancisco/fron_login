@@ -35,7 +35,7 @@ export class PermissionGuard implements CanActivate {
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot, _state: RouterStateSnapshot): boolean {
-    const requiredPermission: string | undefined = route.data?.['requiredPermission'];
+    const requiredPermission: string | string[] | undefined = route.data?.['requiredPermission'];
 
     // Si la ruta no requiere permiso específico, permitir acceso
     if (!requiredPermission) {
@@ -43,8 +43,14 @@ export class PermissionGuard implements CanActivate {
     }
 
     // Verificar si el usuario tiene el permiso requerido
-    if (this.authService.hasPermission(requiredPermission)) {
-      return true;
+    if (Array.isArray(requiredPermission)) {
+      if (this.authService.hasAnyPermission(requiredPermission)) {
+        return true;
+      }
+    } else {
+      if (this.authService.hasPermission(requiredPermission)) {
+        return true;
+      }
     }
 
     // No tiene permiso: navegar al primer módulo accesible

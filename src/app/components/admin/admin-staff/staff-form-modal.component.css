@@ -183,149 +183,159 @@ app-staff-form-modal .alert-info    { background-color: #e7f3ff; border-left-col
 app-staff-form-modal .alert-warning { background-color: #fff8e1; border-left-color: #ffc107; color: #664d03; }
 app-staff-form-modal .alert-danger  { background-color: #fdf2f2; border-left-color: #dc3545; color: #842029; }
 
-/* ---------- Contenedor de roles ---------- */
-app-staff-form-modal .roles-selection-container {
-  max-height: 300px;
-  overflow-y: auto;
+/* ---------- Contenedor de roles (Nuevo Grid) ---------- */
+app-staff-form-modal .roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
   padding-right: 4px;
 }
 
-app-staff-form-modal .roles-selection-container::-webkit-scrollbar        { width: 8px; }
-app-staff-form-modal .roles-selection-container::-webkit-scrollbar-track  { background: #f1f1f1; border-radius: 8px; }
-app-staff-form-modal .roles-selection-container::-webkit-scrollbar-thumb  {
-  background: linear-gradient(180deg, #722f37, #600018);
-  border-radius: 8px;
-  border: 2px solid #f1f1f1;
-}
-
-/* ---------- Tarjetas de rol ---------- */
-app-staff-form-modal .role-card {
+/* ---------- Tarjetas de rol modernas ---------- */
+app-staff-form-modal .role-card-modern {
   background: #ffffff;
-  border: 2px solid #e8ecef;
-  border-radius: 12px;
-  padding: 1.1rem 1.25rem;
-  margin-bottom: 0.85rem;
+  border: 1px solid #e8ecef;
+  border-radius: 10px;
+  padding: 1rem;
   cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  outline: none;
 }
 
-app-staff-form-modal .role-card:last-child { margin-bottom: 0; }
+app-staff-form-modal .role-card-modern:focus-visible {
+  box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.2);
+  border-color: #722f37;
+}
 
-app-staff-form-modal .role-card:hover {
+app-staff-form-modal .role-card-modern:hover:not(.locked) {
   border-color: #722f37;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(128, 0, 32, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-app-staff-form-modal .role-card.selected {
+app-staff-form-modal .role-card-modern.selected {
   border: 2px solid #722f37;
-  background: linear-gradient(135deg, rgba(128, 0, 32, 0.04), rgba(212, 163, 71, 0.06));
-  box-shadow: 0 6px 20px rgba(128, 0, 32, 0.18);
-  transform: translateY(-2px);
+  background-color: rgba(114, 47, 55, 0.02);
+  box-shadow: 0 4px 12px rgba(114, 47, 55, 0.1);
+  padding: calc(1rem - 1px); /* Ajuste por el borde de 2px */
 }
 
-/* Tarjeta bloqueada � ROLE_SUPER_ADMIN para no-super-admins */
-app-staff-form-modal .role-card.role-card--locked {
-  opacity: 0.55;
+/* Tarjeta bloqueada */
+app-staff-form-modal .role-card-modern.locked {
+  opacity: 0.6;
   cursor: not-allowed;
   pointer-events: none;
-  background: #f9f9f9;
-  border-color: #d1d5db;
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
 }
 
-app-staff-form-modal .roles-disabled {
-  position: relative;
-  pointer-events: none;
-}
-
-app-staff-form-modal .roles-disabled::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  z-index: 1;
-}
-
-app-staff-form-modal .role-card.role-card--locked:hover {
-  transform: none;
-  box-shadow: none;
-  border-color: #d1d5db;
-}
-
-app-staff-form-modal .role-card-inner {
+/* Header de la tarjeta */
+app-staff-form-modal .role-card-modern-header {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
-app-staff-form-modal .form-check { margin: 0; padding: 0; }
-
-app-staff-form-modal .form-check-input {
-  width: 1.4rem;
-  height: 1.4rem;
-  margin-top: 0.2rem;
-  border: 2px solid #ccc;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-app-staff-form-modal .form-check-input:checked { background-color: #722f37; border-color: #722f37; }
-app-staff-form-modal .form-check-input:focus   { box-shadow: 0 0 0 0.2rem rgba(128, 0, 32, 0.15); }
-
-/* ---------- �cono de rol ---------- */
-app-staff-form-modal .role-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #722f37, #600018);
+/* Checkbox personalizado */
+app-staff-form-modal .role-checkbox-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #adb5bd;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  font-size: 1.5rem;
+  transition: all 0.2s ease;
   flex-shrink: 0;
-  transition: all 0.25s ease;
-  box-shadow: 0 3px 8px rgba(128, 0, 32, 0.2);
+  background-color: #fff;
+  color: transparent;
+  font-size: 0.8rem;
 }
 
-app-staff-form-modal .role-card.selected .role-icon {
-  background: linear-gradient(135deg, #D4A347, #b8903d);
-  box-shadow: 0 4px 12px rgba(212, 163, 71, 0.35);
+app-staff-form-modal .role-checkbox-custom.checked {
+  background-color: #722f37;
+  border-color: #722f37;
+  color: #fff;
 }
 
-app-staff-form-modal .role-content  { flex: 1; min-width: 0; }
+app-staff-form-modal .role-checkbox-custom i {
+  margin-top: 1px;
+}
 
-app-staff-form-modal .role-header {
+/* Icono del rol */
+app-staff-form-modal .role-icon-small {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(114, 47, 55, 0.1);
+  color: #722f37;
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  margin-bottom: 0.6rem;
+  justify-content: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
 }
 
-app-staff-form-modal .role-info { flex: 1; min-width: 0; }
+app-staff-form-modal .role-card-modern.selected .role-icon-small {
+  background: #722f37;
+  color: #fff;
+}
 
-app-staff-form-modal .role-name {
-  font-size: 1rem;
+/* Título */
+app-staff-form-modal .role-title-wrapper {
+  flex-grow: 1;
+}
+
+app-staff-form-modal .role-title {
+  font-size: 0.95rem;
   font-weight: 700;
+  color: #333;
+  line-height: 1.2;
+}
+
+/* Badges */
+app-staff-form-modal .badge-system {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  background-color: rgba(114, 47, 55, 0.1);
   color: #722f37;
-  line-height: 1.3;
+  border: 1px solid rgba(114, 47, 55, 0.2);
 }
 
-app-staff-form-modal .role-description {
-  background: #f8f9fa;
-  padding: 0.6rem 0.85rem;
-  border-radius: 8px;
-  border-left: 3px solid #D4A347;
+/* Cuerpo / Descripción */
+app-staff-form-modal .role-card-modern-body {
+  padding-left: calc(20px + 0.75rem); /* Alineado con el ícono, dejando espacio del checkbox */
 }
 
-app-staff-form-modal .role-description small { color: #555; font-size: 0.83rem; line-height: 1.5; }
+app-staff-form-modal .role-desc {
+  font-size: 0.82rem;
+  color: #6c757d;
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
-app-staff-form-modal .role-footer {
-  display: flex;
-  justify-content: flex-end;
+/* Mensaje de bloqueado */
+app-staff-form-modal .role-card-modern-locked {
   margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #6c757d;
+  padding-left: calc(20px + 0.75rem);
+  font-weight: 600;
 }
 
 /* ---------- Utilidades ---------- */

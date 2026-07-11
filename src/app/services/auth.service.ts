@@ -446,14 +446,8 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
     // SUPER_ADMIN tiene acceso total
     if (allAuthorities.includes('ROLE_SUPER_ADMIN')) return true;
 
-    // ROLE_ADMIN tiene acceso a todos excepto los módulos exclusivos de SUPER_ADMIN
-    const superAdminOnly = [
-      'DATABASE_BACKUP', 'DATABASE_MAINTAIN', 'DATABASE_AUTOMATE', 'DATABASE_VIEW'
-    ];
-    if (allAuthorities.includes('ROLE_ADMIN') && !superAdminOnly.includes(permission)) {
-      return true;
-    }
-
+    // Removemos el bypass implícito de ROLE_ADMIN. 
+    // Ahora debe tener el permiso explícitamente asignado.
     return allAuthorities.includes(permission);
   }
 
@@ -462,6 +456,24 @@ login(credentials: LoginRequest): Observable<AuthResponse> {
    */
   hasAnyPermission(permissions: string[]): boolean {
     return permissions.some(p => this.hasPermission(p));
+  }
+
+  isProtectedOwner(): boolean {
+    const user = this.getCurrentUserSnapshot();
+    return !!user?.protectedOwner;
+  }
+
+  canAccessOwnerFeatures(): boolean {
+    return this.isProtectedOwner() && this.getRolesAndPermissions().includes('ROLE_SUPER_ADMIN');
+  }
+
+  isStoreManager(): boolean {
+    return this.getRolesAndPermissions().includes('ROLE_STORE_MANAGER');
+  }
+
+  isTechnicalAdmin(): boolean {
+    const authorities = this.getRolesAndPermissions();
+    return authorities.includes('ROLE_SUPER_ADMIN') || authorities.includes('ROLE_ADMIN');
   }
 
   /**

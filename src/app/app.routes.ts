@@ -206,7 +206,7 @@ export const routes: Routes = [
       {
         path: 'staff',
         component: AdminStaffComponent,
-        canActivate: [PermissionGuard],
+        canActivate: [AdminGuard, PermissionGuard],
         data: { requiredPermission: 'USER_READ' }
       },
       {
@@ -238,7 +238,7 @@ export const routes: Routes = [
         path: 'payment-settings',
         component: AdminPaymentSettingsComponent,
         canActivate: [PermissionGuard],
-        data: { requiredPermission: 'SYSTEM_SETTINGS' }
+        data: { requiredPermission: ['SYSTEM_SETTINGS', 'BANK_TRANSFER_SETTINGS_READ', 'BANK_TRANSFER_SETTINGS_UPDATE', 'PAYMENT_SETTINGS_READ', 'PAYMENT_SETTINGS_UPDATE'] }
       }
     ]
   },

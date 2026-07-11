@@ -16,6 +16,7 @@ export interface User {
     smsEnabled?: boolean;
     emailEnabled?: boolean; // <-- Para Email 2FA
     backupCodesEnabled?: boolean; // <-- Para Backup Codes
+    protectedOwner?: boolean; // <-- Flag de jerarquia
   }
   
   export interface RegisterRequest {

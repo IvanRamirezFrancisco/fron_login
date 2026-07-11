@@ -54,6 +54,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   isSidebarCollapsed = false;
   isScrolled = false;
   currentUser: User | null = null;
+  public visibleMenuItems: MenuItem[] = [];
   activeRoute = '';
   private destroy$ = new Subject<void>();
 
@@ -162,9 +163,9 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     { title: 'Categorías',   icon: 'category',             route: '/admin/categories',      badge: null, requiredPermission: 'CATEGORY_MANAGE' },
     { title: 'Órdenes',      icon: 'shopping_bag',         route: '/admin/orders',          badge: null, requiredPermission: 'ORDER_READ'      },
     { title: 'Clientes',     icon: 'people',               route: '/admin/customers',       badge: null, requiredPermission: 'CUSTOMER_READ'   },
-    { title: 'Empleados',    icon: 'admin_panel_settings', route: '/admin/staff',           badge: null, requiredPermission: 'USER_READ'       },
+    { title: 'Empleados', icon: 'admin_panel_settings', route: '/admin/staff',     badge: null, requiredPermission: 'USER_READ'       },
     { title: 'Roles',        icon: 'security',             route: '/admin/roles',           badge: null, requiredPermission: 'ROLE_READ'       },
-    { title: 'Pagos',        icon: 'payments',             route: '/admin/payment-settings',badge: null, requiredPermission: 'SYSTEM_SETTINGS' },
+    { title: 'Pagos',        icon: 'payments',             route: '/admin/payment-settings',badge: null, requiredAnyPermission: ['SYSTEM_SETTINGS', 'BANK_TRANSFER_SETTINGS_READ', 'BANK_TRANSFER_SETTINGS_UPDATE', 'PAYMENT_SETTINGS_READ', 'PAYMENT_SETTINGS_UPDATE'] },
     {
       title: 'Gestión DB',
       icon: 'dns',
@@ -176,15 +177,17 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   ];
 
   /**
-   * Ítems filtrados según los permisos granulares del usuario actual.
+   * Construye los ítems filtrados según los permisos granulares del usuario actual.
    * Lógica:
    *  1. Si tiene requiredAnyPermission → visible con al menos uno de ellos.
    *  2. Si tiene requiredPermission → visible solo si tiene ese permiso exacto.
    *  3. Sin restricción → siempre visible.
    * SUPER_ADMIN siempre ve todo (authService.hasPermission lo maneja internamente).
    */
-  get menuItems(): MenuItem[] {
-    return this.ALL_MENU_ITEMS.filter(item => {
+  private buildVisibleMenuItems(): void {
+    const isStoreManager = this.authService.hasRole('ROLE_STORE_MANAGER');
+
+    this.visibleMenuItems = this.ALL_MENU_ITEMS.filter(item => {
       if (item.requiredAnyPermission?.length) {
         return this.authService.hasAnyPermission(item.requiredAnyPermission);
       }
@@ -192,7 +195,16 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         return this.authService.hasPermission(item.requiredPermission);
       }
       return true;
+    }).map(item => {
+      if (item.route === '/admin/payment-settings' && isStoreManager) {
+        return { ...item, title: 'Datos bancarios' };
+      }
+      return item;
     });
+  }
+
+  trackByMenuItem(index: number, item: MenuItem): string {
+    return item.route;
   }
 
   constructor(
@@ -205,6 +217,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.currentUser = user;
+        this.buildVisibleMenuItems();
       });
 
     this.activeRoute = this.router.url;
@@ -278,8 +291,10 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   /** Etiqueta de rol para mostrar en el sidebar */
   get userRoleLabel(): string {
+    if (this.authService.isProtectedOwner()) return 'Owner Prot.';
     if (this.isSuperAdmin()) return 'Super Administrador';
     if (this.isAdmin()) return 'Administrador';
+    if (this.authService.isStoreManager()) return 'Gerente de Tienda';
 
     // Empleados con roles personalizados: mostrar nombre legible del primer rol
     const roles = this.currentUser?.roles ?? [];
@@ -301,7 +316,13 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   get currentModuleHeader(): ModuleHeader {
     const match = this.MODULE_HEADERS.find(item => this.activeRoute.startsWith(item.route));
-    return match ?? {
+    if (match) {
+      if (match.route === '/admin/payment-settings' && this.authService.hasRole('ROLE_STORE_MANAGER')) {
+        return { ...match, title: 'Datos bancarios', subtitle: 'Configura la cuenta para transferencias.' };
+      }
+      return match;
+    }
+    return {
       route: this.activeRoute,
       title: 'Panel de Administración',
       subtitle: '',

@@ -12,7 +12,9 @@ import {
   CreateStaffInvitationRequest,
   StaffInvitationDto,
   InvitationInfoDto,
-  AcceptInvitationRequest
+  AcceptInvitationRequest,
+  Role,
+  AssignableRole
 } from '../models/staff.model';
 
 /** Forma exacta en que el backend devuelve la lista de staff */
@@ -110,15 +112,13 @@ export class StaffService {
     const content: StaffUser[] = rawStaff
       .filter(u => u != null)
       .map(u => ({
-        id:                 u.id,
+        ...u,
         firstName:          u.firstName  ?? '',
         lastName:           u.lastName   ?? '',
         email:              u.email      ?? '',
         enabled:            u.enabled    ?? false,
         accountNonLocked:   u.accountNonLocked ?? true,
         failedLoginAttempts: u.failedLoginAttempts ?? 0,
-        createdAt:          u.createdAt,
-        lastLogin:          u.lastLogin,
         // El backend devuelve roles como string "ROLE_A, ROLE_B" → convertir a Role[]
         roles: this.parseRoles(u.roles)
       } as StaffUser));
@@ -171,6 +171,13 @@ export class StaffService {
    */
   getStaffById(userId: number): Observable<StaffUser> {
     return this.http.get<StaffUser>(`${this.apiUrl}/${userId}`);
+  }
+
+  /**
+   * Obtiene los roles que el usuario actual tiene permitido asignar a nivel técnico
+   */
+  getAssignableRoles(): Observable<AssignableRole[]> {
+    return this.http.get<AssignableRole[]>(`${this.apiUrl}/assignable-roles`);
   }
 
   /**
