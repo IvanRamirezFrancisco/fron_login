@@ -5,7 +5,10 @@ import { environment } from '../../environments/environment';
 import {
   PublicProduct,
   PublicCategory,
-  SpringPage
+  SpringPage,
+  ProductRecommendation,
+  PublicTrendingProduct,
+  ProductTrendStatus
 } from '../models/product.model';
 
 /**
@@ -90,6 +93,23 @@ export class PublicApiService {
     return this.http.get<PublicProduct>(`${this.PRODUCTS}/${id}`);
   }
 
+  /**
+   * GET /api/public/products/trending
+   * Devuelve los productos en tendencia basados en el pronóstico de demanda.
+   */
+  getTrendingProducts(limit = 8): Observable<PublicTrendingProduct[]> {
+    const params = new HttpParams().set('limit', limit);
+    return this.http.get<PublicTrendingProduct[]>(`${this.PRODUCTS}/trending`, { params });
+  }
+
+  /**
+   * GET /api/public/products/{id}/trend-status
+   * Verifica si un producto está en tendencia.
+   */
+  getProductTrendStatus(id: number): Observable<ProductTrendStatus> {
+    return this.http.get<ProductTrendStatus>(`${this.PRODUCTS}/${id}/trend-status`);
+  }
+
   // ── Categorías ──────────────────────────────────────────────────────────────
 
   /**
@@ -101,5 +121,15 @@ export class PublicApiService {
   getActiveCategories(withProducts = false): Observable<PublicCategory[]> {
     const params = new HttpParams().set('withProducts', withProducts);
     return this.http.get<PublicCategory[]>(`${this.CATEGORIES}/active`, { params });
+  }
+
+  // ── Recomendaciones ──────────────────────────────────────────────────────────
+
+  /**
+   * GET /api/public/products/{id}/recommendations
+   * Devuelve productos complementarios usando reglas de asociación (Propuesta 2).
+   */
+  getRecommendations(productId: number): Observable<ProductRecommendation[]> {
+    return this.http.get<ProductRecommendation[]>(`${this.PRODUCTS}/${productId}/recommendations`);
   }
 }

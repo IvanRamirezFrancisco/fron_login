@@ -78,11 +78,153 @@
       <div class="checkout-form-section">
         <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" novalidate>
 
-          <!-- ── SECCIÓN 1: DIRECCIÓN DE ENVÍO ──────────────────── -->
+          <!-- ── SECCIÓN 1: MÉTODO DE ENTREGA ───────────────────── -->
           <div class="form-card">
             <div class="form-card-header">
               <div class="card-header-icon">
                 <span class="material-icons">local_shipping</span>
+              </div>
+              <div>
+                <h2 class="card-title">Método de Entrega</h2>
+                <p class="card-subtitle">¿Cómo quieres recibir tu pedido?</p>
+              </div>
+            </div>
+            
+            <div class="form-card-body">
+              <div class="payment-options">
+                <div class="payment-option"
+                     [class.selected]="checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE'"
+                     (click)="checkoutForm.get('deliveryOption')?.setValue('PICKUP_STORE')">
+                  <div class="payment-icon-wrap"><span class="material-icons">storefront</span></div>
+                  <div class="payment-info">
+                    <span class="payment-label">Recoger en tienda</span>
+                    <span class="payment-desc">Recoge tu pedido personalmente o autoriza a alguien más.</span>
+                  </div>
+                  <span class="payment-check material-icons" *ngIf="checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE'">check_circle</span>
+                </div>
+                
+                <div class="payment-option"
+                     [class.selected]="checkoutForm.get('deliveryOption')?.value === 'LOCAL_DELIVERY'"
+                     (click)="checkoutForm.get('deliveryOption')?.setValue('LOCAL_DELIVERY')">
+                  <div class="payment-icon-wrap"><span class="material-icons">local_shipping</span></div>
+                  <div class="payment-info">
+                    <span class="payment-label">Envío Local (Huejutla)</span>
+                    <span class="payment-desc">Envío rápido a domicilio en la zona local.</span>
+                  </div>
+                  <span class="payment-check material-icons" *ngIf="checkoutForm.get('deliveryOption')?.value === 'LOCAL_DELIVERY'">check_circle</span>
+                </div>
+                
+                <div class="payment-option"
+                     [class.selected]="checkoutForm.get('deliveryOption')?.value === 'EXTERNAL_SHIPPING_QUOTE'"
+                     (click)="checkoutForm.get('deliveryOption')?.setValue('EXTERNAL_SHIPPING_QUOTE')">
+                  <div class="payment-icon-wrap"><span class="material-icons">public</span></div>
+                  <div class="payment-info">
+                    <span class="payment-label">Envío Foráneo</span>
+                    <span class="payment-desc">Envíos fuera de Huejutla. Requiere cotización.</span>
+                  </div>
+                  <span class="payment-check material-icons" *ngIf="checkoutForm.get('deliveryOption')?.value === 'EXTERNAL_SHIPPING_QUOTE'">check_circle</span>
+                </div>
+              </div>
+
+              <!-- Mensaje dinámico de Envío Foráneo / Fuera de zona -->
+              <div class="alert mt-3" 
+                   [ngClass]="pricePreviewResult?.requiresQuote ? 'alert-warning' : 'alert-info'" 
+                   *ngIf="checkoutForm.get('deliveryOption')?.value === 'EXTERNAL_SHIPPING_QUOTE' || pricePreviewResult?.requiresQuote">
+                <span class="material-icons">{{ pricePreviewResult?.requiresQuote ? 'info' : 'local_shipping' }}</span>
+                <div class="alert-body">
+                  <span><strong>{{ pricePreviewResult?.requiresQuote ? 'Tu envío requiere cotización.' : 'Información de envío:' }}</strong> 
+                  {{ pricePreviewResult?.message || 'Completa tu dirección para calcular el envío foráneo.' }}</span>
+                </div>
+              </div>
+            </div>
+          </div><!-- /form-card delivery -->
+
+          <!-- ── SECCIÓN 2: DIRECCIÓN O RECOLECCIÓN ──────────────────── -->
+          
+          <!-- Recoger en tienda -->
+          <div class="form-card" *ngIf="checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE'">
+            <div class="form-card-header">
+              <div class="card-header-icon">
+                <span class="material-icons">person_add</span>
+              </div>
+              <div>
+                <h2 class="card-title">Personas Autorizadas</h2>
+                <p class="card-subtitle">¿Quién puede recoger este pedido en la tienda?</p>
+              </div>
+            </div>
+            
+            <div class="form-card-body" formArrayName="authorizedPersons">
+              <div class="alert alert-info" style="margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; background-color: rgba(var(--primary-color-rgb), 0.1); border-radius: 8px; color: var(--primary-color);">
+                <span class="material-icons" style="font-size: 20px;">info</span>
+                <p class="text-sm mb-0">Solo las personas registradas podrán recoger el pedido presentando identificación oficial y el código de recolección.</p>
+              </div>
+              
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-sm font-weight-bold" style="color: var(--text-color);">{{ authorizedPersons.length }} de 3 personas autorizadas</span>
+              </div>
+              
+              <div class="authorized-persons-grid" style="display: grid; gap: 1rem;">
+                <div *ngFor="let person of authorizedPersons.controls; let i=index" [formGroupName]="i" class="authorized-person-card" style="border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; background: var(--bg-surface); position: relative; transition: all 0.2s ease;">
+                  
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 style="font-size: 1rem; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem; color: var(--text-color);">
+                      <span class="material-icons" style="color: var(--primary-color);">person</span> 
+                      Persona {{i + 1}} <span *ngIf="person.get('isPrimary')?.value" class="badge" style="background: var(--primary-color); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">Principal</span>
+                    </h3>
+                    
+                    <div style="display: flex; gap: 0.5rem;">
+                      <button type="button" class="btn btn-sm btn-outline-primary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 4px;" (click)="fillWithMyData(i)" title="Usar mis datos" *ngIf="i === 0">
+                        Yo recogeré
+                      </button>
+                      <button type="button" class="btn-remove-person" style="background: none; border: none; color: #dc3545; cursor: pointer; padding: 0.25rem;" (click)="removeAuthorizedPerson(i)" *ngIf="authorizedPersons.length > 1" title="Eliminar persona">
+                        <span class="material-icons" style="font-size: 20px;">delete_outline</span>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div class="form-group mb-3">
+                    <label style="font-size: 0.85rem; font-weight: 500;">Nombre completo (como en su INE) <span class="required-mark" style="color: #dc3545;">*</span></label>
+                    <input type="text" formControlName="fullName" class="form-input" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;" placeholder="Ej. Juan Pérez García">
+                    
+                    <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('fullName')?.errors?.['required'] && (person.get('fullName')?.touched || person.get('fullName')?.dirty)">Ingresa el nombre completo de la persona.</small>
+                    <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('fullName')?.errors?.['minlength'] && (person.get('fullName')?.touched || person.get('fullName')?.dirty)">El nombre debe tener al menos 5 caracteres.</small>
+                    <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('fullName')?.errors?.['pattern'] && (person.get('fullName')?.touched || person.get('fullName')?.dirty)">El nombre solo puede contener letras y espacios.</small>
+                    <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('fullName')?.errors?.['duplicatePerson']">Esta persona ya está autorizada.</small>
+                  </div>
+                  
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group mb-0">
+                      <label style="font-size: 0.85rem; font-weight: 500;">Teléfono (opcional)</label>
+                      <input type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" (input)="onAuthorizedPhoneInput(i)" formControlName="phone" class="form-input" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;" placeholder="10 dígitos">
+                      
+                      <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('phone')?.errors?.['invalidPhone'] && (person.get('phone')?.touched || person.get('phone')?.dirty)">El teléfono debe tener exactamente 10 dígitos.</small>
+                      <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('phone')?.errors?.['pattern'] && (person.get('phone')?.touched || person.get('phone')?.dirty)">El teléfono solo puede contener números.</small>
+                    </div>
+                    <div class="form-group mb-0">
+                      <label style="font-size: 0.85rem; font-weight: 500;">Parentesco (opcional)</label>
+                      <input type="text" formControlName="relationship" class="form-input" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;" placeholder="Ej. Hermano, Amigo">
+                      
+                      <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('relationship')?.errors?.['maxlength'] && (person.get('relationship')?.touched || person.get('relationship')?.dirty)">La referencia no debe superar 50 caracteres.</small>
+                      <small class="text-danger" style="display: block; margin-top: 0.25rem;" *ngIf="person.get('relationship')?.errors?.['pattern'] && (person.get('relationship')?.touched || person.get('relationship')?.dirty)">Usa solo letras y espacios.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <button type="button" class="btn-add-person mt-3" style="width: 100%; padding: 0.75rem; background: transparent; border: 2px dashed var(--primary-color); color: var(--primary-color); border-radius: 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s;" (click)="addAuthorizedPerson()" *ngIf="authorizedPersons.length < 3">
+                <span class="material-icons">add_circle_outline</span> Autorizar a otra persona
+              </button>
+              <button type="button" class="btn-add-person mt-3" style="width: 100%; padding: 0.75rem; background: transparent; border: 2px dashed #6c757d; color: #6c757d; border-radius: 12px; cursor: not-allowed; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" disabled *ngIf="authorizedPersons.length >= 3">
+                <span class="material-icons">person_off</span> Máximo 3 personas autorizadas
+              </button>
+            </div>
+          </div>
+          
+          <!-- Dirección de Envío -->
+          <div class="form-card" *ngIf="checkoutForm.get('deliveryOption')?.value !== 'PICKUP_STORE'">
+            <div class="form-card-header">
+              <div class="card-header-icon">
+                <span class="material-icons">place</span>
               </div>
               <div>
                 <h2 class="card-title">Dirección de Envío</h2>
@@ -315,7 +457,7 @@
             </div>
           </div><!-- /form-card shipping -->
 
-          <!-- ── SECCIÓN 2: FACTURACIÓN ──────────────────────────── -->
+          <!-- ── SECCIÓN 3: FACTURACIÓN ──────────────────────────── -->
           <div class="form-card">
             <div class="form-card-header">
               <div class="card-header-icon">
@@ -410,8 +552,8 @@
             </div>
           </div><!-- /form-card billing -->
 
-          <!-- ── SECCIÓN 3: MÉTODO DE PAGO ──────────────────────── -->
-          <div class="form-card">
+          <!-- ── SECCIÓN 4: MÉTODO DE PAGO ──────────────────────── -->
+          <div class="form-card" *ngIf="pricePreviewResult?.canProceedToPayment">
             <div class="form-card-header">
               <div class="card-header-icon">
                 <span class="material-icons">account_balance</span>
@@ -462,7 +604,7 @@
             </div>
           </div><!-- /form-card payment -->
 
-          <!-- ── SECCIÓN 4: NOTAS ────────────────────────────────── -->
+          <!-- ── SECCIÓN 5: NOTAS ────────────────────────────────── -->
           <div class="form-card">
             <div class="form-card-header">
               <div class="card-header-icon">
@@ -493,20 +635,37 @@
 
           <!-- ── BOTÓN SUBMIT MÓVIL ──────────────────────────────── -->
           <div class="submit-mobile">
-            <button
-              type="submit"
-              class="btn-confirm"
-              [disabled]="isProcessing"
-            >
-              <span class="spinner" *ngIf="isProcessing"></span>
-              <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value !== 'MERCADO_PAGO'">lock</span>
-              <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">shield</span>
-              <span *ngIf="isValidating">Validando carrito...</span>
-              <span *ngIf="isSubmitting && !isProcessingPayment">Generando pedido...</span>
-              <span *ngIf="isProcessingPayment">Preparando redirección segura...</span>
-              <span *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER'">Confirmar Pedido — ${{ cartTotal | number:'1.2-2' }}</span>
-              <span *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">Confirmar y pagar con Mercado Pago — ${{ cartTotal | number:'1.2-2' }}</span>
-            </button>
+            <div *ngIf="pricePreviewResult?.message" class="preview-message mb-2">
+              <span class="material-icons">info</span> {{ pricePreviewResult?.message }}
+            </div>
+            
+            <!-- Block reasons -->
+            <div *ngIf="!canSubmitCheckout()" class="alert alert-warning mb-2" style="font-size: 0.85rem; padding: 0.75rem; text-align: left;">
+              <strong>Corrige lo siguiente para continuar:</strong>
+              <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.25rem;">
+                <li *ngFor="let reason of getCheckoutBlockReasons()">{{ reason }}</li>
+              </ul>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                class="btn-confirm"
+                [disabled]="isProcessing || !canSubmitCheckout()"
+              >
+                <span class="spinner" *ngIf="isProcessing || isLoadingPreview"></span>
+                <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value !== 'MERCADO_PAGO' && canSubmitCheckout()">lock</span>
+                <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO' && canSubmitCheckout()">shield</span>
+                <span *ngIf="isValidating">Validando carrito...</span>
+                <span *ngIf="isLoadingPreview">Calculando envío...</span>
+                <span *ngIf="isSubmitting && !isProcessingPayment">Generando pedido...</span>
+                <span *ngIf="isProcessingPayment">Preparando redirección segura...</span>
+                <span *ngIf="!isProcessing && !isLoadingPreview && canSubmitCheckout() && checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER'">Confirmar Pedido — ${{ pricePreviewResult?.total || cartTotal | number:'1.2-2' }}</span>
+                <span *ngIf="!isProcessing && !isLoadingPreview && canSubmitCheckout() && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">Confirmar y pagar con Mercado Pago — ${{ pricePreviewResult?.total || cartTotal | number:'1.2-2' }}</span>
+                <span *ngIf="!canSubmitCheckout() && checkoutForm.get('deliveryOption')?.value !== 'PICKUP_STORE'">Completa todos los campos</span>
+                <span *ngIf="!canSubmitCheckout() && checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE'">Completa datos de recolección</span>
+              </button>
+            </div>
           </div>
 
         </form>
@@ -545,14 +704,29 @@
           <div class="summary-sep"></div>
 
           <!-- Totales -->
-          <div class="totals-block">
+          <div class="totals-block" *ngIf="!isLoadingPreview">
             <div class="total-row">
               <span>Subtotal</span>
-              <span>${{ cartSubtotal | number:'1.2-2' }}</span>
+              <span>${{ (pricePreviewResult ? pricePreviewResult.subtotal : cartSubtotal) | number:'1.2-2' }}</span>
             </div>
             <div class="total-row">
               <span>IVA (16%)</span>
-              <span>${{ cartTax | number:'1.2-2' }}</span>
+              <span>${{ (pricePreviewResult ? pricePreviewResult.tax : cartTax) | number:'1.2-2' }}</span>
+            </div>
+            <div class="total-row">
+              <span>Envío <small *ngIf="pricePreviewResult?.deliveryLabel">({{pricePreviewResult?.deliveryLabel}})</small></span>
+              
+              <!-- Caso: calculado como Gratis -->
+              <span *ngIf="pricePreviewResult?.shipping === 0 && !pricePreviewResult?.requiresQuote && checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE'">Gratis</span>
+              
+              <!-- Caso: requiere cotización -->
+              <span *ngIf="pricePreviewResult?.requiresQuote">Por cotizar</span>
+              
+              <!-- Caso: falta dirección (LOCAL) -->
+              <span *ngIf="checkoutForm.get('deliveryOption')?.value === 'LOCAL_DELIVERY' && !pricePreviewResult?.canProceedToPayment && !pricePreviewResult?.requiresQuote">Pendiente por calcular</span>
+              
+              <!-- Caso: costo de envío mayor a 0 -->
+              <span *ngIf="pricePreviewResult?.shipping! > 0">${{ pricePreviewResult?.shipping | number:'1.2-2' }}</span>
             </div>
             <div class="total-row discount" *ngIf="cartDiscount > 0">
               <span>Descuento</span>
@@ -563,13 +737,27 @@
               <span>-${{ unavailableItemsTotal | number:'1.2-2' }}</span>
             </div>
           </div>
+          
+          <!-- Cargando Totales -->
+          <div class="totals-block" *ngIf="isLoadingPreview">
+            <div class="text-center py-3">
+              <span class="spinner spinner-sm" style="display:inline-block; margin-right: 8px;"></span>
+              Calculando totales y envío...
+            </div>
+          </div>
 
           <div class="summary-sep"></div>
 
           <!-- Gran total -->
           <div class="grand-total-row">
             <span class="grand-label">Total a pagar</span>
-            <span class="grand-value">${{ cartTotal | number:'1.2-2' }}</span>
+            <span class="grand-value" *ngIf="!isLoadingPreview">${{ (pricePreviewResult ? pricePreviewResult.total : cartTotal) | number:'1.2-2' }}</span>
+            <span class="spinner spinner-sm" *ngIf="isLoadingPreview"></span>
+          </div>
+          
+          <div class="alert alert-info mt-2" *ngIf="pricePreviewResult?.message">
+            <span class="material-icons" style="font-size: 18px;">info</span>
+            <span style="font-size: 13px;">{{ pricePreviewResult?.message }}</span>
           </div>
 
           <!-- Método seleccionado -->
@@ -586,23 +774,72 @@
 
           <div class="summary-sep"></div>
 
-          <!-- BOTÓN CONFIRMAR (desktop) — SIEMPRE VISIBLE -->
-          <button
-            type="button"
-            class="btn-confirm"
-            (click)="onSubmit()"
-            [disabled]="isProcessing"
-            id="btn-confirmar-pedido"
-          >
-            <span class="spinner" *ngIf="isProcessing"></span>
-            <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value !== 'MERCADO_PAGO'">lock</span>
-            <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">shield</span>
-            <span *ngIf="isValidating">Validando carrito...</span>
-            <span *ngIf="isSubmitting && !isProcessingPayment">Generando pedido...</span>
-            <span *ngIf="isProcessingPayment">Preparando redirección segura...</span>
-            <span *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER'">Confirmar Pedido — ${{ cartTotal | number:'1.2-2' }}</span>
-            <span *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">Confirmar y pagar con Mercado Pago — ${{ cartTotal | number:'1.2-2' }}</span>
-          </button>
+          <!-- BOTÓN CONFIRMAR (desktop) — SIEMPRE VISIBLE SI NO REQUIERE COTIZACIÓN -->
+          
+          <div *ngIf="!canSubmitCheckout() && !pricePreviewResult?.requiresQuote" class="alert alert-warning mb-3" style="font-size: 0.85rem; padding: 1rem; text-align: left; border-radius: 8px;">
+            <strong style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;"><span class="material-icons" style="font-size: 1.2rem;">warning</span> Corrige lo siguiente para continuar:</strong>
+            <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.25rem;">
+              <li *ngFor="let reason of getCheckoutBlockReasons()" style="margin-bottom: 0.25rem;">{{ reason }}</li>
+            </ul>
+          </div>
+
+          <div>
+            <button
+              *ngIf="!pricePreviewResult?.requiresQuote"
+              type="button"
+              class="btn-confirm"
+              (click)="onSubmit()"
+              [disabled]="isProcessing || !canSubmitCheckout()"
+              id="btn-confirmar-pedido"
+            >
+              <span class="spinner" *ngIf="isProcessing || isLoadingPreview"></span>
+              <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value !== 'MERCADO_PAGO' && canSubmitCheckout()">lock</span>
+              <span class="material-icons" *ngIf="!isProcessing && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO' && canSubmitCheckout()">shield</span>
+              <span *ngIf="isValidating">Validando carrito...</span>
+              <span *ngIf="isLoadingPreview">Calculando envío...</span>
+              <span *ngIf="isSubmitting && !isProcessingPayment">Generando pedido...</span>
+              <span *ngIf="isProcessingPayment">Preparando redirección segura...</span>
+              
+              <span *ngIf="!isProcessing && !isLoadingPreview && canSubmitCheckout() && checkoutForm.get('paymentMethod')?.value === 'BANK_TRANSFER'">Confirmar Pedido — ${{ pricePreviewResult?.total || cartTotal | number:'1.2-2' }}</span>
+              <span *ngIf="!isProcessing && !isLoadingPreview && canSubmitCheckout() && checkoutForm.get('paymentMethod')?.value === 'MERCADO_PAGO'">Confirmar y pagar con Mercado Pago — ${{ pricePreviewResult?.total || cartTotal | number:'1.2-2' }}</span>
+              
+              <span *ngIf="!canSubmitCheckout() && checkoutForm.get('deliveryOption')?.value !== 'PICKUP_STORE'">Completa todos los campos</span>
+              <span *ngIf="!canSubmitCheckout() && checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE'">Completa datos de recolección</span>
+            </button>
+          </div>
+
+          <!-- BOTÓN COTIZAR Y CONTACTO (Cuando requiere cotización) -->
+          <div *ngIf="pricePreviewResult?.requiresQuote" class="quote-contact-box mt-3" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem;">
+            <h3 style="font-size: 1rem; margin-top: 0; margin-bottom: 0.5rem; color: var(--text-color);">Tu envío requiere cotización</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Para envíos fuera de Huejutla, el costo puede variar según tu ubicación. Contáctanos para confirmar el costo antes de realizar tu compra.</p>
+            
+            <div *ngIf="pricePreviewResult?.businessHours" style="font-size: 0.85rem; margin-bottom: 1rem;">
+              <strong>Horario:</strong> {{ pricePreviewResult?.businessHours }}
+            </div>
+
+            <button 
+              type="button" 
+              class="btn-confirm"
+              style="background-color: #25D366; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 0.5rem;"
+              (click)="requestShippingQuote()"
+              [disabled]="!pricePreviewResult?.contactWhatsapp || !checkoutForm.get('shippingAddress.state')?.value || !checkoutForm.get('shippingAddress.city')?.value"
+            >
+              <span class="material-icons">chat</span>
+              Solicitar cotización por WhatsApp
+            </button>
+            <p *ngIf="(!checkoutForm.get('shippingAddress.state')?.value || !checkoutForm.get('shippingAddress.city')?.value) && pricePreviewResult?.contactWhatsapp" style="font-size: 0.75rem; text-align: center; color: #dc3545; margin-bottom: 0.5rem;">
+              Completa tu dirección para solicitar la cotización
+            </p>
+
+            <a *ngIf="pricePreviewResult?.contactPhone" [href]="'tel:' + pricePreviewResult?.contactPhone" class="btn btn-outline-primary w-100" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <span class="material-icons">call</span>
+              Llamar al negocio
+            </a>
+
+            <div *ngIf="!pricePreviewResult?.contactWhatsapp && !pricePreviewResult?.contactPhone" class="alert alert-info mt-2 mb-0" style="font-size: 0.85rem; padding: 0.75rem;">
+              Comunícate directamente con Casa de Música Castillo para cotizar tu envío.
+            </div>
+          </div>
 
           <a routerLink="/carrito" class="back-link">
             <span class="material-icons">arrow_back</span>Volver al carrito

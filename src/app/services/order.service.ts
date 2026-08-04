@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { 
   Order, 
   OrderStats, 
@@ -13,7 +14,11 @@ import {
   CancelOrderRequest,
   PaymentProofResponse,
   RejectPaymentProofRequest,
-  PaymentInstructionsResponse
+  PaymentInstructionsResponse,
+  OrderTransitionsDTO,
+  OrderTimelineEvent,
+  PricePreviewRequest,
+  PricePreviewResponse
 } from '../models/order.model';
 import { environment } from '../../environments/environment';
 
@@ -100,6 +105,26 @@ export class OrderService {
     return this.http.get<OrderStats>(`${this.apiUrl}/stats`);
   }
 
+  // ==================== ENDPOINTS DE ADMINISTRADOR ====================
+
+  /**
+   * Marcar orden como lista para recolección (Admin).
+   */
+  markReadyForPickup(orderId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${orderId}/pickup-ready`, {});
+  }
+
+  /**
+   * Verificar código de recolección y entregar pedido (Admin).
+   */
+  verifyPickup(orderId: number, code: string, pickupAuthorizationId: number, notes?: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${orderId}/pickup-verify`, {
+      code,
+      pickupAuthorizationId,
+      notes
+    });
+  }
+
   // ==================== ACTUALIZAR ESTADOS ====================
 
   /**
@@ -119,6 +144,23 @@ export class OrderService {
     return this.http.patch<Order>(
       `${this.apiUrl}/${orderId}/payment-status`,
       { paymentStatus: newStatus }
+    );
+  }
+
+  /**
+   * Reconsulta a Mercado Pago el estado de una orden.
+   */
+  requeryPaymentByOrderId(orderId: number): Observable<any> {
+    // Obtenemos los pagos de esta orden
+    return this.http.get<any>(`/api/admin/payments`, { params: { orderId: orderId.toString() } }).pipe(
+      switchMap(pageData => {
+        const payments = pageData.content || [];
+        const mpPayment = payments.find((p: any) => p.provider === 'MERCADO_PAGO' && p.status === 'PENDING');
+        if (!mpPayment) {
+          return throwError(() => new Error('No se encontró un pago pendiente de Mercado Pago para esta orden.'));
+        }
+        return this.http.post(`/api/admin/payments/${mpPayment.id}/requery`, {});
+      })
     );
   }
 
@@ -145,10 +187,17 @@ export class OrderService {
 
   /**
    * Crear pedido desde el carrito (POST /api/checkout).
-   * Solo envía los 4 campos permitidos — el backend calcula totales.
+   * Solo envía los campos permitidos — el backend calcula totales.
    */
   createOrder(request: CheckoutRequest): Observable<Order> {
     return this.http.post<Order>(this.checkoutUrl, request);
+  }
+
+  /**
+   * Calcular pre-visualización de precios y disponibilidad de envío.
+   */
+  pricePreview(request: PricePreviewRequest): Observable<PricePreviewResponse> {
+    return this.http.post<PricePreviewResponse>(`${this.checkoutUrl}/price-preview`, request);
   }
 
   /**
@@ -166,6 +215,20 @@ export class OrderService {
    */
   getMyOrderById(id: number): Observable<Order> {
     return this.http.get<Order>(`${this.customerApiUrl}/${id}`);
+  }
+
+  /**
+   * Historial de eventos (Timeline) de un pedido del cliente
+   */
+  getMyOrderTimeline(orderId: number): Observable<OrderTimelineEvent[]> {
+    return this.http.get<OrderTimelineEvent[]>(`${this.customerApiUrl}/${orderId}/timeline`);
+  }
+
+  /**
+   * Obtener código de recolección para una orden
+   */
+  getMyOrderPickupCode(orderId: number): Observable<{ pickupCode: string }> {
+    return this.http.get<{ pickupCode: string }>(`${this.customerApiUrl}/${orderId}/pickup-code`);
   }
 
   /**
@@ -232,6 +295,13 @@ export class OrderService {
       `${this.apiUrl}/${orderId}/cancel`,
       { reason }
     );
+  }
+
+  /**
+   * Historial de eventos (Timeline) de un pedido para Admin
+   */
+  getAdminOrderTimeline(orderId: number): Observable<OrderTimelineEvent[]> {
+    return this.http.get<OrderTimelineEvent[]>(`${this.apiUrl}/${orderId}/timeline`);
   }
 
   /**
@@ -343,5 +413,15 @@ export class OrderService {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+
+
+  // ==================== STATE TRANSITIONS ====================
+  /**
+   * Obtener opciones permitidas de transición de estados.
+   */
+  getAllowedTransitions(orderId: number): Observable<OrderTransitionsDTO> {
+    return this.http.get<OrderTransitionsDTO>(`${this.apiUrl}/${orderId}/allowed-transitions`);
   }
 }

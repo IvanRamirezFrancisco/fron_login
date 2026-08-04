@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrderService } from '../../../services/order.service';
@@ -9,7 +10,9 @@ import {
   OrderStatus, 
   PaymentStatus, 
   ShippingStatus,
-  PaymentProofResponse
+  PaymentProofResponse,
+  OrderTransitionsDTO,
+  OrderTimelineEvent
 } from '../../../models/order.model';
 import Swal from 'sweetalert2';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -29,6 +32,7 @@ export class OrderDetailModalComponent implements OnInit {
   @Input() order!: Order;
   @Output() close = new EventEmitter<void>();
   @Output() orderUpdated = new EventEmitter<Order>();
+  @Output() analyzePatternEvent = new EventEmitter<number>();
 
   // Estados editables
   selectedOrderStatus: OrderStatus;
@@ -40,6 +44,9 @@ export class OrderDetailModalComponent implements OnInit {
   loading = false;
   error: string | null = null;
   successMessage: string | null = null;
+  allowedTransitions: OrderTransitionsDTO | null = null;
+  loadingTransitions = false;
+  hasReportViewPermission = false;
 
   // Comprobante
   proofMetadata: PaymentProofResponse | null = null;
@@ -58,6 +65,11 @@ export class OrderDetailModalComponent implements OnInit {
   @ViewChild('pdfCanvas') pdfCanvas!: ElementRef<HTMLCanvasElement>;
   pdfDocument: any = null;
 
+  // Timeline
+  timeline: OrderTimelineEvent[] = [];
+  loadingTimeline = false;
+  timelineError: string | null = null;
+
   // Enums para template
   OrderStatus = OrderStatus;
   PaymentStatus = PaymentStatus;
@@ -71,11 +83,13 @@ export class OrderDetailModalComponent implements OnInit {
     public orderService: OrderService,
     private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {
     this.selectedOrderStatus = OrderStatus.PENDING;
     this.selectedPaymentStatus = PaymentStatus.PENDING;
     this.selectedShippingStatus = ShippingStatus.PENDING;
+    this.hasReportViewPermission = this.authService.hasPermission('REPORT_VIEW');
   }
 
   ngOnInit(): void {
@@ -88,9 +102,110 @@ export class OrderDetailModalComponent implements OnInit {
     if (this.order.paymentMethod === 'BANK_TRANSFER' || this.order.paymentMethod === 'TRANSFER') {
       this.loadPaymentProof();
     }
+    
+    this.loadAllowedTransitions();
+    this.loadTimeline();
   }
 
-  // ==================== CERRAR MODAL ====================
+  loadTimeline(): void {
+    this.loadingTimeline = true;
+    this.timelineError = null;
+    this.orderService.getAdminOrderTimeline(this.order.id).subscribe({
+      next: (events) => {
+        this.timeline = events.map(event => this.mapAdminTimelineEvent(event));
+        this.loadingTimeline = false;
+      },
+      error: (err) => {
+        console.error('Error loading timeline:', err);
+        this.timelineError = 'No se pudo cargar el historial en este momento.';
+        this.loadingTimeline = false;
+      }
+    });
+  }
+
+  private mapAdminTimelineEvent(event: OrderTimelineEvent): OrderTimelineEvent {
+    let desc = event.description || '';
+    
+    // Remove "Fuente:" from description if exists
+    if (desc.includes('Fuente:')) {
+      desc = desc.split('Fuente:')[0].trim();
+    }
+    
+    // Remove metadata_json if it got leaked in description
+    if (desc.includes('{') || desc.includes('metadata_json') || desc.includes('source:')) {
+      desc = 'Evento del sistema registrado.';
+    }
+    
+    event.description = desc;
+    
+    // Translate Source for actorLabel if needed
+    if (event.source) {
+      const sourceMap: Record<string, string> = {
+        'BANK_TRANSFER_PROOF_APPROVED': 'Transferencia bancaria',
+        'BANK_TRANSFER_PROOF_REJECTED': 'Transferencia bancaria',
+        'SYSTEM_EXPIRATION': 'Sistema',
+        'ADMIN_PANEL': 'Panel administrativo',
+        'MERCADO_PAGO': 'Mercado Pago',
+        'ORDER_SERVICE': 'Sistema',
+        'PAYMENT_PROOF': 'Gestión de comprobantes'
+      };
+      
+      const translatedSource = sourceMap[event.source] || event.source;
+      // If actorLabel doesn't exist, we can use the translated source as actor
+      if (!event.actorLabel) {
+         event.actorLabel = translatedSource;
+      } else if (event.actorLabel === 'Sistema') {
+         event.actorLabel = `Sistema (${translatedSource})`;
+      }
+    }
+    
+    return event;
+  }
+
+  loadAllowedTransitions(): void {
+    this.loadingTransitions = true;
+    this.orderService.getAllowedTransitions(this.order.id).subscribe({
+      next: (transitions) => {
+        this.allowedTransitions = transitions;
+        this.loadingTransitions = false;
+      },
+      error: (err) => {
+        console.error('Error cargando transiciones permitidas:', err);
+        this.loadingTransitions = false;
+      }
+    });
+  }
+
+  refreshOrderAfterMutation(): void {
+    this.orderService.getOrderById(this.order.id).subscribe({
+      next: (reloadedOrder) => {
+        this.order = reloadedOrder;
+        this.selectedOrderStatus = reloadedOrder.status;
+        this.selectedPaymentStatus = reloadedOrder.paymentStatus;
+        this.selectedShippingStatus = reloadedOrder.shippingStatus;
+        this.trackingNumber = reloadedOrder.trackingNumber || '';
+        
+        if (this.order.paymentMethod === 'BANK_TRANSFER' || this.order.paymentMethod === 'TRANSFER') {
+          this.loadPaymentProof();
+        }
+        
+        this.loadAllowedTransitions();
+        this.loadTimeline();
+        this.orderUpdated.emit(this.order);
+      },
+      error: (err) => {
+        console.error('Error recargando orden tras mutación:', err);
+      }
+    });
+  }
+
+  onAnalyzePattern(): void {
+    const orderId = this.order.id;
+    this.closeModal();
+    this.analyzePatternEvent.emit(orderId);
+  }
+
+  // ==================== CERRAR Y NOTIFICAR ====================
 
   closeModal(): void {
     this.close.emit();
@@ -120,13 +235,27 @@ export class OrderDetailModalComponent implements OnInit {
           this.order = updatedOrder;
           this.successMessage = 'Estado de orden actualizado correctamente';
           this.orderUpdated.emit(updatedOrder);
+          this.loadAllowedTransitions();
+          this.loadTimeline();
           this.loading = false;
           this.hideMessageAfterDelay();
         },
         error: (err) => {
           console.error('Error al actualizar estado de orden:', err);
-          this.error = err.error?.error || 'Error al actualizar el estado de la orden';
+          const errorMsg = err.error?.message || err.error?.error || 'Error al actualizar el estado de la orden';
+          this.error = errorMsg;
+          
+          Swal.fire({
+            title: 'No permitido',
+            text: errorMsg,
+            icon: 'warning',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Entendido'
+          });
+          
           this.loading = false;
+          // Revertir selección
+          this.selectedOrderStatus = this.order.status;
           this.hideMessageAfterDelay();
         }
       });
@@ -146,15 +275,96 @@ export class OrderDetailModalComponent implements OnInit {
         next: (updatedOrder) => {
           this.order = updatedOrder;
           this.successMessage = 'Estado de pago actualizado correctamente';
-          this.orderUpdated.emit(updatedOrder);
           this.loading = false;
-          this.hideMessageAfterDelay();
+          this.orderUpdated.emit();
+          this.loadTimeline();
         },
         error: (err) => {
-          console.error('Error al actualizar estado de pago:', err);
           this.error = err.error?.error || 'Error al actualizar el estado de pago';
           this.loading = false;
-          this.hideMessageAfterDelay();
+          // Revertir selección
+          this.selectedPaymentStatus = this.order.paymentStatus;
+        }
+      });
+  }
+
+  cancelOrder(): void {
+    if (!this.allowedTransitions?.canCancelOrder) return;
+
+    Swal.fire({
+      title: 'Cancelar Orden',
+      text: this.allowedTransitions.requiresCancelReason ? 'Por favor, ingresa el motivo de la cancelación (mínimo 10 caracteres):' : '¿Estás seguro de cancelar esta orden?',
+      input: this.allowedTransitions.requiresCancelReason ? 'textarea' : undefined,
+      inputPlaceholder: 'Motivo de cancelación...',
+      inputAttributes: {
+        'aria-label': 'Motivo de cancelación',
+        'maxlength': '500'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cancelar orden',
+      cancelButtonText: 'Volver',
+      confirmButtonColor: '#dc2626',
+      preConfirm: (reason) => {
+        if (this.allowedTransitions?.requiresCancelReason) {
+          if (!reason || reason.trim().length < 10) {
+            Swal.showValidationMessage('Debes ingresar un motivo válido (mínimo 10 caracteres)');
+            return false;
+          }
+        }
+        return reason || 'Cancelada por administrador';
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.loading = true;
+        this.orderService.cancelOrder(this.order.id, result.value).subscribe({
+          next: (updatedOrder) => {
+            this.order = updatedOrder;
+            this.successMessage = 'La orden ha sido cancelada exitosamente';
+            this.orderUpdated.emit(updatedOrder);
+            this.loadAllowedTransitions();
+            this.loadTimeline();
+            this.loading = false;
+            this.hideMessageAfterDelay();
+            Swal.fire('Cancelada', 'La orden fue cancelada correctamente.', 'success');
+          },
+          error: (err) => {
+            let msg = err.error?.message || err.error?.error || 'No se pudo cancelar la orden.';
+            msg = this.sanitizeErrorMessage(msg);
+            Swal.fire('Error', msg, 'error');
+            this.loading = false;
+          }
+        });
+      }
+    });
+  }
+
+  requeryPayment(): void {
+    this.loading = true;
+    this.error = null;
+    this.successMessage = null;
+
+    // Buscar el paymentId (asumimos que el backend lo requiere, pero el modal no lo tiene directamente en la orden
+    // Espera, el endpoint es POST /api/admin/payments/{paymentId}/requery.
+    // Si la orden tiene un transactionId o podemos llamar a un endpoint de orden.
+    // Wait, el backend requiere paymentId... ¿La orden expone el paymentId en algún lado?
+    // Vamos a tener que crear un endpoint de requery por orderId, o usar el order.transactionId?
+    // El frontend admin probablemente no conoce el internal payment ID a menos que se cargue la lista de pagos.
+    // Dejaré un alert o implementaré un servicio temporal si transactionId no es suficiente.
+    this.orderService.requeryPaymentByOrderId(this.order.id)
+      .subscribe({
+        next: (result) => {
+          this.successMessage = `Reconsulta exitosa. Estado: ${result.status}`;
+          this.loading = false;
+          this.orderUpdated.emit();
+          this.loadTimeline();
+          if (result.status === 'PAID') {
+             this.order.paymentStatus = PaymentStatus.PAID;
+             this.selectedPaymentStatus = PaymentStatus.PAID;
+          }
+        },
+        error: (err) => {
+          this.error = err.error?.error || 'Error al reconsultar en Mercado Pago';
+          this.loading = false;
         }
       });
   }
@@ -178,13 +388,28 @@ export class OrderDetailModalComponent implements OnInit {
         this.order = updatedOrder;
         this.successMessage = 'Estado de envío actualizado correctamente';
         this.orderUpdated.emit(updatedOrder);
+        this.loadAllowedTransitions();
+        this.loadTimeline();
         this.loading = false;
         this.hideMessageAfterDelay();
       },
       error: (err) => {
         console.error('Error al actualizar estado de envío:', err);
-        this.error = err.error?.error || 'Error al actualizar el estado de envío';
+        const errorMsg = err.error?.message || err.error?.error || 'Error al actualizar el estado de envío';
+        this.error = errorMsg;
+        
+        Swal.fire({
+          title: 'No permitido',
+          text: errorMsg,
+          icon: 'warning',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Entendido'
+        });
+        
         this.loading = false;
+        // Revertir selección
+        this.selectedShippingStatus = this.order.shippingStatus;
+        this.trackingNumber = this.order.trackingNumber || '';
         this.hideMessageAfterDelay();
       }
     });
@@ -195,6 +420,104 @@ export class OrderDetailModalComponent implements OnInit {
       this.successMessage = null;
       this.error = null;
     }, 5000);
+  }
+
+  // ==================== ACCIONES DE PICKUP ====================
+
+  markReadyForPickup(): void {
+    Swal.fire({
+      title: 'Marcar como Listo para Recolección',
+      text: 'Esto notificará al cliente que su pedido está listo para ser recogido en tienda.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, marcar como listo',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#3085d6'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.loading = true;
+        this.orderService.markReadyForPickup(this.order.id).subscribe({
+          next: () => {
+            this.successMessage = 'Orden marcada como lista para recolección.';
+            this.hideMessageAfterDelay();
+            Swal.fire('¡Listo!', 'El pedido está listo para recolección.', 'success');
+            this.refreshOrderAfterMutation();
+          },
+          error: (err) => {
+            let msg = err.error?.message || err.error?.error || 'Error al marcar como listo.';
+            Swal.fire('Error', this.sanitizeErrorMessage(msg), 'error');
+            this.loading = false;
+          }
+        });
+      }
+    });
+  }
+
+  verifyPickupCode(): void {
+    if (!this.order.authorizedPersons || this.order.authorizedPersons.length === 0) {
+      Swal.fire('Error', 'No hay personas autorizadas registradas para este pedido.', 'error');
+      return;
+    }
+
+    const optionsHtml = this.order.authorizedPersons.map(ap => 
+      `<option value="${ap.id}">${ap.fullName} ${ap.isPrimary ? '(Principal)' : ''}</option>`
+    ).join('');
+
+    Swal.fire({
+      title: 'Verificar Código de Recolección',
+      html: `
+        <div class="mb-3 text-left">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Persona que recoge</label>
+          <select id="swal-auth-id" class="swal2-select !mt-0 !mb-0" style="display: flex; width: 100%; max-width: 100%;">
+            <option value="">Seleccione una persona...</option>
+            ${optionsHtml}
+          </select>
+        </div>
+        <div class="mb-3 text-left">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Código de recolección</label>
+          <input id="swal-code" class="swal2-input !mt-0 !mb-0 font-mono tracking-widest text-center" placeholder="XXXXXX">
+        </div>
+        <div class="text-left">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Notas u observaciones (opcional)</label>
+          <textarea id="swal-notes" class="swal2-textarea !mt-0 !mb-0" placeholder="Ej. Se verificó INE."></textarea>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Verificar y Entregar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#166534',
+      preConfirm: () => {
+        const authId = (document.getElementById('swal-auth-id') as HTMLSelectElement).value;
+        const code = (document.getElementById('swal-code') as HTMLInputElement).value;
+        const notes = (document.getElementById('swal-notes') as HTMLTextAreaElement).value;
+        
+        if (!authId) {
+          Swal.showValidationMessage('Debe seleccionar a la persona autorizada que recoge el pedido');
+          return false;
+        }
+        if (!code || code.trim().length === 0) {
+          Swal.showValidationMessage('Debe ingresar el código de recolección');
+          return false;
+        }
+        return { pickupAuthorizationId: Number(authId), code: code.trim(), notes: notes.trim() };
+      }
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        this.loading = true;
+        this.orderService.verifyPickup(this.order.id, result.value.code, result.value.pickupAuthorizationId, result.value.notes).subscribe({
+          next: () => {
+            Swal.fire('¡Entregado!', 'El código fue verificado y el pedido marcado como entregado.', 'success');
+            this.refreshOrderAfterMutation();
+          },
+          error: (err) => {
+            console.error('Error verificando código:', err);
+            const errorMsg = err.error?.message || err.error?.error || 'Código incorrecto o error en la verificación';
+            Swal.fire('Error', errorMsg, 'error');
+            this.loading = false;
+          }
+        });
+      }
+    });
   }
 
   // ==================== HELPERS ====================
@@ -237,11 +560,64 @@ export class OrderDetailModalComponent implements OnInit {
     return translations[status] || status;
   }
 
+  translatePickupStatus(status: string | undefined | null): string {
+    if (!status) return 'Desconocido';
+    const translations: Record<string, string> = {
+      'NOT_APPLICABLE': 'No aplica',
+      'WAITING_PAYMENT': 'Esperando pago',
+      'PAID_WAITING_PREPARATION': 'Pago confirmado, preparando pedido',
+      'READY_FOR_PICKUP': 'Listo para recoger',
+      'PICKED_UP': 'Recolectado en tienda',
+      'CANCELLED': 'Cancelado'
+    };
+    return translations[status] || status;
+  }
+
   canManagePayments(): boolean {
     return this.authService.hasRole('ROLE_SUPER_ADMIN') || 
            this.authService.hasPermission('ORDER_UPDATE') || 
            this.authService.hasPermission('ORDER_MANAGE') || 
            this.authService.hasPermission('PAYMENT_MANAGE');
+  }
+
+  // ==================== TIMELINE ADMIN ====================
+
+  getTimelineIcon(eventType: string): string {
+    const map: Record<string, string> = {
+      'ORDER_CREATED': 'description',
+      'BANK_PROOF_UPLOADED': 'upload_file',
+      'BANK_PROOF_REJECTED': 'error',
+      'BANK_PROOF_APPROVED': 'check_circle',
+      'PAYMENT_APPROVED': 'payments',
+      'ORDER_CONFIRMED': 'check_circle',
+      'ORDER_STATUS_CHANGED': 'sync_alt',
+      'SHIPPING_STATUS_CHANGED': 'local_shipping',
+      'TRACKING_NUMBER_UPDATED': 'local_offer',
+      'ORDER_CANCELLED': 'cancel',
+      'ORDER_EXPIRED': 'timer_off',
+      'MERCADO_PAGO_WEBHOOK_RECEIVED': 'payment',
+      'MERCADO_PAGO_REQUERY': 'refresh'
+    };
+    return map[eventType] || 'info';
+  }
+
+  getTimelineColorClass(eventType: string): string {
+    const map: Record<string, string> = {
+      'ORDER_CREATED': 'text-gray-500 bg-gray-100',
+      'BANK_PROOF_UPLOADED': 'text-blue-500 bg-blue-100',
+      'BANK_PROOF_REJECTED': 'text-red-500 bg-red-100',
+      'BANK_PROOF_APPROVED': 'text-green-500 bg-green-100',
+      'PAYMENT_APPROVED': 'text-green-500 bg-green-100',
+      'ORDER_CONFIRMED': 'text-green-500 bg-green-100',
+      'ORDER_STATUS_CHANGED': 'text-blue-500 bg-blue-100',
+      'SHIPPING_STATUS_CHANGED': 'text-blue-500 bg-blue-100',
+      'TRACKING_NUMBER_UPDATED': 'text-blue-500 bg-blue-100',
+      'ORDER_CANCELLED': 'text-red-500 bg-red-100',
+      'ORDER_EXPIRED': 'text-orange-500 bg-orange-100',
+      'MERCADO_PAGO_WEBHOOK_RECEIVED': 'text-blue-500 bg-blue-100',
+      'MERCADO_PAGO_REQUERY': 'text-blue-500 bg-blue-100'
+    };
+    return map[eventType] || 'text-gray-500 bg-gray-100';
   }
 
   // ==================== COMPROBANTE DE PAGO (ADMIN) ====================
@@ -427,17 +803,17 @@ export class OrderDetailModalComponent implements OnInit {
     }).then((result) => {
       if (result.isConfirmed) {
         this.orderService.approvePaymentProof(this.order.id).subscribe({
-          next: (proof) => {
-            this.proofMetadata = proof;
-            this.order.paymentStatus = PaymentStatus.PAID;
-            this.selectedPaymentStatus = PaymentStatus.PAID;
-            this.order.hasPaymentProof = true;
-            this.order.paymentProofStatus = proof.status;
-            this.orderUpdated.emit(this.order);
+          next: (res) => {
+            this.successMessage = 'Comprobante aprobado exitosamente.';
+            this.hideMessageAfterDelay();
+            this.loading = false;
             Swal.fire('Aprobado', 'El comprobante ha sido aprobado.', 'success');
+            
+            this.refreshOrderAfterMutation();
           },
           error: (err) => {
-            const msg = err.error?.error || 'Error al aprobar.';
+            let msg = err.error?.message || err.error?.error || 'Error al aprobar.';
+            msg = this.sanitizeErrorMessage(msg);
             Swal.fire('Error', msg, 'error');
           }
         });
@@ -469,13 +845,15 @@ export class OrderDetailModalComponent implements OnInit {
       if (result.isConfirmed && result.value) {
         this.orderService.rejectPaymentProof(this.order.id, result.value).subscribe({
           next: (proof) => {
-            this.proofMetadata = proof;
-            this.order.paymentProofStatus = proof.status;
-            this.orderUpdated.emit(this.order);
-            Swal.fire('Rechazado', 'El comprobante fue rechazado.', 'success');
+            this.successMessage = 'Comprobante rechazado exitosamente.';
+            this.hideMessageAfterDelay();
+            Swal.fire('Rechazado', 'El comprobante ha sido rechazado.', 'success');
+            
+            this.refreshOrderAfterMutation();
           },
           error: (err) => {
-            const msg = err.error?.error || 'Error al rechazar.';
+            let msg = err.error?.message || err.error?.error || 'Error al rechazar.';
+            msg = this.sanitizeErrorMessage(msg);
             Swal.fire('Error', msg, 'error');
           }
         });
@@ -513,6 +891,26 @@ export class OrderDetailModalComponent implements OnInit {
     }
 
     const message = await this.extractBlobErrorMessage(err);
-    Swal.fire('Error', message, 'error');
+    Swal.fire('Error', this.sanitizeErrorMessage(message), 'error');
+  }
+
+  private sanitizeErrorMessage(msg: string): string {
+    if (!msg) return 'No se pudo completar la operación. Inténtalo nuevamente.';
+    const lowerMsg = msg.toLowerCase();
+    if (
+      lowerMsg.includes('jdbc') || 
+      lowerMsg.includes('sql') || 
+      lowerMsg.includes('insert into') || 
+      lowerMsg.includes('select ') || 
+      lowerMsg.includes('metadata_json') || 
+      lowerMsg.includes('rollback-only') || 
+      lowerMsg.includes('transacción abortada') || 
+      lowerMsg.includes('exception') || 
+      lowerMsg.includes('stack trace') ||
+      lowerMsg.includes('transaction system')
+    ) {
+      return 'No se pudo completar la operación. Inténtalo nuevamente.';
+    }
+    return msg;
   }
 }

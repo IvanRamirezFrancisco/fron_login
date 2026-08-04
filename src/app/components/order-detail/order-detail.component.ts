@@ -12,7 +12,8 @@ import {
   ShippingStatus, 
   PaymentProofStatus, 
   PaymentProofResponse,
-  PaymentInstructionsResponse
+  PaymentInstructionsResponse,
+  OrderTimelineEvent
 } from '../../models/order.model';
 import Swal from 'sweetalert2';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -62,6 +63,24 @@ export class OrderDetailComponent implements OnInit {
   // Instrucciones bancarias
   paymentInstructions: PaymentInstructionsResponse | null = null;
   loadingInstructions = false;
+  transferDateError: string = '';
+  minTransferDate: string = '';
+  maxTransferDate: string = '';
+
+  // Pickup Code
+  pickupCode: string | null = null;
+  loadingPickupCode = false;
+  pickupCodeError = '';
+
+  // Expiración de pago
+  remainingTimeText: string = '';
+  isAlmostExpired: boolean = false;
+  countdownInterval: any;
+
+  // Timeline
+  timeline: OrderTimelineEvent[] = [];
+  loadingTimeline = false;
+  timelineError: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -78,6 +97,28 @@ export class OrderDetailComponent implements OnInit {
       transferDate: [''],
       notes: ['', [Validators.maxLength(500)]]
     });
+
+    this.proofForm.get('transferDate')?.valueChanges.subscribe(() => {
+      this.validateTransferDate();
+    });
+  }
+
+  private validateTransferDate(): void {
+    const val = this.proofForm.get('transferDate')?.value;
+    this.transferDateError = '';
+    if (val) {
+      if (val < this.minTransferDate) {
+        this.transferDateError = 'La fecha no puede ser anterior a la creación de la orden.';
+        this.proofForm.get('transferDate')?.setErrors({ outOfRange: true });
+      } else if (val > this.maxTransferDate) {
+        this.transferDateError = 'La fecha no puede ser posterior al día de hoy.';
+        this.proofForm.get('transferDate')?.setErrors({ outOfRange: true });
+      } else {
+        this.proofForm.get('transferDate')?.setErrors(null);
+      }
+    } else {
+      this.proofForm.get('transferDate')?.setErrors(null);
+    }
   }
 
   ngOnInit(): void {
@@ -97,12 +138,27 @@ export class OrderDetailComponent implements OnInit {
       next: (order) => {
         this.order = order;
         this.isLoading = false;
+        
+        const now = new Date();
+        this.maxTransferDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        
+        if (order.createdAt) {
+          const cDate = new Date(order.createdAt);
+          this.minTransferDate = cDate.getFullYear() + '-' + String(cDate.getMonth() + 1).padStart(2, '0') + '-' + String(cDate.getDate()).padStart(2, '0');
+        }
+
         if (order.paymentMethod === 'BANK_TRANSFER' || order.paymentMethod === 'TRANSFER') {
           this.loadPaymentInstructions(id);
         }
         if (order.hasPaymentProof) {
           this.loadProofMetadata(id);
         }
+        
+        if (order.deliveryType === 'PICKUP_STORE' && order.pickupStatus === 'READY_FOR_PICKUP') {
+          this.loadPickupCode(id);
+        }
+        
+        this.loadTimeline(id);
       },
       error: (err) => {
         this.isLoading = false;
@@ -192,6 +248,23 @@ export class OrderDetailComponent implements OnInit {
     });
   }
 
+  loadPickupCode(orderId: number): void {
+    this.loadingPickupCode = true;
+    this.pickupCodeError = '';
+    this.orderService.getMyOrderPickupCode(orderId).subscribe({
+      next: (res) => {
+        this.pickupCode = res.pickupCode;
+        this.loadingPickupCode = false;
+      },
+      error: (err) => {
+        this.loadingPickupCode = false;
+        if (err.status !== 404) {
+          this.pickupCodeError = 'No se pudo cargar el código de recolección.';
+        }
+      }
+    });
+  }
+
   getStatusBadgeClass(status: OrderStatus): string {
     const map: Record<string, string> = {
       PENDING: 'badge-amber', CONFIRMED: 'badge-blue', PROCESSING: 'badge-indigo',
@@ -224,12 +297,24 @@ export class OrderDetailComponent implements OnInit {
     return map[status] ?? status;
   }
 
-  getPaymentMethodLabel(method: string): string {
+  getPaymentMethodLabel(method: string | undefined): string {
+    if (!method) return '—';
     const map: Record<string, string> = {
       CASH_ON_DELIVERY: 'Pago al recibir',
-      BANK_TRANSFER: 'Transferencia bancaria'
+      BANK_TRANSFER: 'Transferencia bancaria',
+      MERCADO_PAGO: 'Mercado Pago'
     };
     return map[method] ?? method;
+  }
+  
+  getDeliveryTypeLabel(type: string | undefined): string {
+    if (!type) return 'Estándar';
+    const map: Record<string, string> = {
+      PICKUP_STORE: 'Recoger en tienda',
+      LOCAL_DELIVERY: 'Envío local (Huejutla)',
+      EXTERNAL_SHIPPING_QUOTE: 'Envío foráneo (Cotización)'
+    };
+    return map[type] ?? type;
   }
 
   getCancelSourceLabel(source: string | undefined): string {
@@ -261,12 +346,62 @@ export class OrderDetailComponent implements OnInit {
       next: (instructions) => {
         this.paymentInstructions = instructions;
         this.loadingInstructions = false;
+        
+        if (instructions?.paymentDeadline && !instructions.isPaymentDeadlineExpired) {
+          this.startCountdown(instructions.paymentDeadline);
+        }
       },
       error: (err) => {
         console.error('Error cargando instrucciones de pago', err);
         this.loadingInstructions = false;
       }
     });
+  }
+
+  private startCountdown(deadlineStr: string): void {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
+
+    // El formato de paymentDeadline es "dd/MM/yyyy HH:mm"
+    const parts = deadlineStr.split(' ');
+    const dateParts = parts[0].split('/');
+    const timeParts = parts[1].split(':');
+    
+    if (dateParts.length !== 3 || timeParts.length !== 2) return;
+    
+    // Meses en JS son 0-index
+    const deadlineDate = new Date(
+      parseInt(dateParts[2], 10), 
+      parseInt(dateParts[1], 10) - 1, 
+      parseInt(dateParts[0], 10),
+      parseInt(timeParts[0], 10),
+      parseInt(timeParts[1], 10)
+    ).getTime();
+
+    const updateTimer = () => {
+      const now = new Date().getTime();
+      const distance = deadlineDate - now;
+
+      if (distance <= 0) {
+        clearInterval(this.countdownInterval);
+        this.remainingTimeText = '';
+        if (this.paymentInstructions) {
+          this.paymentInstructions.isPaymentDeadlineExpired = true;
+        }
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+
+      this.remainingTimeText = `${days} días ${hours} h ${minutes} min`;
+      this.isAlmostExpired = distance < (12 * 60 * 60 * 1000); // menos de 12 hrs
+    };
+
+    updateTimer();
+    this.countdownInterval = setInterval(updateTimer, 60000); // actualizar cada minuto
   }
 
   copyToClipboard(text: string | number | undefined | null, fieldName: string): void {
@@ -284,6 +419,12 @@ export class OrderDetailComponent implements OnInit {
     }).catch(err => {
       console.error('No se pudo copiar el texto', err);
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
   }
 
   loadProofMetadata(orderId: number): void {
@@ -354,6 +495,7 @@ export class OrderDetailComponent implements OnInit {
         if (this.order) {
           this.order.hasPaymentProof = true;
           this.order.paymentProofStatus = proof.status;
+          this.loadTimeline(this.order.id);
         }
         Swal.fire({
           icon: 'success',
@@ -490,16 +632,203 @@ export class OrderDetailComponent implements OnInit {
 
   closeProofPreview(): void {
     this.showProofPreviewModal = false;
+    this.proofPreviewUrl = null;
     this.proofPreviewSafeUrl = null;
     this.proofPreviewBlob = null;
     this.proofPreviewContentType = null;
-    this.proofPreviewFilename = null;
-    this.proofPreviewError = null;
     this.pdfDocument = null;
-    if (this.proofPreviewUrl) {
-      URL.revokeObjectURL(this.proofPreviewUrl);
-      this.proofPreviewUrl = null;
+  }
+
+  // ==================== TIMELINE CLIENTE ====================
+
+  loadTimeline(orderId: number): void {
+    this.loadingTimeline = true;
+    this.timelineError = null;
+    this.orderService.getMyOrderTimeline(orderId).subscribe({
+      next: (events) => {
+        this.timeline = events.map(event => this.mapClientTimelineEvent(event));
+        this.loadingTimeline = false;
+      },
+      error: (err) => {
+        console.error('Error loading timeline:', err);
+        this.timelineError = 'No se pudo cargar el historial en este momento.';
+        this.loadingTimeline = false;
+      }
+    });
+  }
+
+  private sanitizeCustomerTimelineText(text: string, eventType: string): string {
+    if (!text) return '';
+    const technicalTerms = [
+      'BANK_TRANSFER_PROOF_APPROVED', 'BANK_PROOF_UPLOADED', 'PAYMENT_APPROVED',
+      'ORDER_CONFIRMED', 'SYSTEM_EXPIRATION', 'ADMIN_PANEL', 'metadata_json',
+      'source', 'actorType', 'null', 'undefined', 'Fuente:', 'Fuente'
+    ];
+    
+    let hasTechnical = false;
+    for (const term of technicalTerms) {
+      if (text.includes(term)) {
+        hasTechnical = true;
+        break;
+      }
     }
+    
+    if (text.includes('{') || text.includes('[')) {
+      hasTechnical = true;
+    }
+    
+    if (hasTechnical) {
+      // Fallbacks amigables
+      switch(eventType) {
+        case 'ORDER_CREATED': return 'Tu pedido fue registrado correctamente.';
+        case 'BANK_PROOF_UPLOADED': return 'Recibimos tu comprobante de pago. Está pendiente de revisión.';
+        case 'BANK_PROOF_APPROVED': return 'Tu comprobante fue revisado correctamente.';
+        case 'PAYMENT_APPROVED': return 'Tu pago fue confirmado correctamente. Ahora prepararemos tu pedido para continuar con el proceso.';
+        case 'ORDER_CONFIRMED': return 'Tu pedido fue confirmado y está listo para ser preparado.';
+        case 'ORDER_CANCELLED': return 'La orden fue cancelada.';
+        case 'ORDER_EXPIRED': return 'La orden expiró porque no se confirmó el pago dentro del plazo establecido.';
+        case 'MERCADO_PAGO_WEBHOOK_RECEIVED': return 'Recibimos una actualización del estado de tu pago.';
+        case 'MERCADO_PAGO_REQUERY': return 'El estado de tu pago fue verificado nuevamente.';
+        case 'TRACKING_NUMBER_UPDATED': return 'Se agregó o actualizó la información de rastreo de tu pedido.';
+        default: return 'El estado de tu pedido fue actualizado.';
+      }
+    }
+    
+    return text;
+  }
+
+  private mapClientTimelineEvent(event: OrderTimelineEvent): OrderTimelineEvent {
+    const titleMap: Record<string, string> = {
+      'ORDER_CREATED': 'Orden creada',
+      'BANK_PROOF_UPLOADED': 'Comprobante enviado',
+      'BANK_PROOF_REJECTED': 'Comprobante rechazado',
+      'BANK_PROOF_APPROVED': 'Comprobante aprobado',
+      'PAYMENT_APPROVED': 'Pago aprobado',
+      'ORDER_CONFIRMED': 'Pedido confirmado',
+      'ORDER_STATUS_CHANGED': 'Pedido actualizado',
+      'SHIPPING_STATUS_CHANGED': 'Actualización de envío',
+      'TRACKING_NUMBER_UPDATED': 'Número de rastreo actualizado',
+      'ORDER_CANCELLED': 'Orden cancelada',
+      'ORDER_EXPIRED': 'Orden expirada',
+      'MERCADO_PAGO_WEBHOOK_RECEIVED': 'Actualización de pago',
+      'MERCADO_PAGO_REQUERY': 'Pago verificado',
+      'PICKUP_AUTHORIZED': 'Personas autorizadas registradas',
+      'PICKUP_CODE_GENERATED': 'Recolección preparada',
+      'PICKUP_READY': 'Pedido listo para recoger',
+      'PICKUP_CODE_VERIFIED': 'Código verificado',
+      'ORDER_PICKED_UP': 'Pedido recolectado',
+      'PICKUP_CODE_REGENERATED': 'Código actualizado',
+      'PICKUP_VERIFICATION_FAILED': 'Intento de recolección fallido'
+    };
+
+    if (event.eventType === 'SHIPPING_STATUS_CHANGED') {
+      const shippingTitleMap: Record<string, string> = {
+        'PREPARING': 'Pedido en preparación',
+        'SHIPPED': 'Pedido enviado',
+        'DELIVERED': 'Pedido entregado',
+        'IN_TRANSIT': 'Pedido en camino',
+        'RETURNED': 'Pedido devuelto'
+      };
+      const shippingDescMap: Record<string, string> = {
+        'PREPARING': 'Estamos preparando tu pedido.',
+        'SHIPPED': 'Tu pedido fue enviado.',
+        'DELIVERED': 'Tu pedido fue entregado.',
+        'IN_TRANSIT': 'Tu pedido está en camino.',
+        'RETURNED': 'El pedido fue marcado como devuelto.'
+      };
+      if (event.shippingStatusAfter && shippingTitleMap[event.shippingStatusAfter]) {
+        event.title = shippingTitleMap[event.shippingStatusAfter];
+        event.description = shippingDescMap[event.shippingStatusAfter];
+      } else {
+        event.title = titleMap[event.eventType] || 'Actualización de la orden';
+      }
+    } else if (event.eventType === 'ORDER_STATUS_CHANGED') {
+      const statusDescMap: Record<string, string> = {
+        'CONFIRMED': 'Tu pedido fue confirmado.',
+        'PROCESSING': 'Estamos preparando tu pedido.',
+        'COMPLETED': 'Tu pedido fue completado.',
+        'CANCELLED': 'La orden fue cancelada.'
+      };
+      event.title = titleMap[event.eventType] || 'Pedido actualizado';
+      if (event.orderStatusAfter && statusDescMap[event.orderStatusAfter]) {
+        event.description = statusDescMap[event.orderStatusAfter];
+      } else {
+        event.description = 'El estado de tu pedido fue actualizado.';
+      }
+    } else if (event.eventType.startsWith('PICKUP_') || event.eventType === 'ORDER_PICKED_UP') {
+      const pickupDescMap: Record<string, string> = {
+        'PICKUP_AUTHORIZED': 'Se registraron personas autorizadas para recoger el pedido.',
+        'PICKUP_CODE_GENERATED': 'Se generó el código de recolección. Lo verás cuando tu pedido esté listo para recoger.',
+        'PICKUP_READY': 'Tu pedido ya puede recogerse en tienda con el código de recolección y una identificación oficial.',
+        'PICKUP_CODE_VERIFIED': 'El código de recolección fue validado en tienda.',
+        'ORDER_PICKED_UP': 'El pedido fue recolectado en tienda.',
+        'PICKUP_CODE_REGENERATED': 'Se generó un nuevo código de recolección.',
+        'PICKUP_VERIFICATION_FAILED': 'Hubo un problema al validar el código de recolección.'
+      };
+      event.title = titleMap[event.eventType] || 'Actualización de recolección';
+      event.description = pickupDescMap[event.eventType] || 'El estado de recolección fue actualizado.';
+    } else {
+      event.title = titleMap[event.eventType] || 'Actualización de la orden';
+    }
+    
+    if (event.eventType === 'BANK_PROOF_REJECTED') {
+      let rawDesc = event.description || '';
+      // Si el backend mandó "El comprobante fue rechazado... Motivo: blabla", intentamos extraer el motivo.
+      let motive = '';
+      if (rawDesc.includes('Motivo:')) {
+         motive = rawDesc.split('Motivo:')[1].trim();
+      } else if (rawDesc && !rawDesc.includes('{') && !rawDesc.includes('Fuente')) {
+         motive = rawDesc;
+      }
+      
+      if (motive) {
+         event.description = `Motivo: ${motive}`;
+      } else {
+         event.description = 'Tu comprobante fue rechazado. Revisa el motivo y sube uno nuevo si el plazo sigue vigente.';
+      }
+    } else if (event.eventType !== 'SHIPPING_STATUS_CHANGED' && event.eventType !== 'ORDER_STATUS_CHANGED') {
+      event.description = this.sanitizeCustomerTimelineText(event.description || '', event.eventType);
+    }
+
+    return event;
+  }
+
+  getTimelineIcon(eventType: string): string {
+    const map: Record<string, string> = {
+      'ORDER_CREATED': 'description',
+      'BANK_PROOF_UPLOADED': 'upload_file',
+      'BANK_PROOF_REJECTED': 'error',
+      'BANK_PROOF_APPROVED': 'check_circle',
+      'PAYMENT_APPROVED': 'payments',
+      'ORDER_CONFIRMED': 'check_circle',
+      'ORDER_STATUS_CHANGED': 'sync_alt',
+      'SHIPPING_STATUS_CHANGED': 'local_shipping',
+      'TRACKING_NUMBER_UPDATED': 'local_offer',
+      'ORDER_CANCELLED': 'cancel',
+      'ORDER_EXPIRED': 'timer_off',
+      'MERCADO_PAGO_WEBHOOK_RECEIVED': 'payment',
+      'MERCADO_PAGO_REQUERY': 'refresh'
+    };
+    return map[eventType] || 'info';
+  }
+
+  getTimelineColorClass(eventType: string): string {
+    const map: Record<string, string> = {
+      'ORDER_CREATED': 'text-gray-500 bg-gray-100',
+      'BANK_PROOF_UPLOADED': 'text-blue-500 bg-blue-100',
+      'BANK_PROOF_REJECTED': 'text-red-500 bg-red-100',
+      'BANK_PROOF_APPROVED': 'text-green-500 bg-green-100',
+      'PAYMENT_APPROVED': 'text-green-500 bg-green-100',
+      'ORDER_CONFIRMED': 'text-green-500 bg-green-100',
+      'ORDER_STATUS_CHANGED': 'text-blue-500 bg-blue-100',
+      'SHIPPING_STATUS_CHANGED': 'text-blue-500 bg-blue-100',
+      'TRACKING_NUMBER_UPDATED': 'text-blue-500 bg-blue-100',
+      'ORDER_CANCELLED': 'text-red-500 bg-red-100',
+      'ORDER_EXPIRED': 'text-orange-500 bg-orange-100',
+      'MERCADO_PAGO_WEBHOOK_RECEIVED': 'text-blue-500 bg-blue-100',
+      'MERCADO_PAGO_REQUERY': 'text-blue-500 bg-blue-100'
+    };
+    return map[eventType] || 'text-gray-500 bg-gray-100';
   }
 
   downloadProof(): void {

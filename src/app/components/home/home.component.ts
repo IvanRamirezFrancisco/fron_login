@@ -7,7 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { PublicApiService } from '../../services/public-api.service';
 import { User } from '../../models/user.model';
-import { PublicProduct, PublicCategory } from '../../models/product.model';
+import { PublicProduct, PublicCategory, PublicTrendingProduct } from '../../models/product.model';
 
 @Component({
   selector: 'app-home',
@@ -32,8 +32,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Datos reales del backend
   featuredProducts: PublicProduct[] = [];
   latestProducts: PublicProduct[] = [];
+  trendingProducts: PublicTrendingProduct[] = [];
   categories: PublicCategory[] = [];
   loadingFeatured = true;
+  loadingTrending = true;
   loadingCategories = true;
 
   // ── Hero Slider ────────────────────────────────────────────────────────────
@@ -118,6 +120,18 @@ export class HomeComponent implements OnInit, OnDestroy {
       error: () => {}
     });
 
+    // Cargar productos en tendencia (Solución 2)
+    this.publicApiService.getTrendingProducts(8).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (products) => {
+        this.trendingProducts = products;
+        this.loadingTrending = false;
+      },
+      error: () => {
+        // Fallo seguro
+        this.loadingTrending = false;
+      }
+    });
+
     // Cargar categorías con productos activos
     this.publicApiService.getActiveCategories(true).pipe(takeUntil(this.destroy$)).subscribe({
       next: (cats) => {
@@ -143,6 +157,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   getDiscountPercent(p: PublicProduct): number {
     if (!p.discountPrice || p.discountPrice >= p.price) return 0;
     return Math.round((1 - p.discountPrice / p.price) * 100);
+  }
+
+  getTrendingDiscountPercent(p: PublicTrendingProduct): number {
+    if (!p.discountPrice || p.discountPrice >= p.regularPrice) return 0;
+    return Math.round((1 - p.discountPrice / p.regularPrice) * 100);
   }
 
   onDocumentClick(event: MouseEvent): void {
@@ -250,4 +269,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   navigateToRegister() { this.router.navigate(['/register']); }
   navigateToCatalog() { this.router.navigate(['/catalogo']); }
   navigateToHelp() { this.router.navigate(['/ayuda']); }
+
+  onImageError(event: any): void {
+    event.target.src = '/assets/logoP.png';
+  }
 }

@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { OrderService } from '../../../services/order.service';
+import { AuthService } from '../../../services/auth.service';
 import { NotificationCenterService } from '../../../core/services/notification-center.service';
 import { 
   Order, 
@@ -61,6 +62,8 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   OrderStatus = OrderStatus;
   PaymentStatus = PaymentStatus;
   ShippingStatus = ShippingStatus;
+
+  hasReportViewPermission = false;
 
   // Opciones para selects
   orderStatusOptions = Object.values(OrderStatus);
@@ -159,8 +162,11 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     private notifService: NotificationCenterService,
     private paymentSettingsService: PaymentSettingsService,
     private router: Router,
-    private route: ActivatedRoute
-  ) {}
+    private route: ActivatedRoute,
+    private authService: AuthService
+  ) {
+    this.hasReportViewPermission = this.authService.hasPermission('REPORT_VIEW');
+  }
 
   ngOnInit(): void {
     // Configurar debounce para búsqueda (500ms)
@@ -267,6 +273,7 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     this.loadOrders();
   }
 
+  /** Limpia filtros y recarga */
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedOrderStatus = null;
@@ -276,6 +283,18 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     this.endDate = '';
     this.currentPage = 0;
     this.loadOrders();
+  }
+
+  /** Navega al módulo de clustering para analizar la orden */
+  analyzePattern(orderId: number): void {
+    // Si viene del modal, ya cerró. Nos aseguramos.
+    this.closeDetailModal();
+    this.router.navigate(['/admin/analitica/patrones-compra'], { queryParams: { orderId } });
+  }
+
+  onAnalyzePatternRow(orderId: number, event: Event): void {
+    event.stopPropagation();
+    this.analyzePattern(orderId);
   }
 
   // ==================== PAGINACIÓN ====================
@@ -325,16 +344,18 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     this.loadOrders();
   }
 
-  // ==================== MODAL DETALLE ====================
+  // ==================== MODAL DE DETALLE ====================
 
   openDetailModal(order: Order): void {
     this.selectedOrder = order;
     this.showDetailModal = true;
+    document.body.classList.add('overflow-hidden');
   }
 
   closeDetailModal(): void {
     this.showDetailModal = false;
     this.selectedOrder = null;
+    document.body.classList.remove('overflow-hidden');
   }
 
   onOrderUpdated(updatedOrder: Order): void {

@@ -1,12 +1,12 @@
-/* =============================================================
-   CHECKOUT — CASA DE MÚSICA CASTILLO
+﻿/* =============================================================
+   CHECKOUT â€” CASA DE MÃšSICA CASTILLO
    ============================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :host { font-family: 'Inter', sans-serif; }
 
-/* ── Design Tokens ──────────────────────────────────────────── */
+/* â”€â”€ Design Tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .checkout-page {
   --wine:        #722f37;
   --wine-dark:   #5a2029;
@@ -37,7 +37,7 @@
   --shadow-lg:   0 10px 30px rgba(0,0,0,.10);
 }
 
-/* ── Base ───────────────────────────────────────────────────── */
+/* â”€â”€ Base â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .checkout-page {
   min-height: 100vh;
   background: var(--gray-50);
@@ -50,7 +50,7 @@
   padding: 0 1.5rem;
 }
 
-/* ── Header ─────────────────────────────────────────────────── */
+/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .checkout-header {
   background: #fff;
   border-bottom: 1px solid var(--gray-200);
@@ -113,10 +113,10 @@
 }
 .secure-badge .material-icons { font-size: 1rem; }
 
-/* ── Body ───────────────────────────────────────────────────── */
+/* â”€â”€ Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .checkout-body { padding: 2rem 1.5rem; }
 
-/* ── Alerts ─────────────────────────────────────────────────── */
+/* â”€â”€ Alerts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .alert {
   display: flex;
   align-items: flex-start;
@@ -139,7 +139,7 @@
   text-decoration: underline;
 }
 
-/* ── State blocks (vacío / bloqueado) ──────────────────────── */
+/* â”€â”€ State blocks (vacÃ­o / bloqueado) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .state-block {
   text-align: center;
   padding: 4rem 2rem;
@@ -170,7 +170,7 @@
 }
 .btn-state:hover { background: var(--wine-dark); }
 
-/* ── Checkout Layout ────────────────────────────────────────── */
+/* â”€â”€ Checkout Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .checkout-layout {
   display: grid;
   grid-template-columns: 1fr 380px;
@@ -178,7 +178,7 @@
   align-items: start;
 }
 
-/* ── Form Cards ─────────────────────────────────────────────── */
+/* â”€â”€ Form Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .form-card {
   background: var(--card-bg, #ffffff);
   border-radius: var(--radius);
@@ -225,7 +225,7 @@
 
 .form-card-body { padding: 1.5rem; }
 
-/* ── Form Groups & Rows ─────────────────────────────────────── */
+/* â”€â”€ Form Groups & Rows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -260,7 +260,7 @@
 
 .form-row-3 > .form-group:nth-child(3) { max-width: 130px; }
 
-/* ── Inputs ─────────────────────────────────────────────────── */
+/* â”€â”€ Inputs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .checkout-page input.form-input,
 .checkout-page textarea.form-input,
 .checkout-page select.form-input,
@@ -338,7 +338,7 @@
 /* CP group */
 .cp-group { max-width: 140px; flex: none; }
 
-/* ── Field errors ───────────────────────────────────────────── */
+/* â”€â”€ Field errors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .field-error {
   display: flex;
   align-items: center;
@@ -350,7 +350,7 @@
 }
 .field-error .material-icons { font-size: .95rem; }
 
-/* ── Toggle (invoice checkbox) ──────────────────────────────── */
+/* â”€â”€ Toggle (invoice checkbox) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .toggle-label {
   display: flex;
   align-items: flex-start;
@@ -402,7 +402,7 @@
 }
 .billing-notice .material-icons { font-size: 1.1rem; }
 
-/* ── Payment option ─────────────────────────────────────────── */
+/* â”€â”€ Payment option â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .payment-options { display: flex; flex-direction: column; gap: .75rem; }
 
 .payment-option {
@@ -492,7 +492,7 @@
   font-weight: 500;
 }
 
-/* ── Precarga de Datos de Usuario (Premium) ─────────────────── */
+/* â”€â”€ Precarga de Datos de Usuario (Premium) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .account-prefill-card {
   display: flex;
   align-items: center;
@@ -512,7 +512,7 @@
 }
 
 .account-prefill-card.partial {
-  background-color: #fffaf0; /* Crema/ámbar muy suave */
+  background-color: #fffaf0; /* Crema/Ã¡mbar muy suave */
   border: 1px solid rgba(197, 160, 89, 0.3); /* Dorado */
   border-left: 4px solid var(--gold);
 }
@@ -600,7 +600,7 @@
   transform: translateY(0);
 }
 
-/* ── Ayuda de Dirección (Premium) ─────────────────────────── */
+/* â”€â”€ Ayuda de DirecciÃ³n (Premium) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .address-helper-card {
   display: flex;
   align-items: flex-start;
@@ -644,7 +644,7 @@
   line-height: 1.3;
 }
 
-/* ── Responsive ────────────────────────────────────────────── */
+/* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 768px) {
   .account-prefill-card {
     flex-direction: column;
@@ -734,7 +734,7 @@
   font-weight: 600;
 }
 
-/* ── Validation errors block ────────────────────────────────── */
+/* â”€â”€ Validation errors block â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .validation-errors-block {
   display: flex;
   align-items: flex-start;
@@ -750,10 +750,10 @@
 .validation-errors-block .material-icons { font-size: 1.3rem; flex-shrink: 0; }
 .validation-errors-block ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .3rem; }
 
-/* ── Submit button (mobile) ─────────────────────────────────── */
+/* â”€â”€ Submit button (mobile) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .submit-mobile { display: none; margin-top: .5rem; }
 
-/* ── Summary sidebar ────────────────────────────────────────── */
+/* â”€â”€ Summary sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .checkout-summary { position: sticky; top: 1.5rem; }
 
 .summary-card {
@@ -860,7 +860,7 @@
 }
 .payment-selected-info .material-icons { font-size: 1rem; color: var(--wine); }
 
-/* ── Confirm Button ─────────────────────────────────────────── */
+/* â”€â”€ Confirm Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .checkout-page .btn-confirm {
   display: flex;
   align-items: center;
@@ -954,7 +954,7 @@
 }
 .guarantee .material-icons { font-size: 1rem; color: var(--green); }
 
-/* ── Responsive ─────────────────────────────────────────────── */
+/* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 960px) {
   .checkout-layout {
     grid-template-columns: 1fr;
@@ -974,4 +974,64 @@
   .form-row { flex-direction: column; gap: 0; }
   .form-row .form-group { max-width: 100% !important; }
   .cp-group { max-width: 100%; }
+}
+/* %% Pickup Options & Buttons %% */
+.authorized-person-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.btn-remove-person {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    background: var(--red-bg);
+    color: var(--red);
+    border: 1px solid var(--red-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all .2s;
+    flex-shrink: 0;
+}
+.btn-remove-person:hover {
+    background: var(--red);
+    color: #fff;
+}
+.btn-add-person {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: transparent;
+    color: var(--wine);
+    border: 1px dashed var(--wine);
+    border-radius: var(--radius-sm);
+    padding: .6rem 1rem;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+}
+.btn-add-person:hover {
+    background: var(--wine-tint);
+}
+.spinner-sm {
+    width: 14px;
+    height: 14px;
+    border-width: 2px;
+    border-color: rgba(0,0,0,0.1);
+    border-top-color: var(--wine);
+}
+.preview-message {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .85rem;
+    color: var(--gray-700);
+}
+.preview-message .material-icons {
+    color: var(--wine);
+    font-size: 1.1rem;
 }

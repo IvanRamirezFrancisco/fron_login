@@ -1,14 +1,22 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl, ValidatorFn, ValidationErrors } from '@angular/forms';
+
+export function optionalPhoneValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = (control.value || '').trim();
+    if (!value) return null;
+    return /^\d{10}$/.test(value) ? null : { invalidPhone: true };
+  };
+}
+import { Subscription, Subject, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, catchError, take } from 'rxjs/operators';
 import { CartService, BackendCartItem } from '../../services/cart.service';
 import { OrderService } from '../../services/order.service';
 import { CartValidationResponse, CartValidationError } from '../../models/cart.model';
-import { CheckoutRequest, PaymentMethodType } from '../../models/order.model';
+import { CheckoutRequest, PaymentMethodType, PricePreviewResponse, PricePreviewRequest } from '../../models/order.model';
 import { AuthService } from '../../services/auth.service';
-import { take } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -28,6 +36,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   cartDiscount = 0;
   cartTotal = 0;
   unavailableItemsTotal = 0;
+  isCheckingOut = false;
   canCheckout = false;
   warningMessage: string | null = null;
 
@@ -37,6 +46,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   validationErrors: string[] = [];
   generalError = '';
   userDataLoadStatus: 'NONE' | 'PARTIAL' | 'COMPLETE' = 'NONE';
+
+  pricePreviewResult: PricePreviewResponse | null = null;
+  isLoadingPreview = false;
+  private previewSubject = new Subject<PricePreviewRequest>();
 
   private subs: Subscription[] = [];
 
@@ -67,6 +80,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.buildForm();
+    this.setupPricePreview();
     this.subscribeToCart();
     this.loadUserData();
     this.cartService.loadCart().subscribe({
@@ -130,6 +144,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   private buildForm(): void {
     this.checkoutForm = this.fb.group({
+      deliveryOption: ['LOCAL_DELIVERY', Validators.required],
       shippingAddress: this.fb.group({
         firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100), Validators.pattern(/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s.'-]{2,}$/)]],
         lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100), Validators.pattern(/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s.'-]{2,}$/)]],
@@ -143,6 +158,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         zipCode: ['', [Validators.required, Validators.pattern(/^\d{5}$/)]],
         references: ['', [Validators.maxLength(250)]]
       }),
+      authorizedPersons: this.fb.array([]),
       requireInvoice: [false],
       billingAddress: this.fb.group({
         rfc: ['', [Validators.minLength(12), Validators.maxLength(13), Validators.pattern(/^[A-Z0-9&]{12,13}$/)]],
@@ -171,18 +187,169 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       billingGroup.get('rfc')!.updateValueAndValidity();
       billingGroup.get('businessName')!.updateValueAndValidity();
       billingGroup.get('fiscalZipCode')!.updateValueAndValidity();
-      billingGroup.get('invoiceEmail')!.updateValueAndValidity();
     });
+
+    // Dynamic validation for delivery options
+    this.checkoutForm.get('deliveryOption')!.valueChanges.subscribe(option => {
+      this.triggerPricePreview();
+      const shippingGroup = this.checkoutForm.get('shippingAddress') as FormGroup;
+      
+      if (option === 'PICKUP_STORE') {
+        shippingGroup.disable();
+        Object.keys(shippingGroup.controls).forEach(key => {
+          shippingGroup.get(key)!.clearValidators();
+          shippingGroup.get(key)!.setErrors(null);
+        });
+        shippingGroup.updateValueAndValidity({ emitEvent: false });
+        
+        if (this.authorizedPersons.length === 0) {
+          this.addAuthorizedPerson(); // Add at least one person
+        }
+      } else {
+        shippingGroup.enable();
+        shippingGroup.get('firstName')!.setValidators([Validators.required, Validators.minLength(2), Validators.maxLength(100), Validators.pattern(/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s.'-]{2,}$/)]);
+        shippingGroup.get('lastName')!.setValidators([Validators.required, Validators.minLength(2), Validators.maxLength(100), Validators.pattern(/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s.'-]{2,}$/)]);
+        shippingGroup.get('phone')!.setValidators([Validators.required, Validators.pattern(/^\d{10}$/)]);
+        shippingGroup.get('street')!.setValidators([Validators.required, Validators.minLength(3), Validators.maxLength(200)]);
+        shippingGroup.get('exteriorNumber')!.setValidators([Validators.required, Validators.minLength(1), Validators.maxLength(20)]);
+        shippingGroup.get('interiorNumber')!.setValidators([Validators.maxLength(20)]);
+        shippingGroup.get('neighborhood')!.setValidators([Validators.required, Validators.minLength(3), Validators.maxLength(100)]);
+        shippingGroup.get('city')!.setValidators([Validators.required, Validators.minLength(2), Validators.maxLength(100), Validators.pattern(/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s-]+$/)]);
+        shippingGroup.get('state')!.setValidators([Validators.required, Validators.minLength(2), Validators.maxLength(100), Validators.pattern(/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/)]);
+        shippingGroup.get('zipCode')!.setValidators([Validators.required, Validators.pattern(/^\d{5}$/)]);
+        shippingGroup.get('references')!.setValidators([Validators.maxLength(250)]);
+        
+        Object.keys(shippingGroup.controls).forEach(key => {
+          shippingGroup.get(key)!.updateValueAndValidity({ emitEvent: false });
+        });
+        shippingGroup.updateValueAndValidity({ emitEvent: false });
+      }
+    });
+
+    const triggerFields = ['state', 'city', 'zipCode'];
+    triggerFields.forEach(field => {
+      this.checkoutForm.get(`shippingAddress.${field}`)!.valueChanges.subscribe(() => {
+        this.triggerPricePreview();
+      });
+    });
+  }
+
+  get authorizedPersons() {
+    return this.checkoutForm.get('authorizedPersons') as FormArray;
+  }
+
+  addAuthorizedPerson() {
+    if (this.authorizedPersons.length < 3) {
+      this.authorizedPersons.push(this.fb.group({
+        fullName: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(80), Validators.pattern(/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/)]],
+        phone: ['', [optionalPhoneValidator()]],
+        relationship: ['', [Validators.maxLength(50), Validators.pattern(/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]*$/)]],
+        isPrimary: [this.authorizedPersons.length === 0]
+      }));
+    }
+  }
+
+  onAuthorizedPhoneInput(index: number): void {
+    const control = this.authorizedPersons.at(index).get('phone');
+    if (control) {
+      const sanitized = (control.value || '').replace(/\D/g, '').slice(0, 10);
+      control.setValue(sanitized, { emitEvent: false });
+    }
+  }
+
+  removeAuthorizedPerson(index: number) {
+    if (this.authorizedPersons.length > 1) {
+      this.authorizedPersons.removeAt(index);
+      // Ensure there's always one primary if it was removed
+      if (index === 0 && this.authorizedPersons.length > 0) {
+        this.authorizedPersons.at(0).get('isPrimary')?.setValue(true);
+      }
+    }
+  }
+
+  fillWithMyData(index: number) {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        let fullName = '';
+        if (user.firstName) fullName += user.firstName;
+        if (user.lastName) fullName += ' ' + user.lastName;
+        fullName = fullName.trim();
+        
+        if (fullName) {
+          // Check if this name is already in the array
+          const persons = this.authorizedPersons.value || [];
+          const normalizedNew = fullName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, ' ');
+          
+          for (let i = 0; i < persons.length; i++) {
+            if (i !== index && persons[i].fullName) {
+              const existing = persons[i].fullName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, ' ');
+              if (existing === normalizedNew) {
+                Swal.fire({
+                  icon: 'warning',
+                  title: 'Nombre duplicado',
+                  text: 'Ya te has agregado como persona autorizada.',
+                  confirmButtonColor: '#722f37'
+                });
+                return;
+              }
+            }
+          }
+
+          this.authorizedPersons.at(index).patchValue({
+            fullName: fullName,
+            relationship: 'Titular'
+          });
+        }
+      } catch (e) {}
+    }
+  }
+
+  private setupPricePreview(): void {
+    this.subs.push(
+      this.previewSubject.pipe(
+        debounceTime(500),
+        switchMap(request => {
+          this.isLoadingPreview = true;
+          return this.orderService.pricePreview(request).pipe(
+            catchError(err => {
+              this.isLoadingPreview = false;
+              // Clear preview if error
+              this.pricePreviewResult = null;
+              return of(null);
+            })
+          );
+        })
+      ).subscribe(result => {
+        this.isLoadingPreview = false;
+        if (result) {
+          this.pricePreviewResult = result;
+        }
+      })
+    );
+  }
+
+  triggerPricePreview(): void {
+    const deliveryOption = this.checkoutForm.get('deliveryOption')?.value;
+    const s = this.checkoutForm.get('shippingAddress')?.value;
+    
+    // Only send state/city/zipCode if they have *some* value, we let backend validate if it's enough.
+    const req: PricePreviewRequest = {
+      deliveryOption,
+      state: s.state,
+      city: s.city,
+      postalCode: s.zipCode
+    };
+    this.previewSubject.next(req);
   }
 
   private subscribeToCart(): void {
     this.subs.push(
       this.cartService.cartItems$.subscribe(items => {
         this.cartItems = items;
-        this.cartSubtotal = this.cartService.getSubtotal();
-        this.cartTax = this.cartService.getTaxes();
-        this.cartDiscount = this.cartService.getDiscount();
-        this.cartTotal = this.cartService.getFinalTotal();
+        // Trigger price preview on cart changes to get updated totals
+        this.triggerPricePreview();
         this.unavailableItemsTotal = this.cartService.getUnavailableItemsTotal();
       }),
       this.cartService.canCheckout$.subscribe(val => this.canCheckout = val),
@@ -260,9 +427,74 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.pricePreviewResult && this.pricePreviewResult.canProceedToPayment === false) {
+      return;
+    }
+
     this.submitted = true;
     this.checkoutForm.markAllAsTouched();
-    if (this.checkoutForm.invalid) {
+
+    // Validar duplicados en pickup y cantidad
+    let hasPickupErrors = false;
+    let firstPickupErrorMsg = '';
+    
+    if (this.checkoutForm.get('deliveryOption')?.value === 'PICKUP_STORE') {
+      const persons = this.authorizedPersons.value || [];
+      if (persons.length === 0) {
+        hasPickupErrors = true;
+        firstPickupErrorMsg = 'Debes registrar al menos una persona autorizada.';
+      } else {
+        const normalizedNames = new Set<string>();
+        for (let i = 0; i < persons.length; i++) {
+          const person = persons[i];
+          const name = person.fullName;
+          
+          if (this.authorizedPersons.at(i).invalid && !hasPickupErrors) {
+            hasPickupErrors = true;
+            if (this.authorizedPersons.at(i).get('fullName')?.invalid) {
+               firstPickupErrorMsg = `Persona ${i + 1}: Ingresa un nombre válido de al menos 5 letras (nombre y apellido).`;
+            } else if (this.authorizedPersons.at(i).get('phone')?.invalid) {
+               firstPickupErrorMsg = `Persona ${i + 1}: El teléfono debe tener exactamente 10 dígitos.`;
+            } else if (this.authorizedPersons.at(i).get('relationship')?.invalid) {
+               firstPickupErrorMsg = `Persona ${i + 1}: La referencia es muy larga o contiene números.`;
+            }
+          }
+
+          if (name && name.trim().length > 0) {
+            const normalized = name.trim().toLowerCase()
+                                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                                .replace(/\s+/g, ' ');
+            if (normalizedNames.has(normalized)) {
+              this.authorizedPersons.at(i).get('fullName')?.setErrors({ duplicatePerson: true });
+              if (!hasPickupErrors) {
+                hasPickupErrors = true;
+                firstPickupErrorMsg = `Persona ${i + 1}: Esta persona ya está autorizada.`;
+              }
+            } else {
+              normalizedNames.add(normalized);
+            }
+          }
+        }
+      }
+    }
+
+    if (this.checkoutForm.invalid || hasPickupErrors) {
+      if (hasPickupErrors) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Revisa las personas autorizadas',
+          text: `Hay datos incompletos o inválidos. ${firstPickupErrorMsg} Corrige los campos marcados para continuar.`,
+          confirmButtonColor: '#722f37'
+        });
+        setTimeout(() => {
+          const authSection = document.querySelector('.authorized-person-card, .ng-invalid');
+          if (authSection) {
+            authSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 50);
+        return;
+      }
+      
       setTimeout(() => {
         const firstError = document.querySelector('.input-error, .ng-invalid');
         if (firstError) {
@@ -305,12 +537,20 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   private submitOrder(): void {
     const formValue = this.checkoutForm.value;
+    const rawFormValue = this.checkoutForm.getRawValue();
+    const deliveryOption = formValue.deliveryOption;
     
     // Construir string de envío
-    const s = formValue.shippingAddress;
-    const interiorStr = s.interiorNumber ? ` Int. ${s.interiorNumber}` : '';
-    const refStr = s.references ? ` (Ref: ${s.references})` : '';
-    const shippingString = `${s.firstName} ${s.lastName}, Tel: ${s.phone}\n${s.street} ${s.exteriorNumber}${interiorStr}\nCol. ${s.neighborhood}, ${s.city}, ${s.state}, CP: ${s.zipCode}${refStr}`.trim();
+    const s = rawFormValue.shippingAddress;
+    let shippingString = '';
+    
+    if (deliveryOption === 'PICKUP_STORE') {
+      shippingString = 'Recoger en tienda';
+    } else {
+      const interiorStr = s.interiorNumber ? ` Int. ${s.interiorNumber}` : '';
+      const refStr = s.references ? ` (Ref: ${s.references})` : '';
+      shippingString = `${s.firstName} ${s.lastName}, Tel: ${s.phone}\n${s.street} ${s.exteriorNumber}${interiorStr}\nCol. ${s.neighborhood}, ${s.city}, ${s.state}, CP: ${s.zipCode}${refStr}`.trim();
+    }
 
     // Construir string de facturación
     let billingString = shippingString;
@@ -320,10 +560,15 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     }
 
     const request: CheckoutRequest = {
+      deliveryOption,
+      state: s?.state,
+      city: s?.city,
+      postalCode: s?.zipCode,
       shippingAddress: shippingString,
       billingAddress: billingString,
       paymentMethod: formValue.paymentMethod as PaymentMethodType,
-      notes: formValue.notes ? (formValue.notes as string).trim() : undefined
+      notes: formValue.notes ? (formValue.notes as string).trim() : undefined,
+      authorizedPersons: deliveryOption === 'PICKUP_STORE' ? formValue.authorizedPersons : []
     };
 
     this.isSubmitting = true;
@@ -340,7 +585,18 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         this.isSubmitting = false;
         const status = err?.status;
         if (status === 400) {
-          this.generalError = err?.error?.error ?? 'Datos del formulario no válidos. Revisa tu información.';
+          if (err?.error?.error === 'INVALID_PICKUP_AUTHORIZATIONS') {
+            const details = (err?.error?.details || []).join('\n');
+            Swal.fire({
+              icon: 'error',
+              title: err?.error?.message || 'Error en recolección',
+              text: details,
+              confirmButtonColor: '#722f37'
+            });
+            this.generalError = 'Revisa la sección de personas autorizadas.';
+          } else {
+            this.generalError = err?.error?.message ?? err?.error?.error ?? 'Datos del formulario no válidos. Revisa tu información.';
+          }
         } else if (status === 401) {
           this.router.navigate(['/login'], { queryParams: { returnUrl: '/checkout' } });
         } else if (status === 409) {
@@ -407,7 +663,145 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     (event.target as HTMLImageElement).src = '/assets/logoP.png';
   }
 
+  requestShippingQuote(): void {
+    if (!this.pricePreviewResult?.contactWhatsapp) {
+      return;
+    }
+
+    const formValue = this.checkoutForm.value;
+    const s = formValue.shippingAddress;
+    const items = this.cartItems.map(item => `- ${item.product.name} x ${item.quantity}`).join('\n');
+    const subtotal = this.pricePreviewResult.subtotal ? this.pricePreviewResult.subtotal.toFixed(2) : '0.00';
+    
+    let addressStr = '';
+    if (s.street) {
+      addressStr = `${s.street} ${s.exteriorNumber || ''}, Col. ${s.neighborhood || ''}, ${s.city || ''}, ${s.state || ''}, CP: ${s.zipCode || ''}`.trim();
+    }
+
+    const clientName = (s.firstName && s.lastName) ? `${s.firstName} ${s.lastName}` : 'No proporcionado';
+    const clientPhone = s.phone ? s.phone : 'No proporcionado';
+
+    const message = `Hola, quiero cotizar el envío de mi pedido en Casa de Música Castillo.
+
+Método: Envío foráneo
+Subtotal: $${subtotal}
+
+Productos:
+${items}
+
+Dirección:
+${addressStr || 'Pendiente de capturar'}
+
+Mi nombre:
+${clientName}
+
+Mi teléfono:
+${clientPhone}
+
+Quedo atento al costo de envío para continuar con mi compra.`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const phone = this.pricePreviewResult.contactWhatsapp.replace(/\D/g, '');
+    const url = `https://wa.me/${phone}?text=${encodedMessage}`;
+    window.open(url, '_blank');
+  }
+
   trackByItemId(_: number, item: BackendCartItem): number {
     return item.backendItemId;
+  }
+
+  getCheckoutBlockReasons(): string[] {
+    const reasons: string[] = [];
+    const option = this.checkoutForm.get('deliveryOption')?.value;
+
+    if (!this.checkoutForm.get('paymentMethod')?.value) {
+      reasons.push('Selecciona un método de pago.');
+    }
+
+    if (option === 'PICKUP_STORE') {
+      const persons = this.authorizedPersons.value || [];
+      if (persons.length === 0) {
+        reasons.push('Falta al menos una persona autorizada.');
+      } else {
+        const normalizedNames = new Set<string>();
+        for (let i = 0; i < persons.length; i++) {
+          const personCtrl = this.authorizedPersons.at(i);
+          const val = persons[i];
+          const prefix = `Persona ${i + 1}:`;
+          
+          if (personCtrl.get('fullName')?.invalid) {
+            reasons.push(`${prefix} escribe un nombre y apellido válidos (mínimo 5 letras).`);
+          } else {
+             const cleanName = (val.fullName || '').trim();
+             const normalized = cleanName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, ' ');
+             if (normalizedNames.has(normalized)) {
+               reasons.push(`${prefix} el nombre ya está registrado en otra persona autorizada.`);
+             } else {
+               normalizedNames.add(normalized);
+             }
+          }
+          if (personCtrl.get('phone')?.invalid) {
+            reasons.push(`${prefix} el teléfono debe tener exactamente 10 dígitos.`);
+          }
+          if (personCtrl.get('relationship')?.invalid) {
+            reasons.push(`${prefix} la referencia no debe superar 50 caracteres y solo debe contener letras.`);
+          }
+        }
+      }
+    } else if (option === 'LOCAL_DELIVERY') {
+      const shipping = this.checkoutForm.get('shippingAddress');
+      if (shipping?.invalid) {
+        reasons.push('Completa correctamente tu dirección de envío y datos de contacto.');
+      }
+    } else if (option === 'EXTERNAL_SHIPPING_QUOTE') {
+      reasons.push('El envío requiere cotización. Solicítala por WhatsApp.');
+    }
+
+    if (this.checkoutForm.get('requireInvoice')?.value) {
+      const billing = this.checkoutForm.get('billingAddress');
+      if (billing?.invalid) {
+        reasons.push('Completa los datos de facturación (RFC, Razón Social, etc.).');
+      }
+    }
+
+    return reasons;
+  }
+
+  canSubmitCheckout(): boolean {
+    const option = this.checkoutForm.get('deliveryOption')?.value;
+    
+    if (!this.checkoutForm.get('paymentMethod')?.value) return false;
+
+    const billingValid = !this.checkoutForm.get('requireInvoice')?.value || (this.checkoutForm.get('billingAddress')?.valid === true);
+
+    if (option === 'PICKUP_STORE') {
+      let isPickupValid = this.authorizedPersons.length > 0;
+      const normalizedNames = new Set<string>();
+      
+      for (let i = 0; i < this.authorizedPersons.length; i++) {
+         if (this.authorizedPersons.at(i).invalid) {
+           isPickupValid = false;
+           break;
+         }
+         const cleanName = (this.authorizedPersons.at(i).get('fullName')?.value || '').trim();
+         const normalized = cleanName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, ' ');
+         if (normalizedNames.has(normalized)) {
+           isPickupValid = false;
+           break;
+         }
+         normalizedNames.add(normalized);
+      }
+      return Boolean(isPickupValid && billingValid && this.pricePreviewResult?.canProceedToPayment === true);
+    }
+
+    if (option === 'LOCAL_DELIVERY') {
+      return Boolean(this.checkoutForm.get('shippingAddress')?.valid === true && billingValid && this.pricePreviewResult?.canProceedToPayment === true);
+    }
+
+    if (option === 'EXTERNAL_SHIPPING_QUOTE') {
+      return false; // Nunca permite confirmar, solo cotizar
+    }
+
+    return false;
   }
 }

@@ -214,6 +214,21 @@
   background: var(--gray-100); border: 1px solid var(--gray-300); color: var(--gray-600);
 }
 
+.deadline-expired {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.deadline-warning {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: var(--gray-50);
+  border-left: 4px solid var(--wine);
+  border-radius: 4px;
+}
+
 .proof-actions {
   margin-top: .75rem;
 }
@@ -249,11 +264,17 @@
   width: 100%; box-sizing: border-box; border: 1px solid var(--gray-300); border-radius: 6px;
   padding: .6rem .8rem; font-family: inherit; font-size: .9rem;
 }
-.proof-form input[type="text"]:focus,
-.proof-form input[type="number"]:focus,
-.proof-form input[type="date"]:focus,
-.proof-form textarea:focus {
+.proof-form input:focus, .proof-form textarea:focus {
   outline: none; border-color: var(--wine); box-shadow: 0 0 0 3px rgba(114,47,55,.1);
+}
+.proof-form .invalid-field {
+  border-color: #dc2626 !important;
+}
+.proof-form .error-text {
+  display: block; margin-top: 0.35rem; font-size: 0.8rem; font-weight: 500; color: #dc2626;
+}
+.proof-form .help-text {
+  display: block; margin-top: 0.35rem; font-size: 0.8rem; color: var(--gray-500);
 }
 
 .proof-form input[type="file"] {

@@ -7,7 +7,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { PublicApiService } from '../../services/public-api.service';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
-import { PublicProduct } from '../../models/product.model';
+import { PublicProduct, ProductRecommendation, ProductTrendStatus } from '../../models/product.model';
+import { ProductRecommendationCardComponent } from './product-recommendation-card/product-recommendation-card.component';
 
 /** Modelo local de reseña (mock mientras no exista el endpoint). */
 interface MockReview {
@@ -23,7 +24,7 @@ interface MockReview {
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, ProductRecommendationCardComponent],
   templateUrl: './product-detail.component.html',
   styleUrls: ['./product-detail.component.css']
 })
@@ -44,6 +45,13 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
   // Añadiendo al carrito
   addingToCart = false;
+
+  // Recomendaciones y Tendencia
+  recommendations: ProductRecommendation[] = [];
+  loadingRecommendations = false;
+  trendStatus: ProductTrendStatus | null = null;
+  loadingTrend = false;
+  addingToCartMap: { [key: number]: boolean } = {};
 
   // Reseñas mock (se reemplazarán con endpoint real en sprint futuro)
   mockReviews: MockReview[] = [
@@ -115,6 +123,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     this.error = null;
     this.selectedImageIndex = 0;
     this.quantity = 1;
+    this.loadRecommendations(id);
 
     console.log('Cargando producto con ID:', id);
 
@@ -215,6 +224,34 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     setTimeout(() => { this.addingToCart = false; }, 500);
   }
 
+  onAddRecommendationToCart(rec: ProductRecommendation): void {
+    if (this.addingToCartMap[rec.productId]) return;
+
+    if (!this.isLoggedIn) {
+      this.router.navigate(['/login'], {
+        queryParams: { returnUrl: `/producto/${this.product?.id}` }
+      });
+      return;
+    }
+
+    this.addingToCartMap[rec.productId] = true;
+
+    const productLike = {
+      id: rec.productId.toString(),
+      name: rec.name,
+      images: [rec.imageUrl || '/assets/logoP.png'],
+      price: rec.effectivePrice,
+      inStock: rec.stock > 0
+    } as any;
+
+    this.cartService.addToCart(productLike, 1, undefined, {
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2
+    });
+
+    setTimeout(() => { this.addingToCartMap[rec.productId] = false; }, 500);
+  }
+
   // ── Navegación ─────────────────────────────────────────────────────────────
 
   goBack(): void {
@@ -229,6 +266,58 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   get safeDetailedDescription(): SafeHtml | null {
     if (!this.product?.detailedDescription) return null;
     return this.sanitizer.bypassSecurityTrustHtml(this.product.detailedDescription);
+  }
+
+  private loadProductDetails(id: number): void {
+    this.loading = true;
+    this.error = null;
+    this.trendStatus = null;
+
+    this.publicApiService.getProductById(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (product) => {
+        this.product = product;
+        this.loading = false;
+        
+        // Cargar datos adicionales solo si el producto existe
+        this.loadRecommendations(product.id);
+        this.loadTrendStatus(product.id);
+      },
+      error: (err) => {
+        console.error('Error loading product details:', err);
+        this.error = 'No se pudo cargar el producto. Puede que no exista o no esté disponible.';
+        this.loading = false;
+      }
+    });
+  }
+
+  private loadTrendStatus(productId: number): void {
+    this.loadingTrend = true;
+    this.publicApiService.getProductTrendStatus(productId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (status) => {
+        this.trendStatus = status;
+        this.loadingTrend = false;
+      },
+      error: (err) => {
+        console.error('Error loading trend status:', err);
+        this.loadingTrend = false;
+      }
+    });
+  }
+
+  private loadRecommendations(id: number): void {
+    this.recommendations = [];
+    this.loadingRecommendations = true;
+    this.publicApiService.getRecommendations(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (recs) => {
+        this.recommendations = recs || [];
+        this.loadingRecommendations = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar recomendaciones:', err);
+        this.recommendations = [];
+        this.loadingRecommendations = false;
+      }
+    });
   }
 
   /**
